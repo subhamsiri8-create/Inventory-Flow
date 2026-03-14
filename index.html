@@ -80,7 +80,6 @@
         <h1 class="text-lg font-bold tracking-tight">Stock Color Chart Builder</h1>
       </div>
       <div class="flex items-center gap-3">
-        <button onclick="loadDemoData()" class="btn-secondary text-sm bg-[#1a2332]">Load Demo Data</button>
         <button onclick="exportToExcel()" class="btn-primary text-sm" id="exportBtn" disabled>Export Colored Excel</button>
       </div>
     </div>
@@ -168,7 +167,7 @@
       </div>
     </div>
 
-    <!-- NEW: Smart Overview Tab -->
+    <!-- Smart Overview Tab -->
     <div id="tab-smart" class="tab-content hidden">
         <div class="text-center mb-8 animate-in">
             <h2 class="text-3xl font-bold mb-2">Inventory Health Check</h2>
@@ -325,7 +324,7 @@
       document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
       if (tabName === 'analysis') generateAnalysis();
       if (tabName === 'transfers') generateTransferSuggestions();
-      if (tabName === 'smart') generateSmartView(); // NEW
+      if (tabName === 'smart') generateSmartView();
     }
 
     function showToast(message, type = 'success') {
@@ -350,16 +349,6 @@
       stores.push({ id, name }); updateStoresTable();
       document.getElementById('storeId').value = ''; document.getElementById('storeName').value = '';
       showToast('Store added');
-    }
-
-    function loadDemoData() {
-        stores = [...predefinedStores]; updateStoresTable();
-        baseStock = [ { sku: 'SHIRT-001', name: 'Premium Cotton Shirt', baseQty: 50 }, { sku: 'PANT-002', name: 'Denim Jeans', baseQty: 40 }, { sku: 'KURTA-003', name: 'Ethnic Kurta', baseQty: 30 } ];
-        updateBaseStockTable();
-        storeStock = [];
-        baseStock.forEach(item => { stores.forEach(st => { storeStock.push({ storeId: st.id, sku: item.sku, qty: Math.floor(Math.random() * (item.baseQty + 30)) }); }); });
-        showToast('Demo data loaded!');
-        document.getElementById('exportBtn').disabled = false;
     }
 
     function updateBaseStockTable() {
@@ -491,7 +480,7 @@
         container.innerHTML = Object.entries(grouped).map(([sku, data]) => `<div class="mb-6"><h4 class="font-semibold mb-2">${escapeHtml(data.name)}</h4>${data.list.map(t => `<div class="transfer-card p-3 mb-2"><p class="text-sm"><span class="text-green-400">${escapeHtml(t.from)}</span> → <span class="text-orange-400">${escapeHtml(t.to)}</span> <span class="font-bold text-[#00d4aa] ml-2">${t.qty} units</span></p></div>`).join('')}</div>`).join('');
     }
 
-    // === NEW: SMART VIEW LOGIC ===
+    // === SMART VIEW LOGIC ===
     function generateSmartView() {
         if (!analysisData) generateAnalysis();
         if (!analysisData) return;
