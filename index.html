@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Stock Color Chart Builder</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- SheetJS for Reading -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <!-- ExcelJS for Colored Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
   
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -30,11 +28,30 @@
     .btn-primary { background: linear-gradient(135deg, var(--accent) 0%, #00a88a 100%); color: var(--bg-primary); font-weight: 600; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s ease; font-size: 14px; }
     .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0, 212, 170, 0.3); }
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-secondary { background: transparent; color: var(--text-primary); font-weight: 500; padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; font-size: 14px; }
-    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
     .input-field { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px 16px; border-radius: 8px; width: 100%; }
-    .upload-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 40px; text-align: center; transition: all 0.3s ease; cursor: pointer; }
-    .upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: rgba(0, 212, 170, 0.05); }
+    
+    /* Fixed Upload Zone Logic */
+    .upload-zone { 
+        position: relative; 
+        border: 2px dashed var(--border); 
+        border-radius: 12px; 
+        padding: 40px 20px; 
+        text-align: center; 
+        transition: all 0.3s ease; 
+        cursor: pointer;
+        overflow: hidden;
+    }
+    .upload-zone:hover { border-color: var(--accent); background: rgba(0, 212, 170, 0.05); }
+    
+    /* Input overlay to capture click anywhere */
+    .upload-input { 
+        position: absolute; 
+        top: 0; left: 0; 
+        width: 100%; height: 100%; 
+        opacity: 0; 
+        cursor: pointer; 
+        z-index: 10;
+    }
     
     .data-table { width: 100%; border-collapse: separate; border-spacing: 0; }
     .data-table th { background: var(--bg-secondary); padding: 14px 16px; text-align: left; font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
@@ -50,13 +67,11 @@
     .tab-btn { padding: 12px 20px; background: transparent; border: none; color: var(--text-secondary); cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.2s ease; font-size: 14px; }
     .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-    /* Smart View Specific Styles */
     .health-circle { width: 160px; height: 160px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: bold; margin: 0 auto; }
     .health-bg { position: absolute; inset: 0; border-radius: 50%; border: 12px solid #1f2937; }
     .health-bar { position: absolute; inset: 0; border-radius: 50%; border: 12px solid transparent; transform: rotate(-45deg); }
-    
-    .simple-card { background: linear-gradient(145deg, #1a2332, #111827); border-radius: 16px; padding: 20px; border: 1px solid #2a3548; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .progress-simple { height: 24px; border-radius: 12px; background: #1f2937; overflow: hidden; position: relative; }
+    .simple-card { background: linear-gradient(145deg, #1a2332, #111827); border-radius: 16px; padding: 20px; border: 1px solid #2a3548; }
+    .progress-simple { height: 24px; border-radius: 12px; background: #1f2937; overflow: hidden; }
     .progress-fill-simple { height: 100%; border-radius: 12px; display: flex; align-items: center; padding-left: 12px; font-weight: bold; font-size: 12px; color: white; transition: width 1s ease; }
 
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -107,10 +122,13 @@
           </div>
         </div>
         <div class="card p-6 animate-in stagger-1">
-          <h3 class="text-lg font-semibold mb-4">Import Base Stock</h3>
-          <div class="upload-zone" id="baseUploadZone" onclick="document.getElementById('baseStockFile').click()">
-            <input type="file" id="baseStockFile" accept=".csv,.xlsx,.xls" hidden>
-            <p class="text-[#8896ab] mb-2">Drop file here or click</p>
+          <h3 class="text-lg font-semibold mb-4">Import Base Stock (CSV/Excel)</h3>
+          <!-- Fixed Upload Zone -->
+          <div class="upload-zone" id="baseUploadZone">
+            <input type="file" class="upload-input" id="baseStockFile" accept=".csv,.xlsx,.xls">
+            <svg class="w-12 h-12 mx-auto mb-4 text-[#5a6a80]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <p class="text-[#8896ab] mb-2 pointer-events-none">Click anywhere to browse</p>
+            <p class="text-xs text-[#5a6a80] pointer-events-none">Columns: SKU, Name, Base Qty</p>
           </div>
         </div>
       </div>
@@ -132,10 +150,13 @@
           </div>
         </div>
         <div class="card p-6 animate-in stagger-1">
-          <h3 class="text-lg font-semibold mb-4">Upload Store Stock</h3>
-          <div class="upload-zone" id="storeUploadZone" onclick="document.getElementById('storeStockFile').click()">
-            <input type="file" id="storeStockFile" accept=".csv,.xlsx,.xls" hidden>
-            <p class="text-[#8896ab] mb-2">Drop file here</p>
+          <h3 class="text-lg font-semibold mb-4">Upload Store Stock (CSV/Excel)</h3>
+          <!-- Fixed Upload Zone -->
+          <div class="upload-zone" id="storeUploadZone">
+            <input type="file" class="upload-input" id="storeStockFile" accept=".csv,.xlsx,.xls">
+            <svg class="w-12 h-12 mx-auto mb-4 text-[#5a6a80]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <p class="text-[#8896ab] mb-2 pointer-events-none">Click anywhere to browse</p>
+            <p class="text-xs text-[#5a6a80] pointer-events-none">Columns: Store ID, SKU, Quantity</p>
           </div>
         </div>
       </div>
@@ -169,116 +190,33 @@
 
     <!-- Smart Overview Tab -->
     <div id="tab-smart" class="tab-content hidden">
-        <div class="text-center mb-8 animate-in">
-            <h2 class="text-3xl font-bold mb-2">Inventory Health Check</h2>
-            <p class="text-[#8896ab]">A simple report card for your stores</p>
-        </div>
-
-        <!-- Top Section: Score & Status -->
+        <div class="text-center mb-8 animate-in"><h2 class="text-3xl font-bold mb-2">Inventory Health Check</h2><p class="text-[#8896ab]">A simple report card for your stores</p></div>
         <div class="grid lg:grid-cols-3 gap-6 mb-8">
-            <!-- Health Score -->
             <div class="card p-6 flex flex-col items-center justify-center animate-in stagger-1">
-                <div class="health-circle mb-4">
-                    <div class="health-bg"></div>
-                    <div class="health-bar" id="healthBar"></div>
-                    <div class="z-10 text-center">
-                        <span id="healthScore">0%</span>
-                    </div>
-                </div>
-                <h3 class="text-xl font-bold" id="healthTitle">Calculating...</h3>
-                <p class="text-sm text-[#8896ab]" id="healthDesc">Analyze data to see score</p>
+                <div class="health-circle mb-4"><div class="health-bg"></div><div class="health-bar" id="healthBar"></div><div class="z-10 text-center"><span id="healthScore">0%</span></div></div>
+                <h3 class="text-xl font-bold" id="healthTitle">Calculating...</h3><p class="text-sm text-[#8896ab]" id="healthDesc">Analyze data to see score</p>
             </div>
-
-            <!-- Visual Status Bars -->
             <div class="card p-6 animate-in stagger-2">
                 <h3 class="font-semibold mb-4">Stock Status Levels</h3>
                 <div class="space-y-4">
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span>Good (Equal)</span>
-                            <span id="smartEqualPct">0%</span>
-                        </div>
-                        <div class="progress-simple">
-                            <div class="progress-fill-simple" id="barEqual" style="width: 0%; background: #3b82f6;"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span>Extra Stock</span>
-                            <span id="smartExcessPct">0%</span>
-                        </div>
-                        <div class="progress-simple">
-                            <div class="progress-fill-simple" id="barExcess" style="width: 0%; background: #10b981;"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span>Low Stock</span>
-                            <span id="smartDeficitPct">0%</span>
-                        </div>
-                        <div class="progress-simple">
-                            <div class="progress-fill-simple" id="barDeficit" style="width: 0%; background: #f59e0b;"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span>Empty (Critical)</span>
-                            <span id="smartCriticalPct">0%</span>
-                        </div>
-                        <div class="progress-simple">
-                            <div class="progress-fill-simple" id="barCritical" style="width: 0%; background: #ef4444;"></div>
-                        </div>
-                    </div>
+                    <div><div class="flex justify-between text-sm mb-1"><span>Good (Equal)</span><span id="smartEqualPct">0%</span></div><div class="progress-simple"><div class="progress-fill-simple" id="barEqual" style="width: 0%; background: #3b82f6;"></div></div></div>
+                    <div><div class="flex justify-between text-sm mb-1"><span>Extra Stock</span><span id="smartExcessPct">0%</span></div><div class="progress-simple"><div class="progress-fill-simple" id="barExcess" style="width: 0%; background: #10b981;"></div></div></div>
+                    <div><div class="flex justify-between text-sm mb-1"><span>Low Stock</span><span id="smartDeficitPct">0%</span></div><div class="progress-simple"><div class="progress-fill-simple" id="barDeficit" style="width: 0%; background: #f59e0b;"></div></div></div>
+                    <div><div class="flex justify-between text-sm mb-1"><span>Empty (Critical)</span><span id="smartCriticalPct">0%</span></div><div class="progress-simple"><div class="progress-fill-simple" id="barCritical" style="width: 0%; background: #ef4444;"></div></div></div>
                 </div>
             </div>
-
-            <!-- Simple Math -->
             <div class="card p-6 animate-in stagger-2">
                 <h3 class="font-semibold mb-4">The Simple Math</h3>
                 <div class="space-y-3">
-                    <div class="flex justify-between items-center border-b border-[#2a3548] pb-2">
-                        <span class="text-[#8896ab]">Total Items Needed:</span>
-                        <span class="font-bold text-lg" id="smartTotalNeed">0</span>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-[#2a3548] pb-2">
-                        <span class="text-[#8896ab]">Total Items in Stores:</span>
-                        <span class="font-bold text-lg" id="smartTotalHave">0</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-[#8896ab]">Difference:</span>
-                        <span class="font-bold text-lg" id="smartDiff">0</span>
-                    </div>
+                    <div class="flex justify-between items-center border-b border-[#2a3548] pb-2"><span class="text-[#8896ab]">Total Items Needed:</span><span class="font-bold text-lg" id="smartTotalNeed">0</span></div>
+                    <div class="flex justify-between items-center border-b border-[#2a3548] pb-2"><span class="text-[#8896ab]">Total Items in Stores:</span><span class="font-bold text-lg" id="smartTotalHave">0</span></div>
+                    <div class="flex justify-between items-center"><span class="text-[#8896ab]">Difference:</span><span class="font-bold text-lg" id="smartDiff">0</span></div>
                 </div>
             </div>
         </div>
-
-        <!-- Actionable Advice Section -->
         <div class="grid lg:grid-cols-2 gap-6">
-            <!-- Problems -->
-            <div class="simple-card animate-in">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center bg-red-500/20">
-                        <span class="text-xl">⚠️</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-[#ef4444]">Needs Attention</h3>
-                </div>
-                <div id="smartProblems" class="space-y-3">
-                    <p class="text-[#5a6a80]">No critical issues found.</p>
-                </div>
-            </div>
-
-            <!-- Solutions -->
-            <div class="simple-card animate-in stagger-1">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center bg-green-500/20">
-                        <span class="text-xl">💡</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-[#10b981]">Smart Advice</h3>
-                </div>
-                <div id="smartAdvice" class="space-y-3">
-                    <p class="text-[#5a6a80]">Load data to get advice.</p>
-                </div>
-            </div>
+            <div class="simple-card animate-in"><div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-full flex items-center justify-center bg-red-500/20"><span class="text-xl">⚠️</span></div><h3 class="text-lg font-bold text-[#ef4444]">Needs Attention</h3></div><div id="smartProblems" class="space-y-3"><p class="text-[#5a6a80]">No critical issues found.</p></div></div>
+            <div class="simple-card animate-in stagger-1"><div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-full flex items-center justify-center bg-green-500/20"><span class="text-xl">💡</span></div><h3 class="text-lg font-bold text-[#10b981]">Smart Advice</h3></div><div id="smartAdvice" class="space-y-3"><p class="text-[#5a6a80]">Load data to get advice.</p></div></div>
         </div>
     </div>
   </main>
@@ -292,36 +230,18 @@
     let storeStock = [];
     let analysisData = null;
 
-    const predefinedStores = [
-      { id: 'SUB-ELU', name: 'Subham Grand - Eluru' }, { id: 'SUB-TAN', name: 'Subham Grand - Tanuku' }, { id: 'SUB-TUN', name: 'Subham Grand - Tuni' }, { id: 'SUB-TEN', name: 'Subham Grand - Tenali' }, { id: 'SUB-RJY', name: 'Subham Grand - Rajahmundry' }, { id: 'SUB-BZA', name: 'Subham Grand - Vijayawada' }, { id: 'SUB-AKD', name: 'Subham Grand - Kakinada' }, { id: 'SUB-TIR', name: 'Subham Grand - Tirupati' }, { id: 'SUB-HYD', name: 'Subham Grand - Hyderabad' }, { id: 'SUB-CKP', name: 'Subham Grand - Chilakaluripet' },
-      { id: 'SIR-HYD', name: 'Siri Dress Divine - Hyderabad' }, { id: 'SIR-BZA', name: 'Siri Dress Divine - Vijayawada' }, { id: 'SIR-AKD', name: 'Siri Dress Divine - Kakinada' }, { id: 'SIR-CKP', name: 'Siri Dress Divine - Chilakaluripet' }, { id: 'SIR-VZG', name: 'Siri Dress Divine - Vizag' }, { id: 'SIR-TIR', name: 'Siri Dress Divine - Tirupati' }, { id: 'SIR-RJY', name: 'Siri Dress Divine - Rajahmundry' }, { id: 'SIR-BVM', name: 'Siri Dress Divine - Bhimavaram' }, { id: 'SIR-ELU', name: 'Siri Dress Divine - Eluru' }
-    ];
+    document.addEventListener('DOMContentLoaded', () => {
+        initUploads(); 
+        initDragDrop();
+    });
 
-    document.addEventListener('DOMContentLoaded', () => { initFileHandlers(); initDragDrop(); });
-
-    function initFileHandlers() {
-        document.getElementById('baseStockFile').addEventListener('change', handleBaseStockUpload);
-        document.getElementById('storeStockFile').addEventListener('change', handleStoreStockUpload);
-    }
-
-    function initDragDrop() {
-        ['baseUploadZone', 'storeUploadZone'].forEach(id => {
-            const zone = document.getElementById(id); if(!zone) return;
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => { zone.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); }, false); });
-            ['dragenter', 'dragover'].forEach(eventName => { zone.addEventListener(eventName, () => zone.classList.add('dragover'), false); });
-            ['dragleave', 'drop'].forEach(eventName => { zone.addEventListener(eventName, () => zone.classList.remove('dragover'), false); });
-            zone.addEventListener('drop', (e) => {
-                const file = e.dataTransfer.files[0]; if (!file) return;
-                if (id === 'baseUploadZone') processFile(file, 'base'); else processFile(file, 'store');
-            }, false);
-        });
-    }
-
+    // === TAB LOGIC ===
     function switchTab(tabName) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.getElementById('tab-' + tabName).classList.remove('hidden');
       document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+      
       if (tabName === 'analysis') generateAnalysis();
       if (tabName === 'transfers') generateTransferSuggestions();
       if (tabName === 'smart') generateSmartView();
@@ -333,6 +253,7 @@
       toast.classList.remove('translate-y-20', 'opacity-0'); setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
     }
 
+    // === MANUAL ENTRY ===
     function addBaseStock() {
       const sku = document.getElementById('itemSku').value.trim(); const name = document.getElementById('itemName').value.trim(); const qty = parseInt(document.getElementById('baseQty').value);
       if (!sku || !name || isNaN(qty) || qty < 0) { showToast('Fill all fields validly', 'error'); return; }
@@ -368,45 +289,179 @@
     function deleteBaseStock(sku) { baseStock = baseStock.filter(i => i.sku !== sku); updateBaseStockTable(); }
     function deleteStore(id) { stores = stores.filter(s => s.id !== id); storeStock = storeStock.filter(s => s.storeId !== id); updateStoresTable(); }
 
-    function handleBaseStockUpload(e) { const file = e.target.files[0]; if(file) processFile(file, 'base'); e.target.value = ''; }
-    function handleStoreStockUpload(e) { const file = e.target.files[0]; if(file) processFile(file, 'store'); e.target.value = ''; }
+    // === UPLOAD LOGIC (FIXED) ===
+    function initUploads() {
+        // Attach change listeners to the inputs
+        document.getElementById('baseStockFile').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(file) processFile(file, 'base');
+            e.target.value = ''; // Reset
+        });
+
+        document.getElementById('storeStockFile').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(file) processFile(file, 'store');
+            e.target.value = ''; // Reset
+        });
+    }
+
+    function initDragDrop() {
+        ['baseUploadZone', 'storeUploadZone'].forEach(id => {
+            const zone = document.getElementById(id);
+            if(!zone) return;
+            
+            // Highlight on drag
+            ['dragenter', 'dragover'].forEach(eventName => {
+                zone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    zone.classList.add('dragover');
+                }, false);
+            });
+            
+            // Remove highlight
+            ['dragleave', 'drop'].forEach(eventName => {
+                zone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('dragover');
+                }, false);
+            });
+            
+            // Handle drop
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const file = e.dataTransfer.files[0];
+                if (!file) return;
+                const type = (id === 'baseUploadZone') ? 'base' : 'store';
+                processFile(file, type);
+            }, false);
+        });
+    }
 
     function processFile(file, type) {
+        console.log("Processing file:", file.name, "Type:", type);
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
-                const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const json = XLSX.utils.sheet_to_json(sheet);
-                if(type === 'base') importBaseStock(json); else importStoreStock(json);
-            } catch(err) { console.error(err); showToast('Error parsing file', 'error'); }
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const json = XLSX.utils.sheet_to_json(sheet, { header: 1 }); // Get as array of arrays first for robustness
+                
+                if (json.length <= 1) { showToast('File is empty or has only headers', 'error'); return; }
+                
+                // Convert array of arrays to objects using first row as headers
+                const headers = json[0].map(h => String(h).trim().toLowerCase());
+                const rows = json.slice(1).map(row => {
+                    let obj = {};
+                    headers.forEach((h, i) => obj[h] = row[i]);
+                    return obj;
+                });
+
+                console.log("Parsed Rows:", rows);
+                
+                if(type === 'base') {
+                    importBaseStock(rows, headers); 
+                    if (baseStock.length > 0) setTimeout(() => switchTab('upload'), 500);
+                } else {
+                    importStoreStock(rows, headers);
+                }
+            } catch(err) { 
+                console.error(err);
+                showToast('Error reading file: ' + err.message, 'error'); 
+            }
         };
         reader.readAsArrayBuffer(file);
     }
 
-    function importBaseStock(json) {
-        let added = 0;
-        json.forEach(row => {
-            const sku = row['SKU'] || row['sku'] || Object.values(row)[0]; const name = row['Name'] || row['name'] || Object.values(row)[1]; const qty = parseInt(row['Base Qty'] || row['Base'] || row['Quantity'] || Object.values(row)[2]);
-            if (sku && name && !isNaN(qty)) { const sSku = String(sku).trim(); if (!baseStock.find(i => i.sku === sSku)) { baseStock.push({ sku: sSku, name: String(name).trim(), baseQty: qty }); added++; } }
-        });
-        updateBaseStockTable(); showToast(`Imported ${added} base items`);
+    // === SMART IMPORT LOGIC ===
+    function getCol(row, headers, keys, indexFallback) {
+        // Try finding by key name
+        for(let k of keys) {
+            if(row.hasOwnProperty(k)) return row[k];
+        }
+        // Fallback to index
+        if(headers[indexFallback]) {
+            return row[headers[indexFallback]];
+        }
+        return undefined;
     }
 
-    function importStoreStock(json) {
-        let added = 0; let newStores = 0;
-        json.forEach(row => {
-            let storeId = row['Store ID'] || row['StoreId'] || Object.values(row)[0]; const sku = row['SKU'] || row['sku'] || Object.values(row)[1]; const qty = parseInt(row['Quantity'] || row['Qty'] || Object.values(row)[2]);
-            if (storeId && !stores.find(s => s.id === String(storeId).trim())) { const foundStore = stores.find(s => s.name.toLowerCase() === String(storeId).toLowerCase().trim()); if (foundStore) storeId = foundStore.id; }
-            if (storeId && sku && !isNaN(qty)) {
-                const sId = String(storeId).trim(); const sSku = String(sku).trim();
-                if (!stores.find(s => s.id === sId)) { stores.push({ id: sId, name: sId }); newStores++; }
-                const existing = storeStock.find(s => s.storeId === sId && s.sku === sSku); if (existing) existing.qty = qty; else { storeStock.push({ storeId: sId, sku: sSku, qty }); added++; }
+    function importBaseStock(rows, headers) {
+        let added = 0;
+        rows.forEach(row => {
+            // Try keys: sku, item code, style OR fallback to Col 0
+            let sku = getCol(row, headers, ['sku', 'item code', 'style', 'id'], 0);
+            // Try keys: name, item name, description OR fallback to Col 1
+            let name = getCol(row, headers, ['name', 'item name', 'description', 'item'], 1);
+            // Try keys: base, base qty, quantity, qty OR fallback to Col 2
+            let qty = getCol(row, headers, ['base qty', 'base', 'quantity', 'qty', 'target'], 2);
+
+            sku = String(sku || '').trim();
+            name = String(name || '').trim();
+            qty = parseInt(qty);
+
+            if (sku && name && !isNaN(qty) && qty >= 0) {
+                if (!baseStock.find(i => i.sku === sku)) {
+                    baseStock.push({ sku, name, baseQty: qty });
+                    added++;
+                }
             }
         });
-        updateStoresTable(); showToast(`Imported ${added} stock entries. Added ${newStores} new stores.`);
+        updateBaseStockTable(); 
+        showToast(`Imported ${added} base items`);
+    }
+
+    function importStoreStock(rows, headers) {
+        let added = 0; let newStores = 0;
+        rows.forEach(row => {
+            // Try keys: store id, store, location OR fallback to Col 0
+            let storeId = getCol(row, headers, ['store id', 'storeid', 'store', 'location'], 0);
+            // Try keys: sku, item, style OR fallback to Col 1
+            let sku = getCol(row, headers, ['sku', 'item', 'style'], 1);
+            // Try keys: qty, quantity, stock, current OR fallback to Col 2
+            let qty = getCol(row, headers, ['qty', 'quantity', 'stock', 'current', 'count'], 2);
+
+            storeId = String(storeId || '').trim();
+            sku = String(sku || '').trim();
+            qty = parseInt(qty);
+
+            // Smart Matching for Store Name
+            if (storeId && !stores.find(s => s.id === storeId)) {
+                const foundStore = stores.find(s => s.name.toLowerCase() === storeId.toLowerCase());
+                if (foundStore) storeId = foundStore.id;
+            }
+
+            if (storeId && sku && !isNaN(qty)) {
+                if (!stores.find(s => s.id === storeId)) { 
+                    stores.push({ id: storeId, name: storeId }); 
+                    newStores++; 
+                }
+                const existing = storeStock.find(s => s.storeId === storeId && s.sku === sku);
+                if (existing) {
+                    existing.qty = qty; 
+                } else {
+                    storeStock.push({ storeId, sku, qty });
+                    added++;
+                }
+            }
+        });
+        updateStoresTable(); 
+        
+        if (added > 0 && baseStock.length > 0) {
+            showToast('Stock imported. Generating analysis...');
+            setTimeout(() => switchTab('analysis'), 500);
+        } else if (baseStock.length === 0) {
+            showToast('Please upload Base Stock first', 'error');
+        } else {
+            showToast(`Processed file.`);
+        }
     }
 
     function generateAnalysis() {
-      if (baseStock.length === 0 || stores.length === 0 || storeStock.length === 0) { document.getElementById('colorChartBody').innerHTML = '<tr><td colspan="20" class="text-center text-[#5a6a80] py-8">Load Demo Data or Upload files</td></tr>'; return; }
+      if (baseStock.length === 0 || stores.length === 0 || storeStock.length === 0) { 
+          document.getElementById('colorChartBody').innerHTML = '<tr><td colspan="20" class="text-center text-[#5a6a80] py-8">Upload data to see analysis</td></tr>'; 
+          return; 
+      }
       analysisData = { items: [], summary: { excess: 0, deficit: 0, equal: 0, critical: 0 } };
       baseStock.forEach(item => {
         const itemAnalysis = { sku: item.sku, name: item.name, baseQty: item.baseQty, stores: [] };
@@ -451,7 +506,7 @@
 
     function generateTransferSuggestions() {
         if (!analysisData) generateAnalysis(); if (!analysisData || analysisData.items.length === 0) return;
-        const transfers = []; let totalUnits = 0; const priorityItems = [];
+        const transfers = []; let totalUnits = 0;
         analysisData.items.forEach(item => {
             const excessStores = item.stores.filter(s => s.variance > 0).sort((a, b) => b.variance - a.variance);
             const deficitStores = item.stores.filter(s => s.variance < 0).sort((a, b) => a.variance - b.variance);
@@ -464,13 +519,11 @@
                     });
                 });
             }
-            const critical = item.stores.filter(s => s.status === 'critical');
-            if (critical.length > 0) priorityItems.push({ sku: item.sku, name: item.name, count: critical.length });
         });
-        renderTransfers(transfers, totalUnits, priorityItems);
+        renderTransfers(transfers, totalUnits);
     }
 
-    function renderTransfers(transfers, totalUnits, priorityItems) {
+    function renderTransfers(transfers, totalUnits) {
         document.getElementById('totalTransfers').textContent = transfers.length;
         document.getElementById('itemsToTransfer').textContent = [...new Set(transfers.map(t=>t.sku))].length;
         document.getElementById('totalUnits').textContent = totalUnits;
@@ -480,115 +533,59 @@
         container.innerHTML = Object.entries(grouped).map(([sku, data]) => `<div class="mb-6"><h4 class="font-semibold mb-2">${escapeHtml(data.name)}</h4>${data.list.map(t => `<div class="transfer-card p-3 mb-2"><p class="text-sm"><span class="text-green-400">${escapeHtml(t.from)}</span> → <span class="text-orange-400">${escapeHtml(t.to)}</span> <span class="font-bold text-[#00d4aa] ml-2">${t.qty} units</span></p></div>`).join('')}</div>`).join('');
     }
 
-    // === SMART VIEW LOGIC ===
     function generateSmartView() {
-        if (!analysisData) generateAnalysis();
-        if (!analysisData) return;
-
-        const totalSlots = baseStock.length * stores.length;
-        if (totalSlots === 0) return;
-
-        // 1. Calculate Health Score (0-100)
-        // Formula: 100 - (Critical% + Half of Deficit%)
+        if (!analysisData) generateAnalysis(); if (!analysisData) return;
+        const totalSlots = baseStock.length * stores.length; if (totalSlots === 0) return;
         const critPct = (analysisData.summary.critical / totalSlots) * 100;
         const defPct = (analysisData.summary.deficit / totalSlots) * 100;
         const score = Math.max(0, Math.round(100 - (critPct + (defPct/2))));
-
-        // Update Score UI
         document.getElementById('healthScore').textContent = score + '%';
         const color = score > 80 ? '#10b981' : (score > 50 ? '#f59e0b' : '#ef4444');
         document.getElementById('healthBar').style.borderColor = color;
         document.getElementById('healthScore').style.color = color;
-        
         const title = score > 80 ? 'Great Job!' : (score > 50 ? 'Needs Work' : 'Critical');
-        document.getElementById('healthTitle').textContent = title;
-        document.getElementById('healthDesc').textContent = `Based on ${totalSlots} inventory slots.`;
-
-        // 2. Update Bars
+        document.getElementById('healthTitle').textContent = title; document.getElementById('healthDesc').textContent = `Based on ${totalSlots} inventory slots.`;
         const eqPct = Math.round((analysisData.summary.equal / totalSlots) * 100);
         const exPct = Math.round((analysisData.summary.excess / totalSlots) * 100);
-        
-        document.getElementById('smartEqualPct').textContent = eqPct + '%';
-        document.getElementById('barEqual').style.width = eqPct + '%';
-        
-        document.getElementById('smartExcessPct').textContent = exPct + '%';
-        document.getElementById('barExcess').style.width = exPct + '%';
-        
-        document.getElementById('smartDeficitPct').textContent = Math.round(defPct) + '%';
-        document.getElementById('barDeficit').style.width = defPct + '%';
-        
-        document.getElementById('smartCriticalPct').textContent = Math.round(critPct) + '%';
-        document.getElementById('barCritical').style.width = critPct + '%';
-
-        // 3. Simple Math
-        let totalNeed = 0;
-        let totalHave = 0;
-        baseStock.forEach(item => {
-            totalNeed += (item.baseQty * stores.length);
-        });
+        document.getElementById('smartEqualPct').textContent = eqPct + '%'; document.getElementById('barEqual').style.width = eqPct + '%';
+        document.getElementById('smartExcessPct').textContent = exPct + '%'; document.getElementById('barExcess').style.width = exPct + '%';
+        document.getElementById('smartDeficitPct').textContent = Math.round(defPct) + '%'; document.getElementById('barDeficit').style.width = defPct + '%';
+        document.getElementById('smartCriticalPct').textContent = Math.round(critPct) + '%'; document.getElementById('barCritical').style.width = critPct + '%';
+        let totalNeed = 0; let totalHave = 0;
+        baseStock.forEach(item => { totalNeed += (item.baseQty * stores.length); });
         storeStock.forEach(s => totalHave += s.qty);
-
         document.getElementById('smartTotalNeed').textContent = totalNeed.toLocaleString();
         document.getElementById('smartTotalHave').textContent = totalHave.toLocaleString();
         const diff = totalHave - totalNeed;
         const diffEl = document.getElementById('smartDiff');
         diffEl.textContent = (diff > 0 ? '+' : '') + diff.toLocaleString();
         diffEl.style.color = diff >= 0 ? '#10b981' : '#ef4444';
-
-        // 4. Problems & Advice (Simple English)
-        const probDiv = document.getElementById('smartProblems');
-        const advDiv = document.getElementById('smartAdvice');
-        
-        // Find Critical Items
+        const probDiv = document.getElementById('smartProblems'); const advDiv = document.getElementById('smartAdvice');
         const criticalItems = [];
-        analysisData.items.forEach(item => {
-            item.stores.forEach(st => {
-                if(st.status === 'critical') criticalItems.push({ name: item.name, store: st.storeName });
-            });
-        });
-
-        if(criticalItems.length > 0) {
-            const list = criticalItems.slice(0, 3).map(i => `<div class="p-2 bg-red-500/10 rounded text-sm text-red-300"><b>${i.name}</b> is empty at <b>${i.store}</b></div>`).join('');
-            probDiv.innerHTML = list;
-        } else {
-            probDiv.innerHTML = '<p class="text-green-400">No empty shelves found! 👍</p>';
-        }
-
-        // Advice
-        if(analysisData.summary.excess > 0 && analysisData.summary.deficit > 0) {
-            advDiv.innerHTML = `
-                <div class="p-3 bg-green-500/10 rounded text-sm text-green-300 mb-2">
-                    You have extra stock in some stores. Move it to stores that need it.
-                </div>
-                <p class="text-xs text-[#5a6a80]">Go to the "Transfers" tab to see exactly how much to move.</p>
-            `;
-        } else if (diff < 0) {
-            advDiv.innerHTML = `<div class="p-3 bg-orange-500/10 rounded text-sm text-orange-300">You have less stock than needed. You need to buy <b>${Math.abs(diff)}</b> more items.</div>`;
-        } else {
-            advDiv.innerHTML = `<div class="p-3 bg-blue-500/10 rounded text-sm text-blue-300">Stock looks balanced. Good job! 🎉</div>`;
-        }
+        analysisData.items.forEach(item => { item.stores.forEach(st => { if(st.status === 'critical') criticalItems.push({ name: item.name, store: st.storeName }); }); });
+        if(criticalItems.length > 0) { probDiv.innerHTML = criticalItems.slice(0, 3).map(i => `<div class="p-2 bg-red-500/10 rounded text-sm text-red-300"><b>${i.name}</b> is empty at <b>${i.store}</b></div>`).join(''); }
+        else { probDiv.innerHTML = '<p class="text-green-400">No empty shelves found! 👍</p>'; }
+        if(analysisData.summary.excess > 0 && analysisData.summary.deficit > 0) { advDiv.innerHTML = `<div class="p-3 bg-green-500/10 rounded text-sm text-green-300 mb-2">You have extra stock in some stores. Move it to stores that need it.</div><p class="text-xs text-[#5a6a80]">Go to the "Transfers" tab to see exactly how much to move.</p>`; }
+        else if (diff < 0) { advDiv.innerHTML = `<div class="p-3 bg-orange-500/10 rounded text-sm text-orange-300">You have less stock than needed. You need to buy <b>${Math.abs(diff)}</b> more items.</div>`; }
+        else { advDiv.innerHTML = `<div class="p-3 bg-blue-500/10 rounded text-sm text-blue-300">Stock looks balanced. Good job! 🎉</div>`; }
     }
 
-    // === EXPORT LOGIC ===
     async function exportToExcel() {
         if (!analysisData || analysisData.items.length === 0) { showToast('No data to export', 'error'); return; }
-        
         try {
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('Stock Color Chart');
             const headerStyle = { font: { bold: true, color: { argb: 'FFFFFFFF' } }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F2937' } }, alignment: { vertical: 'middle', horizontal: 'center' } };
             const styles = {
-                excess: { font: { color: { argb: 'FF065F46' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD1FAE5' } } },
-                deficit: { font: { color: { argb: 'FF92400E' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } } },
-                critical: { font: { color: { argb: 'FF991B1B' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } } },
-                equal: { font: { color: { argb: 'FF1E40AF' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDBEAFE' } } }
+                excess:   { font: { color: { argb: 'FF000000' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD1FAE5' } } },
+                deficit:  { font: { color: { argb: 'FF000000' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } } },
+                critical: { font: { color: { argb: 'FF000000' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } } },
+                equal:    { font: { color: { argb: 'FF000000' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDBEAFE' } } }
             };
-
             const headers = ['SKU', 'Item Name', 'Base Qty'];
             stores.forEach(s => headers.push(`${s.name} (Stock)`, `${s.name} (Var)`, `${s.name} (Status)`));
             worksheet.addRow(headers);
             worksheet.getRow(1).eachCell((cell) => Object.assign(cell, headerStyle));
-
             analysisData.items.forEach(item => {
                 const rowData = [item.sku, item.name, item.baseQty];
                 item.stores.forEach(s => rowData.push(s.currentQty, s.variance, s.status.toUpperCase()));
@@ -602,9 +599,7 @@
                     colStart += 3;
                 });
             });
-
             worksheet.columns.forEach((col, i) => { col.width = i < 3 ? 15 : 18; });
-
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
             const url = window.URL.createObjectURL(blob);
