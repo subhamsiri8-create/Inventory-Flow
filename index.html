@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Color Chart Builder</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0f1a;
+      --bg-secondary: #111827;
+      --bg-card: #1a2332;
+      --border: #2a3548;
+      --text-primary: #e8edf5;
+      --text-secondary: #8896ab;
+      --text-muted: #5a6a80;
+      --accent: #00d4aa;
+      --accent-dim: #00a88a;
+      --excess: #10b981;
+      --excess-bg: rgba(16, 185, 129, 0.15);
+      --deficit: #f59e0b;
+      --deficit-bg: rgba(245, 158, 11, 0.15);
+      --critical: #ef4444;
+      --critical-bg: rgba(239, 68, 68, 0.15);
+      --equal: #3b82f6;
+      --equal-bg: rgba(59, 130, 246, 0.15);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'IBM Plex Sans', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; }
+
+    .gradient-mesh {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: 
+        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0, 212, 170, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+        var(--bg-primary);
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%);
+      color: var(--bg-primary);
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 212, 170, 0.3);
+    }
+    
+    .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-primary);
+      font-weight: 500;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .input-field {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 12px 16px;
+      border-radius: 8px;
+      width: 100%;
+      transition: all 0.2s ease;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.1);
+    }
+
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(0, 212, 170, 0.05);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .data-table th {
+      background: var(--bg-secondary);
+      padding: 14px 16px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    
+    /* Sticky columns for Analysis Table */
+    .sticky-col {
+        position: sticky;
+        background: var(--bg-card);
+        z-index: 5;
+    }
+    .sticky-col-1 { left: 0; }
+    .sticky-col-2 { left: 100px; border-right: 1px solid var(--border); }
+
+    .data-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s ease;
+    }
+
+    .data-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
+    .data-table tr:hover td.sticky-col { background: var(--bg-card); }
+
+    .cell-excess { background: var(--excess-bg); color: var(--excess); font-weight: 600; }
+    .cell-deficit { background: var(--deficit-bg); color: var(--deficit); font-weight: 600; }
+    .cell-critical { background: var(--critical-bg); color: var(--critical); font-weight: 600; }
+    .cell-equal { background: var(--equal-bg); color: var(--equal); font-weight: 600; }
+
+    .transfer-card {
+      background: linear-gradient(135deg, rgba(0, 212, 170, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+      border: 1px solid rgba(0, 212, 170, 0.2);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .tab-btn {
+      padding: 12px 24px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-weight: 500;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-in { animation: fadeInUp 0.4s ease forwards; }
+    .stagger-1 { animation-delay: 0.1s; opacity: 0; }
+    .stagger-2 { animation-delay: 0.2s; opacity: 0; }
+
+    .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-track { background: var(--bg-secondary); }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div class="gradient-mesh"></div>
+  
+  <!-- Header -->
+  <header class="border-b border-[#2a3548] bg-[#0a0f1a]/80 backdrop-blur-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-[#00d4aa] to-[#3b82f6] flex items-center justify-center">
+          <svg class="w-6 h-6 text-[#0a0f1a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight">Stock Color Chart Builder</h1>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="loadDemoData()" class="btn-secondary text-sm bg-[#1a2332]">
+          Load Demo Data
+        </button>
+        <button onclick="exportToExcel()" class="btn-primary text-sm" id="exportBtn" disabled>
+          Export Excel
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <!-- Tabs -->
+    <div class="flex border-b border-[#2a3548] mb-8 overflow-x-auto">
+      <button class="tab-btn active" data-tab="setup" onclick="switchTab('setup')">1. Setup Base Stock</button>
+      <button class="tab-btn" data-tab="upload" onclick="switchTab('upload')">2. Manage Stores</button>
+      <button class="tab-btn" data-tab="analysis" onclick="switchTab('analysis')">3. Analysis Dashboard</button>
+      <button class="tab-btn" data-tab="transfers" onclick="switchTab('transfers')">4. Transfer Suggestions</button>
+    </div>
+
+    <!-- Setup Tab -->
+    <div id="tab-setup" class="tab-content">
+      <div class="grid lg:grid-cols-2 gap-6">
+        <div class="card p-6 animate-in">
+          <h3 class="text-lg font-semibold mb-4">Add Base Stock Item</h3>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm text-[#8896ab] mb-2">SKU / Item Code</label>
+              <input type="text" id="itemSku" class="input-field" placeholder="e.g., SKU-001">
+            </div>
+            <div>
+              <label class="block text-sm text-[#8896ab] mb-2">Item Name</label>
+              <input type="text" id="itemName" class="input-field" placeholder="e.g., Premium Shirt">
+            </div>
+            <div>
+              <label class="block text-sm text-[#8896ab] mb-2">Base Stock Quantity</label>
+              <input type="number" id="baseQty" class="input-field" placeholder="e.g., 100">
+            </div>
+            <button onclick="addBaseStock()" class="btn-primary w-full">Add Item</button>
+          </div>
+        </div>
+
+        <div class="card p-6 animate-in stagger-1">
+          <h3 class="text-lg font-semibold mb-4">Import Base Stock (CSV/Excel)</h3>
+          <div class="upload-zone" id="baseUploadZone" onclick="document.getElementById('baseStockFile').click()">
+            <input type="file" id="baseStockFile" accept=".csv,.xlsx,.xls" hidden>
+            <svg class="w-12 h-12 mx-auto mb-4 text-[#5a6a80]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <p class="text-[#8896ab] mb-2">Drop file here or click to browse</p>
+            <p class="text-xs text-[#5a6a80]">Columns: SKU, Name, BaseQty</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-6 animate-in stagger-2">
+        <div class="p-4 border-b border-[#2a3548] flex items-center justify-between">
+          <h3 class="font-semibold">Base Stock Inventory</h3>
+          <span class="text-sm text-[#5a6a80]" id="baseStockCount">0 items</span>
+        </div>
+        <div class="overflow-x-auto scrollbar-thin max-h-80">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Item Name</th>
+                <th>Base Qty</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="baseStockBody">
+              <tr><td colspan="4" class="text-center text-[#5a6a80] py-8">No items added</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload/Stores Tab -->
+    <div id="tab-upload" class="tab-content hidden">
+      <div class="grid lg:grid-cols-2 gap-6">
+        <div class="card p-6 animate-in">
+          <h3 class="text-lg font-semibold mb-4">Add Store Manually</h3>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm text-[#8896ab] mb-2">Store ID</label>
+              <input type="text" id="storeId" class="input-field" placeholder="e.g., SUB-ELU">
+            </div>
+            <div>
+              <label class="block text-sm text-[#8896ab] mb-2">Store Name</label>
+              <input type="text" id="storeName" class="input-field" placeholder="e.g., Subham Grand - Eluru">
+            </div>
+            <button onclick="addStore()" class="btn-primary w-full">Add Store</button>
+          </div>
+        </div>
+
+        <div class="card p-6 animate-in stagger-1">
+          <h3 class="text-lg font-semibold mb-4">Upload Store Stock Data</h3>
+          <div class="upload-zone" id="storeUploadZone" onclick="document.getElementById('storeStockFile').click()">
+            <input type="file" id="storeStockFile" accept=".csv,.xlsx,.xls" hidden>
+            <svg class="w-12 h-12 mx-auto mb-4 text-[#5a6a80]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <p class="text-[#8896ab] mb-2">Drop stock file here</p>
+            <p class="text-xs text-[#5a6a80]">Columns: Store ID (or Name), SKU, Qty</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-6 animate-in stagger-2">
+        <div class="p-4 border-b border-[#2a3548] flex items-center justify-between">
+          <h3 class="font-semibold">Registered Stores</h3>
+          <span class="text-sm text-[#5a6a80]" id="storeCount">0 stores</span>
+        </div>
+        <div class="overflow-x-auto scrollbar-thin max-h-96">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Store ID</th>
+                <th>Full Store Name</th>
+                <th>Items</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="storesBody">
+              <tr><td colspan="4" class="text-center text-[#5a6a80] py-8">Click 'Load Demo Data' above or add manually</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analysis Tab -->
+    <div id="tab-analysis" class="tab-content hidden">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="card p-4 animate-in">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--excess-bg)">
+              <svg class="w-5 h-5" style="color: var(--excess)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+            </div>
+            <div><p class="text-2xl font-bold" id="excessCount">0</p><p class="text-xs text-[#5a6a80]">Excess</p></div>
+          </div>
+        </div>
+        <div class="card p-4 animate-in stagger-1">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--deficit-bg)">
+              <svg class="w-5 h-5" style="color: var(--deficit)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+            </div>
+            <div><p class="text-2xl font-bold" id="deficitCount">0</p><p class="text-xs text-[#5a6a80]">Deficit</p></div>
+          </div>
+        </div>
+        <div class="card p-4 animate-in stagger-1">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--equal-bg)">
+              <svg class="w-5 h-5" style="color: var(--equal)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13h14M5 17h14"/></svg>
+            </div>
+            <div><p class="text-2xl font-bold" id="equalCount">0</p><p class="text-xs text-[#5a6a80]">Equal</p></div>
+          </div>
+        </div>
+        <div class="card p-4 animate-in stagger-1">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--critical-bg)">
+              <svg class="w-5 h-5" style="color: var(--critical)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <div><p class="text-2xl font-bold" id="criticalCount">0</p><p class="text-xs text-[#5a6a80]">Critical</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card animate-in">
+        <div class="p-4 border-b border-[#2a3548] flex items-center justify-between">
+          <h3 class="font-semibold">Stock Color Chart Matrix</h3>
+          <div class="flex items-center gap-4 flex-wrap">
+            <div class="flex items-center gap-2 text-xs"><span class="w-3 h-3 rounded" style="background: var(--excess)"></span><span class="text-[#8896ab]">Excess</span></div>
+            <div class="flex items-center gap-2 text-xs"><span class="w-3 h-3 rounded" style="background: var(--equal)"></span><span class="text-[#8896ab]">Equal</span></div>
+            <div class="flex items-center gap-2 text-xs"><span class="w-3 h-3 rounded" style="background: var(--deficit)"></span><span class="text-[#8896ab]">Below</span></div>
+            <div class="flex items-center gap-2 text-xs"><span class="w-3 h-3 rounded" style="background: var(--critical)"></span><span class="text-[#8896ab]">Critical</span></div>
+          </div>
+        </div>
+        <div class="overflow-x-auto scrollbar-thin" style="max-height: 600px">
+          <table class="data-table" id="colorChartTable">
+            <thead id="colorChartHead"></thead>
+            <tbody id="colorChartBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transfers Tab -->
+    <div id="tab-transfers" class="tab-content hidden">
+      <div class="grid lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2">
+          <div class="card animate-in">
+            <div class="p-4 border-b border-[#2a3548]">
+              <h3 class="font-semibold flex items-center gap-2">
+                <svg class="w-5 h-5 text-[#00d4aa]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                Transfer Suggestions
+              </h3>
+            </div>
+            <div class="p-4 max-h-[600px] overflow-y-auto scrollbar-thin" id="transferSuggestions"></div>
+          </div>
+        </div>
+        <div>
+          <div class="card p-4 mb-4 animate-in stagger-1">
+            <h4 class="font-semibold mb-3">Summary</h4>
+            <div class="space-y-3">
+              <div class="flex justify-between items-center"><span class="text-[#8896ab] text-sm">Total Transfers</span><span class="font-bold text-[#00d4aa]" id="totalTransfers">0</span></div>
+              <div class="flex justify-between items-center"><span class="text-[#8896ab] text-sm">Items Involved</span><span class="font-bold" id="itemsToTransfer">0</span></div>
+              <div class="flex justify-between items-center"><span class="text-[#8896ab] text-sm">Total Units</span><span class="font-bold" id="totalUnits">0</span></div>
+            </div>
+          </div>
+          <div class="card p-4 animate-in stagger-2">
+            <h4 class="font-semibold mb-3">Critical Priority</h4>
+            <div class="space-y-2" id="priorityItems"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast" class="fixed bottom-6 right-6 bg-[#1a2332] border border-[#2a3548] px-4 py-3 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+    <p id="toastMessage" class="text-sm"></p>
+  </div>
+
+  <script>
+    // === DATA INITIALIZATION ===
+    let baseStock = [];
+    let stores = [];
+    let storeStock = [];
+    let analysisData = null;
+
+    const predefinedStores = [
+      { id: 'SUB-ELU', name: 'Subham Grand - Eluru' },
+      { id: 'SUB-TAN', name: 'Subham Grand - Tanuku' },
+      { id: 'SUB-TUN', name: 'Subham Grand - Tuni' },
+      { id: 'SUB-TEN', name: 'Subham Grand - Tenali' },
+      { id: 'SUB-RJY', name: 'Subham Grand - Rajahmundry' },
+      { id: 'SUB-BZA', name: 'Subham Grand - Vijayawada' },
+      { id: 'SUB-AKD', name: 'Subham Grand - Kakinada' },
+      { id: 'SUB-TIR', name: 'Subham Grand - Tirupati' },
+      { id: 'SUB-HYD', name: 'Subham Grand - Hyderabad' },
+      { id: 'SUB-CKP', name: 'Subham Grand - Chilakaluripet' },
+      { id: 'SIR-HYD', name: 'Siri Dress Divine - Hyderabad' },
+      { id: 'SIR-BZA', name: 'Siri Dress Divine - Vijayawada' },
+      { id: 'SIR-AKD', name: 'Siri Dress Divine - Kakinada' },
+      { id: 'SIR-CKP', name: 'Siri Dress Divine - Chilakaluripet' },
+      { id: 'SIR-VZG', name: 'Siri Dress Divine - Vizag' },
+      { id: 'SIR-TIR', name: 'Siri Dress Divine - Tirupati' },
+      { id: 'SIR-RJY', name: 'Siri Dress Divine - Rajahmundry' },
+      { id: 'SIR-BVM', name: 'Siri Dress Divine - Bhimavaram' },
+      { id: 'SIR-ELU', name: 'Siri Dress Divine - Eluru' }
+    ];
+
+    // === DOM LOGIC ===
+    document.addEventListener('DOMContentLoaded', () => {
+      initFileHandlers();
+      initDragDrop();
+    });
+
+    function initFileHandlers() {
+        const baseFileInput = document.getElementById('baseStockFile');
+        const storeFileInput = document.getElementById('storeStockFile');
+        
+        if(baseFileInput) baseFileInput.addEventListener('change', handleBaseStockUpload);
+        if(storeFileInput) storeFileInput.addEventListener('change', handleStoreStockUpload);
+    }
+
+    function initDragDrop() {
+        ['baseUploadZone', 'storeUploadZone'].forEach(id => {
+            const zone = document.getElementById(id);
+            if(!zone) return;
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                zone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, false);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                zone.addEventListener(eventName, () => zone.classList.add('dragover'), false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                zone.addEventListener(eventName, () => zone.classList.remove('dragover'), false);
+            });
+
+            zone.addEventListener('drop', (e) => {
+                const file = e.dataTransfer.files[0];
+                if (!file) return;
+                
+                if (id === 'baseUploadZone') processFile(file, 'base');
+                else processFile(file, 'store');
+            }, false);
+        });
+    }
+
+    // === TAB LOGIC ===
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      
+      const targetTab = document.getElementById('tab-' + tabName);
+      const targetBtn = document.querySelector(`[data-tab="${tabName}"]`);
+      
+      if (targetTab) targetTab.classList.remove('hidden');
+      if (targetBtn) targetBtn.classList.add('active');
+
+      if (tabName === 'analysis') generateAnalysis();
+      if (tabName === 'transfers') generateTransferSuggestions();
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      toastMessage.textContent = message;
+      toast.style.borderColor = type === 'success' ? '#00d4aa' : '#ef4444';
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+    }
+
+    // === DATA ENTRY ===
+    function addBaseStock() {
+      const skuEl = document.getElementById('itemSku');
+      const nameEl = document.getElementById('itemName');
+      const qtyEl = document.getElementById('baseQty');
+      
+      const sku = skuEl.value.trim();
+      const name = nameEl.value.trim();
+      const qty = parseInt(qtyEl.value);
+
+      if (!sku || !name || isNaN(qty) || qty < 0) {
+        showToast('Please fill all fields validly', 'error');
+        return;
+      }
+
+      if (baseStock.find(item => item.sku === sku)) {
+        showToast('SKU already exists', 'error');
+        return;
+      }
+
+      baseStock.push({ sku, name, baseQty: qty });
+      updateBaseStockTable();
+      
+      skuEl.value = '';
+      nameEl.value = '';
+      qtyEl.value = '';
+      showToast('Item added');
+    }
+
+    function addStore() {
+      const idEl = document.getElementById('storeId');
+      const nameEl = document.getElementById('storeName');
+
+      const id = idEl.value.trim();
+      const name = nameEl.value.trim();
+
+      if (!id || !name) {
+        showToast('Fill ID and Name', 'error');
+        return;
+      }
+
+      if (stores.find(s => s.id === id)) {
+        showToast('Store ID exists', 'error');
+        return;
+      }
+
+      stores.push({ id, name });
+      updateStoresTable();
+      
+      idEl.value = '';
+      nameEl.value = '';
+      showToast('Store added');
+    }
+
+    function loadDemoData() {
+        // Load Stores
+        stores = [...predefinedStores];
+        updateStoresTable();
+
+        // Load Base Stock
+        baseStock = [
+            { sku: 'SHIRT-001', name: 'Premium Cotton Shirt', baseQty: 50 },
+            { sku: 'PANT-002', name: 'Denim Jeans', baseQty: 40 },
+            { sku: 'KURTA-003', name: 'Ethnic Kurta', baseQty: 30 }
+        ];
+        updateBaseStockTable();
+
+        // Generate Random Stock for Demo
+        storeStock = [];
+        const storeIds = stores.map(s => s.id);
+        
+        baseStock.forEach(item => {
+            storeIds.forEach(stId => {
+                // Random stock between 0 and BaseQty + 30
+                const qty = Math.floor(Math.random() * (item.baseQty + 30)); 
+                storeStock.push({ storeId: stId, sku: item.sku, qty: qty });
+            });
+        });
+
+        showToast('Demo data loaded successfully!');
+        
+        // Enable export
+        const expBtn = document.getElementById('exportBtn');
+        if(expBtn) expBtn.disabled = false;
+    }
+
+    // === RENDER FUNCTIONS ===
+    function updateBaseStockTable() {
+      const tbody = document.getElementById('baseStockBody');
+      const countEl = document.getElementById('baseStockCount');
+      if (!tbody || !countEl) return;
+      
+      countEl.textContent = baseStock.length + ' items';
+      if (baseStock.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-[#5a6a80] py-8">No items</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = baseStock.map(item => `
+        <tr>
+          <td class="font-mono text-sm">${escapeHtml(item.sku)}</td>
+          <td>${escapeHtml(item.name)}</td>
+          <td>${item.baseQty}</td>
+          <td><button onclick="deleteBaseStock('${escapeHtml(item.sku)}')" class="text-red-400 text-sm hover:underline">Remove</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function updateStoresTable() {
+      const tbody = document.getElementById('storesBody');
+      const countEl = document.getElementById('storeCount');
+      if (!tbody || !countEl) return;
+      
+      countEl.textContent = stores.length + ' stores';
+      if (stores.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-[#5a6a80] py-8">No stores</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = stores.map(store => {
+        const count = storeStock.filter(s => s.storeId === store.id).length;
+        return `
+          <tr>
+            <td class="font-mono text-sm text-[#00d4aa]">${escapeHtml(store.id)}</td>
+            <td class="font-medium">${escapeHtml(store.name)}</td>
+            <td>${count}</td>
+            <td><button onclick="deleteStore('${escapeHtml(store.id)}')" class="text-red-400 text-sm hover:underline">Remove</button></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function deleteBaseStock(sku) {
+      baseStock = baseStock.filter(i => i.sku !== sku);
+      updateBaseStockTable();
+    }
+
+    function deleteStore(id) {
+      stores = stores.filter(s => s.id !== id);
+      storeStock = storeStock.filter(s => s.storeId !== id);
+      updateStoresTable();
+    }
+
+    // === FILE PROCESSING ===
+    function handleBaseStockUpload(e) {
+        const file = e.target.files[0];
+        if(file) processFile(file, 'base');
+        e.target.value = ''; // Reset input
+    }
+
+    function handleStoreStockUpload(e) {
+        const file = e.target.files[0];
+        if(file) processFile(file, 'store');
+        e.target.value = ''; // Reset input
+    }
+
+    function processFile(file, type) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const json = XLSX.utils.sheet_to_json(sheet);
+
+                if(type === 'base') importBaseStock(json);
+                else importStoreStock(json);
+
+            } catch(err) {
+                console.error(err);
+                showToast('Error parsing file', 'error');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function importBaseStock(json) {
+        let added = 0;
+        json.forEach(row => {
+            // Flexible key matching
+            const sku = row['SKU'] || row['sku'] || row['Sku'] || row['Item Code'] || Object.values(row)[0];
+            const name = row['Name'] || row['name'] || row['Item Name'] || Object.values(row)[1];
+            const qty = parseInt(row['Base Qty'] || row['Base'] || row['Quantity'] || row['Qty'] || Object.values(row)[2]);
+
+            if (sku && name && !isNaN(qty)) {
+                const sSku = String(sku).trim();
+                if (!baseStock.find(i => i.sku === sSku)) {
+                    baseStock.push({ sku: sSku, name: String(name).trim(), baseQty: qty });
+                    added++;
+                }
+            }
+        });
+        updateBaseStockTable();
+        showToast(`Imported ${added} base items`);
+    }
+
+    function importStoreStock(json) {
+        let added = 0;
+        let newStores = 0;
+
+        json.forEach(row => {
+            let storeId = row['Store ID'] || row['StoreId'] || row['store_id'] || row['Store Code'];
+            const sku = row['SKU'] || row['sku'] || row['Item'] || Object.values(row)[1];
+            const qty = parseInt(row['Quantity'] || row['Qty'] || row['Stock'] || Object.values(row)[2]);
+            
+            // If storeId is actually a name, try to find the ID
+            if (storeId && !stores.find(s => s.id === String(storeId).trim())) {
+                const foundStore = stores.find(s => s.name.toLowerCase() === String(storeId).toLowerCase().trim());
+                if (foundStore) storeId = foundStore.id;
+            }
+
+            if (storeId && sku && !isNaN(qty)) {
+                const sId = String(storeId).trim();
+                const sSku = String(sku).trim();
+
+                // Add store if not exists
+                if (!stores.find(s => s.id === sId)) {
+                    stores.push({ id: sId, name: sId }); // Default name to ID
+                    newStores++;
+                }
+
+                // Update or add stock
+                const existing = storeStock.find(s => s.storeId === sId && s.sku === sSku);
+                if (existing) existing.qty = qty;
+                else {
+                    storeStock.push({ storeId: sId, sku: sSku, qty });
+                    added++;
+                }
+            }
+        });
+
+        updateStoresTable();
+        showToast(`Imported ${added} stock entries. Added ${newStores} new stores.`);
+    }
+
+    // === ANALYSIS LOGIC ===
+    function generateAnalysis() {
+      if (baseStock.length === 0 || stores.length === 0 || storeStock.length === 0) {
+          const body = document.getElementById('colorChartBody');
+          if(body) body.innerHTML = '<tr><td colspan="20" class="text-center text-[#5a6a80] py-8">Load Demo Data or Upload files to see analysis</td></tr>';
+          return;
+      }
+
+      analysisData = { items: [], summary: { excess: 0, deficit: 0, equal: 0, critical: 0 } };
+
+      baseStock.forEach(item => {
+        const itemAnalysis = { sku: item.sku, name: item.name, baseQty: item.baseQty, stores: [] };
+
+        stores.forEach(store => {
+          const stock = storeStock.find(s => s.storeId === store.id && s.sku === item.sku);
+          const currentQty = stock ? stock.qty : 0;
+          const variance = currentQty - item.baseQty;
+          
+          let status;
+          if (currentQty === 0) { status = 'critical'; analysisData.summary.critical++; }
+          else if (variance > 0) { status = 'excess'; analysisData.summary.excess++; }
+          else if (variance < 0) { status = 'deficit'; analysisData.summary.deficit++; }
+          else { status = 'equal'; analysisData.summary.equal++; }
+
+          itemAnalysis.stores.push({ storeId: store.id, storeName: store.name, currentQty, variance, status });
+        });
+        analysisData.items.push(itemAnalysis);
+      });
+
+      renderColorChart();
+      updateSummary();
+      
+      const expBtn = document.getElementById('exportBtn');
+      if(expBtn) expBtn.disabled = false;
+    }
+
+    function renderColorChart() {
+        const thead = document.getElementById('colorChartHead');
+        const tbody = document.getElementById('colorChartBody');
+        if(!thead || !tbody || !analysisData) return;
+
+        // Header
+        let headerHtml = `<tr>
+            <th class="sticky-col sticky-col-1" style="min-width:100px; left:0">SKU</th>
+            <th class="sticky-col sticky-col-2" style="min-width:150px; left:100px">Item</th>
+            <th style="min-width:50px">Base</th>`;
+        
+        stores.forEach(store => {
+            headerHtml += `<th style="min-width:75px" title="${escapeHtml(store.name)}">${escapeHtml(store.id)}</th>`;
+        });
+        headerHtml += '</tr>';
+        thead.innerHTML = headerHtml;
+
+        // Body
+        tbody.innerHTML = analysisData.items.map(item => {
+            let row = `<tr>
+                <td class="sticky-col sticky-col-1 font-mono text-sm">${escapeHtml(item.sku)}</td>
+                <td class="sticky-col sticky-col-2">${escapeHtml(item.name)}</td>
+                <td class="font-bold">${item.baseQty}</td>`;
+            
+            item.stores.forEach(store => {
+                const cls = `cell-${store.status}`;
+                const varStr = store.variance > 0 ? `+${store.variance}` : store.variance;
+                row += `<td class="${cls}" title="${escapeHtml(store.storeName)}">
+                    <div class="flex flex-col">
+                        <span>${store.currentQty}</span>
+                        <span class="text-xs opacity-80">(${varStr})</span>
+                    </div>
+                </td>`;
+            });
+            row += '</tr>';
+            return row;
+        }).join('');
+    }
+
+    function updateSummary() {
+        if(!analysisData) return;
+        const ids = ['excessCount', 'deficitCount', 'equalCount', 'criticalCount'];
+        const keys = ['excess', 'deficit', 'equal', 'critical'];
+        
+        ids.forEach((id, i) => {
+            const el = document.getElementById(id);
+            if(el) el.textContent = analysisData.summary[keys[i]];
+        });
+    }
+
+    function generateTransferSuggestions() {
+        if (!analysisData) generateAnalysis();
+        if (!analysisData || analysisData.items.length === 0) return;
+
+        const transfers = [];
+        let totalUnits = 0;
+        const priorityItems = [];
+
+        analysisData.items.forEach(item => {
+            const excessStores = item.stores.filter(s => s.variance > 0).sort((a, b) => b.variance - a.variance);
+            const deficitStores = item.stores.filter(s => s.variance < 0).sort((a, b) => a.variance - b.variance);
+
+            if (excessStores.length > 0 && deficitStores.length > 0) {
+                excessStores.forEach(excessStore => {
+                    let available = excessStore.variance;
+                    deficitStores.forEach(deficitStore => {
+                        if (available <= 0) return;
+                        const needed = Math.abs(deficitStore.variance);
+                        const qty = Math.min(available, needed);
+                        
+                        if (qty > 0) {
+                            transfers.push({
+                                item: item.name, sku: item.sku,
+                                from: excessStore.storeName, fromId: excessStore.storeId,
+                                to: deficitStore.storeName, toId: deficitStore.storeId,
+                                qty: qty, baseQty: item.baseQty
+                            });
+                            totalUnits += qty;
+                            available -= qty;
+                        }
+                    });
+                });
+            }
+
+            const critical = item.stores.filter(s => s.status === 'critical');
+            if (critical.length > 0) {
+                priorityItems.push({ sku: item.sku, name: item.name, count: critical.length, stores: critical.map(s=>s.storeName) });
+            }
+        });
+
+        renderTransfers(transfers, totalUnits, priorityItems);
+    }
+
+    function renderTransfers(transfers, totalUnits, priorityItems) {
+        const container = document.getElementById('transferSuggestions');
+        const totalEl = document.getElementById('totalTransfers');
+        const itemsEl = document.getElementById('itemsToTransfer');
+        const unitsEl = document.getElementById('totalUnits');
+        const priorityEl = document.getElementById('priorityItems');
+
+        if(totalEl) totalEl.textContent = transfers.length;
+        if(itemsEl) itemsEl.textContent = [...new Set(transfers.map(t=>t.sku))].length;
+        if(unitsEl) unitsEl.textContent = totalUnits;
+
+        if(priorityEl) {
+            priorityEl.innerHTML = priorityItems.length > 0 ? priorityItems.slice(0,4).map(i => `
+                <div class="p-2 rounded" style="background: var(--critical-bg)">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full" style="background: var(--critical)"></span>
+                        <span class="text-sm font-medium">${escapeHtml(i.name)}</span>
+                    </div>
+                    <p class="text-xs text-[#5a6a80] mt-1">${i.count} stores at zero stock</p>
+                </div>
+            `).join('') : '<p class="text-[#5a6a80] text-sm">None</p>';
+        }
+
+        if (!container) return;
+        if (transfers.length === 0) {
+            container.innerHTML = '<div class="text-center text-[#5a6a80] py-8">Inventory is balanced</div>';
+            return;
+        }
+
+        const grouped = {};
+        transfers.forEach(t => {
+            if(!grouped[t.sku]) grouped[t.sku] = { name: t.item, list: [] };
+            grouped[t.sku].list.push(t);
+        });
+
+        container.innerHTML = Object.entries(grouped).map(([sku, data]) => `
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <h4 class="font-semibold">${escapeHtml(data.name)} <span class="text-xs text-[#5a6a80] font-mono ml-2">${sku}</span></h4>
+                </div>
+                ${data.list.map(t => `
+                    <div class="transfer-card">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2 flex-1 min-w-0">
+                                <div class="truncate">
+                                    <p class="text-xs text-[#5a6a80]">From</p>
+                                    <p class="text-sm text-green-400 font-medium truncate">${escapeHtml(t.from)}</p>
+                                </div>
+                                <span class="text-lg text-[#00d4aa] flex-shrink-0">→</span>
+                                <div class="truncate">
+                                    <p class="text-xs text-[#5a6a80]">To</p>
+                                    <p class="text-sm text-orange-400 font-medium truncate">${escapeHtml(t.to)}</p>
+                                </div>
+                            </div>
+                            <div class="text-right ml-4 flex-shrink-0">
+                                <p class="text-xs text-[#5a6a80]">Qty</p>
+                                <p class="text-xl font-bold text-[#00d4aa]">${t.qty}</p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `).join('');
+    }
+
+    function exportToExcel() {
+        if (!analysisData || analysisData.items.length === 0) {
+            showToast('No data to export', 'error');
+            return;
+        }
+        
+        // Prepare headers
+        const headers = ['SKU', 'Item Name', 'Base Qty'];
+        stores.forEach(s => {
+            headers.push(`${s.name} (Stock)`, `${s.name} (Var)`, `${s.name} (Status)`);
+        });
+
+        // Prepare rows
+        const rows = analysisData.items.map(item => {
+            const row = [item.sku, item.name, item.baseQty];
+            item.stores.forEach(s => row.push(s.currentQty, s.variance, s.status.toUpperCase()));
+            return row;
+        });
+
+        // Create Workbook
+        const wb = XLSX.utils.book_new();
+        
+        // Sheet 1: Color Chart
+        const ws1 = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        ws1['!cols'] = headers.map((h, i) => ({ wch: i < 3 ? 15 : 20 }));
+        XLSX.utils.book_append_sheet(wb, ws1, 'Stock Analysis');
+
+        // Sheet 2: Transfers
+        const transferHeaders = ['SKU', 'Item', 'From Store', 'To Store', 'Transfer Qty'];
+        const transferRows = [];
+        // Reuse logic to get transfers
+        const grouped = {};
+        document.querySelectorAll('#transferSuggestions .transfer-card').forEach(card => {
+            // This is a bit hacky, better to recalculate from data
+        });
+        
+        // Re-calculate transfers for export
+        analysisData.items.forEach(item => {
+            const excessStores = item.stores.filter(s => s.variance > 0).sort((a, b) => b.variance - a.variance);
+            const deficitStores = item.stores.filter(s => s.variance < 0).sort((a, b) => a.variance - b.variance);
+            
+            excessStores.forEach(excessStore => {
+                let available = excessStore.variance;
+                deficitStores.forEach(deficitStore => {
+                    if (available <= 0) return;
+                    const needed = Math.abs(deficitStore.variance);
+                    const qty = Math.min(available, needed);
+                    if (qty > 0) {
+                        transferRows.push([item.sku, item.name, excessStore.storeName, deficitStore.storeName, qty]);
+                        available -= qty;
+                    }
+                });
+            });
+        });
+
+        const ws2 = XLSX.utils.aoa_to_sheet([transferHeaders, ...transferRows]);
+        XLSX.utils.book_append_sheet(wb, ws2, 'Transfer Suggestions');
+
+        // Download
+        XLSX.writeFile(wb, `Stock_Analysis_${new Date().toISOString().split('T')[0]}.xlsx`);
+        showToast('Excel Exported!');
+    }
+
+    function escapeHtml(text) {
+      if (typeof text !== 'string') return text;
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
