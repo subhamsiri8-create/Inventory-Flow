@@ -5,172 +5,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Stock Color Chart Builder</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- SheetJS for Reading/Importing -->
+  <!-- SheetJS for Reading -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <!-- ExcelJS for Writing/Exporting with Colors -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+  <!-- ExcelJS for Colored Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
   
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-primary: #0a0f1a;
-      --bg-secondary: #111827;
-      --bg-card: #1a2332;
-      --border: #2a3548;
-      --text-primary: #e8edf5;
-      --text-secondary: #8896ab;
-      --text-muted: #5a6a80;
+      --bg-primary: #0a0f1a; --bg-secondary: #111827; --bg-card: #1a2332; --border: #2a3548;
+      --text-primary: #e8edf5; --text-secondary: #8896ab; --text-muted: #5a6a80;
       --accent: #00d4aa;
-      --excess: #10b981;
-      --excess-bg: rgba(16, 185, 129, 0.15);
-      --deficit: #f59e0b;
-      --deficit-bg: rgba(245, 158, 11, 0.15);
-      --critical: #ef4444;
-      --critical-bg: rgba(239, 68, 68, 0.15);
-      --equal: #3b82f6;
-      --equal-bg: rgba(59, 130, 246, 0.15);
+      --excess: #10b981; --excess-bg: rgba(16, 185, 129, 0.15);
+      --deficit: #f59e0b; --deficit-bg: rgba(245, 158, 11, 0.15);
+      --critical: #ef4444; --critical-bg: rgba(239, 68, 68, 0.15);
+      --equal: #3b82f6; --equal-bg: rgba(59, 130, 246, 0.15);
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: 'IBM Plex Sans', sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      min-height: 100vh;
-    }
-
+    body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
     h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; }
-
-    .gradient-mesh {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      background: 
-        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0, 212, 170, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
-        var(--bg-primary);
-    }
-
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      backdrop-filter: blur(10px);
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent) 0%, #00a88a 100%);
-      color: var(--bg-primary);
-      font-weight: 600;
-      padding: 10px 20px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 14px;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0, 212, 170, 0.3);
-    }
+    .gradient-mesh { position: fixed; inset: 0; z-index: -1; background: radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0, 212, 170, 0.08) 0%, transparent 50%), var(--bg-primary); }
     
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-    .btn-secondary {
-      background: transparent;
-      color: var(--text-primary);
-      font-weight: 500;
-      padding: 10px 20px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-size: 14px;
-    }
-
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; backdrop-filter: blur(10px); }
+    .btn-primary { background: linear-gradient(135deg, var(--accent) 0%, #00a88a 100%); color: var(--bg-primary); font-weight: 600; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s ease; font-size: 14px; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0, 212, 170, 0.3); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary { background: transparent; color: var(--text-primary); font-weight: 500; padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; font-size: 14px; }
     .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
-
-    .input-field {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      color: var(--text-primary);
-      padding: 12px 16px;
-      border-radius: 8px;
-      width: 100%;
-      transition: all 0.2s ease;
-    }
-
-    .input-field:focus { outline: none; border-color: var(--accent); }
-
-    .upload-zone {
-      border: 2px dashed var(--border);
-      border-radius: 12px;
-      padding: 40px;
-      text-align: center;
-      transition: all 0.3s ease;
-      cursor: pointer;
-    }
-
+    .input-field { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px 16px; border-radius: 8px; width: 100%; }
+    .upload-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 40px; text-align: center; transition: all 0.3s ease; cursor: pointer; }
     .upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: rgba(0, 212, 170, 0.05); }
-
-    .data-table { width: 100%; border-collapse: separate; border-spacing: 0; }
-
-    .data-table th {
-      background: var(--bg-secondary);
-      padding: 14px 16px;
-      text-align: left;
-      font-weight: 600;
-      color: var(--text-secondary);
-      font-size: 12px;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
     
+    .data-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .data-table th { background: var(--bg-secondary); padding: 14px 16px; text-align: left; font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
     .sticky-col { position: sticky; background: var(--bg-card); z-index: 5; }
     .sticky-col-1 { left: 0; }
     .sticky-col-2 { left: 100px; border-right: 1px solid var(--border); }
-
-    .data-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); transition: background 0.2s ease; }
-    .data-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
-    .data-table tr:hover td.sticky-col { background: var(--bg-card); }
-
+    .data-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
     .cell-excess { background: var(--excess-bg); color: var(--excess); font-weight: 600; }
     .cell-deficit { background: var(--deficit-bg); color: var(--deficit); font-weight: 600; }
     .cell-critical { background: var(--critical-bg); color: var(--critical); font-weight: 600; }
     .cell-equal { background: var(--equal-bg); color: var(--equal); font-weight: 600; }
-
-    .transfer-card {
-      background: linear-gradient(135deg, rgba(0, 212, 170, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
-      border: 1px solid rgba(0, 212, 170, 0.2);
-      border-radius: 10px;
-      padding: 16px;
-      margin-bottom: 12px;
-    }
-
-    .tab-btn {
-      padding: 12px 24px;
-      background: transparent;
-      border: none;
-      color: var(--text-secondary);
-      cursor: pointer;
-      font-weight: 500;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s ease;
-    }
-
+    
+    .tab-btn { padding: 12px 20px; background: transparent; border: none; color: var(--text-secondary); cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.2s ease; font-size: 14px; }
     .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* Smart View Specific Styles */
+    .health-circle { width: 160px; height: 160px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: bold; margin: 0 auto; }
+    .health-bg { position: absolute; inset: 0; border-radius: 50%; border: 12px solid #1f2937; }
+    .health-bar { position: absolute; inset: 0; border-radius: 50%; border: 12px solid transparent; transform: rotate(-45deg); }
+    
+    .simple-card { background: linear-gradient(145deg, #1a2332, #111827); border-radius: 16px; padding: 20px; border: 1px solid #2a3548; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .progress-simple { height: 24px; border-radius: 12px; background: #1f2937; overflow: hidden; position: relative; }
+    .progress-fill-simple { height: 100%; border-radius: 12px; display: flex; align-items: center; padding-left: 12px; font-weight: bold; font-size: 12px; color: white; transition: width 1s ease; }
 
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     .animate-in { animation: fadeInUp 0.4s ease forwards; }
     .stagger-1 { animation-delay: 0.1s; opacity: 0; }
     .stagger-2 { animation-delay: 0.2s; opacity: 0; }
-
     .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
     .scrollbar-thin::-webkit-scrollbar-track { background: var(--bg-secondary); }
     .scrollbar-thin::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -179,18 +71,13 @@
 <body>
   <div class="gradient-mesh"></div>
   
-  <!-- Header -->
   <header class="border-b border-[#2a3548] bg-[#0a0f1a]/80 backdrop-blur-lg sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-[#00d4aa] to-[#3b82f6] flex items-center justify-center">
-          <svg class="w-6 h-6 text-[#0a0f1a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-          </svg>
+          <svg class="w-6 h-6 text-[#0a0f1a]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
         </div>
-        <div>
-          <h1 class="text-lg font-bold tracking-tight">Stock Color Chart Builder</h1>
-        </div>
+        <h1 class="text-lg font-bold tracking-tight">Stock Color Chart Builder</h1>
       </div>
       <div class="flex items-center gap-3">
         <button onclick="loadDemoData()" class="btn-secondary text-sm bg-[#1a2332]">Load Demo Data</button>
@@ -200,12 +87,12 @@
   </header>
 
   <main class="max-w-7xl mx-auto px-6 py-8">
-    <!-- Tabs -->
     <div class="flex border-b border-[#2a3548] mb-8 overflow-x-auto">
-      <button class="tab-btn active" data-tab="setup" onclick="switchTab('setup')">1. Setup Base Stock</button>
+      <button class="tab-btn active" data-tab="setup" onclick="switchTab('setup')">1. Setup Base</button>
       <button class="tab-btn" data-tab="upload" onclick="switchTab('upload')">2. Manage Stores</button>
-      <button class="tab-btn" data-tab="analysis" onclick="switchTab('analysis')">3. Analysis Dashboard</button>
-      <button class="tab-btn" data-tab="transfers" onclick="switchTab('transfers')">4. Transfer Suggestions</button>
+      <button class="tab-btn" data-tab="analysis" onclick="switchTab('analysis')">3. Analysis Chart</button>
+      <button class="tab-btn" data-tab="transfers" onclick="switchTab('transfers')">4. Transfers</button>
+      <button class="tab-btn" data-tab="smart" onclick="switchTab('smart')">5. Smart Overview</button>
     </div>
 
     <!-- Setup Tab -->
@@ -214,35 +101,31 @@
         <div class="card p-6 animate-in">
           <h3 class="text-lg font-semibold mb-4">Add Base Stock Item</h3>
           <div class="space-y-4">
-            <div><label class="block text-sm text-[#8896ab] mb-2">SKU / Item Code</label><input type="text" id="itemSku" class="input-field" placeholder="e.g., SKU-001"></div>
+            <div><label class="block text-sm text-[#8896ab] mb-2">SKU</label><input type="text" id="itemSku" class="input-field" placeholder="e.g., SKU-001"></div>
             <div><label class="block text-sm text-[#8896ab] mb-2">Item Name</label><input type="text" id="itemName" class="input-field" placeholder="e.g., Premium Shirt"></div>
-            <div><label class="block text-sm text-[#8896ab] mb-2">Base Stock Quantity</label><input type="number" id="baseQty" class="input-field" placeholder="e.g., 100"></div>
+            <div><label class="block text-sm text-[#8896ab] mb-2">Base Qty</label><input type="number" id="baseQty" class="input-field" placeholder="e.g., 100"></div>
             <button onclick="addBaseStock()" class="btn-primary w-full">Add Item</button>
           </div>
         </div>
         <div class="card p-6 animate-in stagger-1">
-          <h3 class="text-lg font-semibold mb-4">Import Base Stock (CSV/Excel)</h3>
+          <h3 class="text-lg font-semibold mb-4">Import Base Stock</h3>
           <div class="upload-zone" id="baseUploadZone" onclick="document.getElementById('baseStockFile').click()">
             <input type="file" id="baseStockFile" accept=".csv,.xlsx,.xls" hidden>
-            <svg class="w-12 h-12 mx-auto mb-4 text-[#5a6a80]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             <p class="text-[#8896ab] mb-2">Drop file here or click</p>
-            <p class="text-xs text-[#5a6a80]">Columns: SKU, Name, BaseQty</p>
           </div>
         </div>
       </div>
       <div class="card mt-6 animate-in stagger-2">
         <div class="p-4 border-b border-[#2a3548] flex items-center justify-between"><h3 class="font-semibold">Base Stock Inventory</h3><span class="text-sm text-[#5a6a80]" id="baseStockCount">0 items</span></div>
-        <div class="overflow-x-auto scrollbar-thin max-h-80">
-          <table class="data-table"><thead><tr><th>SKU</th><th>Item Name</th><th>Base Qty</th><th>Action</th></tr></thead><tbody id="baseStockBody"><tr><td colspan="4" class="text-center text-[#5a6a80] py-8">No items added</td></tr></tbody></table>
-        </div>
+        <div class="overflow-x-auto scrollbar-thin max-h-80"><table class="data-table"><thead><tr><th>SKU</th><th>Item Name</th><th>Base Qty</th><th>Action</th></tr></thead><tbody id="baseStockBody"></tbody></table></div>
       </div>
     </div>
 
-    <!-- Upload/Stores Tab -->
+    <!-- Upload Tab -->
     <div id="tab-upload" class="tab-content hidden">
       <div class="grid lg:grid-cols-2 gap-6">
         <div class="card p-6 animate-in">
-          <h3 class="text-lg font-semibold mb-4">Add Store Manually</h3>
+          <h3 class="text-lg font-semibold mb-4">Add Store</h3>
           <div class="space-y-4">
             <div><label class="block text-sm text-[#8896ab] mb-2">Store ID</label><input type="text" id="storeId" class="input-field" placeholder="e.g., SUB-ELU"></div>
             <div><label class="block text-sm text-[#8896ab] mb-2">Store Name</label><input type="text" id="storeName" class="input-field" placeholder="e.g., Subham Grand - Eluru"></div>
@@ -250,20 +133,16 @@
           </div>
         </div>
         <div class="card p-6 animate-in stagger-1">
-          <h3 class="text-lg font-semibold mb-4">Upload Store Stock Data</h3>
+          <h3 class="text-lg font-semibold mb-4">Upload Store Stock</h3>
           <div class="upload-zone" id="storeUploadZone" onclick="document.getElementById('storeStockFile').click()">
             <input type="file" id="storeStockFile" accept=".csv,.xlsx,.xls" hidden>
-            <svg class="w-12 h-12 mx-auto mb-4 text-[#5a6a80]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <p class="text-[#8896ab] mb-2">Drop stock file here</p>
-            <p class="text-xs text-[#5a6a80]">Columns: Store ID (or Name), SKU, Qty</p>
+            <p class="text-[#8896ab] mb-2">Drop file here</p>
           </div>
         </div>
       </div>
       <div class="card mt-6 animate-in stagger-2">
         <div class="p-4 border-b border-[#2a3548] flex items-center justify-between"><h3 class="font-semibold">Registered Stores</h3><span class="text-sm text-[#5a6a80]" id="storeCount">0 stores</span></div>
-        <div class="overflow-x-auto scrollbar-thin max-h-96">
-          <table class="data-table"><thead><tr><th>Store ID</th><th>Full Store Name</th><th>Items</th><th>Action</th></tr></thead><tbody id="storesBody"><tr><td colspan="4" class="text-center text-[#5a6a80] py-8">Click 'Load Demo Data' above or add manually</td></tr></tbody></table>
-        </div>
+        <div class="overflow-x-auto scrollbar-thin max-h-96"><table class="data-table"><thead><tr><th>ID</th><th>Full Name</th><th>Items</th><th>Action</th></tr></thead><tbody id="storesBody"></tbody></table></div>
       </div>
     </div>
 
@@ -272,28 +151,143 @@
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="card p-4 animate-in"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--excess-bg)"><svg class="w-5 h-5" style="color: var(--excess)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg></div><div><p class="text-2xl font-bold" id="excessCount">0</p><p class="text-xs text-[#5a6a80]">Excess</p></div></div></div>
         <div class="card p-4 animate-in stagger-1"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--deficit-bg)"><svg class="w-5 h-5" style="color: var(--deficit)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg></div><div><p class="text-2xl font-bold" id="deficitCount">0</p><p class="text-xs text-[#5a6a80]">Deficit</p></div></div></div>
-        <div class="card p-4 animate-in stagger-1"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--equal-bg)"><svg class="w-5 h-5" style="color: var(--equal)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13h14M5 17h14"/></svg></div><div><p class="text-2xl font-bold" id="equalCount">0</p><p class="text-xs text-[#5a6a80]">Equal</p></div></div></div>
-        <div class="card p-4 animate-in stagger-1"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--critical-bg)"><svg class="w-5 h-5" style="color: var(--critical)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></div><div><p class="text-2xl font-bold" id="criticalCount">0</p><p class="text-xs text-[#5a6a80]">Critical</p></div></div></div>
+        <div class="card p-4 animate-in stagger-1"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--equal-bg)"><svg class="w-5 h-5" style="color: var(--equal)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13h14"/></svg></div><div><p class="text-2xl font-bold" id="equalCount">0</p><p class="text-xs text-[#5a6a80]">Equal</p></div></div></div>
+        <div class="card p-4 animate-in stagger-1"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--critical-bg)"><svg class="w-5 h-5" style="color: var(--critical)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg></div><div><p class="text-2xl font-bold" id="criticalCount">0</p><p class="text-xs text-[#5a6a80]">Critical</p></div></div></div>
       </div>
       <div class="card animate-in">
-        <div class="p-4 border-b border-[#2a3548] flex items-center justify-between"><h3 class="font-semibold">Stock Color Chart Matrix</h3><div class="flex items-center gap-4 flex-wrap"><div class="flex items-center gap-2 text-xs"><span class="w-3 h-3 rounded" style="background: var(--excess)"></span><span class="text-[#8896ab]">Excess</span></div><div class="flex items-center gap-2 text-xs"><span class="w-3 h-3 rounded" style="background: var(--equal)"></span><span class="text-[#8896ab]">Equal</span></div><div class="flex items-center gap-2 text-xs"><span class="w-3 h-3 rounded" style="background: var(--deficit)"></span><span class="text-[#8896ab]">Below</span></div><div class="flex items-center gap-2 text-xs"><span class="w-3 h-3 rounded" style="background: var(--critical)"></span><span class="text-[#8896ab]">Critical</span></div></div></div>
-        <div class="overflow-x-auto scrollbar-thin" style="max-height: 600px"><table class="data-table" id="colorChartTable"><thead id="colorChartHead"></thead><tbody id="colorChartBody"></tbody></table></div>
+        <div class="p-4 border-b border-[#2a3548]"><h3 class="font-semibold">Stock Color Chart Matrix</h3></div>
+        <div class="overflow-x-auto scrollbar-thin" style="max-height: 600px"><table class="data-table"><thead id="colorChartHead"></thead><tbody id="colorChartBody"></tbody></table></div>
       </div>
     </div>
 
     <!-- Transfers Tab -->
     <div id="tab-transfers" class="tab-content hidden">
       <div class="grid lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2"><div class="card animate-in"><div class="p-4 border-b border-[#2a3548]"><h3 class="font-semibold flex items-center gap-2"><svg class="w-5 h-5 text-[#00d4aa]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg> Transfer Suggestions</h3></div><div class="p-4 max-h-[600px] overflow-y-auto scrollbar-thin" id="transferSuggestions"></div></div></div>
-        <div><div class="card p-4 mb-4 animate-in stagger-1"><h4 class="font-semibold mb-3">Summary</h4><div class="space-y-3"><div class="flex justify-between items-center"><span class="text-[#8896ab] text-sm">Total Transfers</span><span class="font-bold text-[#00d4aa]" id="totalTransfers">0</span></div><div class="flex justify-between items-center"><span class="text-[#8896ab] text-sm">Items Involved</span><span class="font-bold" id="itemsToTransfer">0</span></div><div class="flex justify-between items-center"><span class="text-[#8896ab] text-sm">Total Units</span><span class="font-bold" id="totalUnits">0</span></div></div></div><div class="card p-4 animate-in stagger-2"><h4 class="font-semibold mb-3">Critical Priority</h4><div class="space-y-2" id="priorityItems"></div></div></div>
+        <div class="lg:col-span-2"><div class="card animate-in"><div class="p-4 border-b border-[#2a3548]"><h3 class="font-semibold">Transfer Suggestions</h3></div><div class="p-4 max-h-[600px] overflow-y-auto scrollbar-thin" id="transferSuggestions"></div></div></div>
+        <div><div class="card p-4 mb-4 animate-in stagger-1"><h4 class="font-semibold mb-3">Summary</h4><div class="space-y-3"><div class="flex justify-between"><span class="text-[#8896ab] text-sm">Total Transfers</span><span class="font-bold text-[#00d4aa]" id="totalTransfers">0</span></div><div class="flex justify-between"><span class="text-[#8896ab] text-sm">Items Involved</span><span class="font-bold" id="itemsToTransfer">0</span></div><div class="flex justify-between"><span class="text-[#8896ab] text-sm">Total Units</span><span class="font-bold" id="totalUnits">0</span></div></div></div></div>
       </div>
+    </div>
+
+    <!-- NEW: Smart Overview Tab -->
+    <div id="tab-smart" class="tab-content hidden">
+        <div class="text-center mb-8 animate-in">
+            <h2 class="text-3xl font-bold mb-2">Inventory Health Check</h2>
+            <p class="text-[#8896ab]">A simple report card for your stores</p>
+        </div>
+
+        <!-- Top Section: Score & Status -->
+        <div class="grid lg:grid-cols-3 gap-6 mb-8">
+            <!-- Health Score -->
+            <div class="card p-6 flex flex-col items-center justify-center animate-in stagger-1">
+                <div class="health-circle mb-4">
+                    <div class="health-bg"></div>
+                    <div class="health-bar" id="healthBar"></div>
+                    <div class="z-10 text-center">
+                        <span id="healthScore">0%</span>
+                    </div>
+                </div>
+                <h3 class="text-xl font-bold" id="healthTitle">Calculating...</h3>
+                <p class="text-sm text-[#8896ab]" id="healthDesc">Analyze data to see score</p>
+            </div>
+
+            <!-- Visual Status Bars -->
+            <div class="card p-6 animate-in stagger-2">
+                <h3 class="font-semibold mb-4">Stock Status Levels</h3>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Good (Equal)</span>
+                            <span id="smartEqualPct">0%</span>
+                        </div>
+                        <div class="progress-simple">
+                            <div class="progress-fill-simple" id="barEqual" style="width: 0%; background: #3b82f6;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Extra Stock</span>
+                            <span id="smartExcessPct">0%</span>
+                        </div>
+                        <div class="progress-simple">
+                            <div class="progress-fill-simple" id="barExcess" style="width: 0%; background: #10b981;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Low Stock</span>
+                            <span id="smartDeficitPct">0%</span>
+                        </div>
+                        <div class="progress-simple">
+                            <div class="progress-fill-simple" id="barDeficit" style="width: 0%; background: #f59e0b;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Empty (Critical)</span>
+                            <span id="smartCriticalPct">0%</span>
+                        </div>
+                        <div class="progress-simple">
+                            <div class="progress-fill-simple" id="barCritical" style="width: 0%; background: #ef4444;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simple Math -->
+            <div class="card p-6 animate-in stagger-2">
+                <h3 class="font-semibold mb-4">The Simple Math</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center border-b border-[#2a3548] pb-2">
+                        <span class="text-[#8896ab]">Total Items Needed:</span>
+                        <span class="font-bold text-lg" id="smartTotalNeed">0</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-[#2a3548] pb-2">
+                        <span class="text-[#8896ab]">Total Items in Stores:</span>
+                        <span class="font-bold text-lg" id="smartTotalHave">0</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-[#8896ab]">Difference:</span>
+                        <span class="font-bold text-lg" id="smartDiff">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actionable Advice Section -->
+        <div class="grid lg:grid-cols-2 gap-6">
+            <!-- Problems -->
+            <div class="simple-card animate-in">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center bg-red-500/20">
+                        <span class="text-xl">⚠️</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-[#ef4444]">Needs Attention</h3>
+                </div>
+                <div id="smartProblems" class="space-y-3">
+                    <p class="text-[#5a6a80]">No critical issues found.</p>
+                </div>
+            </div>
+
+            <!-- Solutions -->
+            <div class="simple-card animate-in stagger-1">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center bg-green-500/20">
+                        <span class="text-xl">💡</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-[#10b981]">Smart Advice</h3>
+                </div>
+                <div id="smartAdvice" class="space-y-3">
+                    <p class="text-[#5a6a80]">Load data to get advice.</p>
+                </div>
+            </div>
+        </div>
     </div>
   </main>
 
   <div id="toast" class="fixed bottom-6 right-6 bg-[#1a2332] border border-[#2a3548] px-4 py-3 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 z-50"><p id="toastMessage" class="text-sm"></p></div>
 
   <script>
-    // === DATA INITIALIZATION ===
+    // === DATA ===
     let baseStock = [];
     let stores = [];
     let storeStock = [];
@@ -304,7 +298,6 @@
       { id: 'SIR-HYD', name: 'Siri Dress Divine - Hyderabad' }, { id: 'SIR-BZA', name: 'Siri Dress Divine - Vijayawada' }, { id: 'SIR-AKD', name: 'Siri Dress Divine - Kakinada' }, { id: 'SIR-CKP', name: 'Siri Dress Divine - Chilakaluripet' }, { id: 'SIR-VZG', name: 'Siri Dress Divine - Vizag' }, { id: 'SIR-TIR', name: 'Siri Dress Divine - Tirupati' }, { id: 'SIR-RJY', name: 'Siri Dress Divine - Rajahmundry' }, { id: 'SIR-BVM', name: 'Siri Dress Divine - Bhimavaram' }, { id: 'SIR-ELU', name: 'Siri Dress Divine - Eluru' }
     ];
 
-    // === DOM LOGIC ===
     document.addEventListener('DOMContentLoaded', () => { initFileHandlers(); initDragDrop(); });
 
     function initFileHandlers() {
@@ -314,8 +307,7 @@
 
     function initDragDrop() {
         ['baseUploadZone', 'storeUploadZone'].forEach(id => {
-            const zone = document.getElementById(id);
-            if(!zone) return;
+            const zone = document.getElementById(id); if(!zone) return;
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => { zone.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); }, false); });
             ['dragenter', 'dragover'].forEach(eventName => { zone.addEventListener(eventName, () => zone.classList.add('dragover'), false); });
             ['dragleave', 'drop'].forEach(eventName => { zone.addEventListener(eventName, () => zone.classList.remove('dragover'), false); });
@@ -326,7 +318,6 @@
         });
     }
 
-    // === TAB LOGIC ===
     function switchTab(tabName) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -334,6 +325,7 @@
       document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
       if (tabName === 'analysis') generateAnalysis();
       if (tabName === 'transfers') generateTransferSuggestions();
+      if (tabName === 'smart') generateSmartView(); // NEW
     }
 
     function showToast(message, type = 'success') {
@@ -342,11 +334,10 @@
       toast.classList.remove('translate-y-20', 'opacity-0'); setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
     }
 
-    // === DATA ENTRY ===
     function addBaseStock() {
       const sku = document.getElementById('itemSku').value.trim(); const name = document.getElementById('itemName').value.trim(); const qty = parseInt(document.getElementById('baseQty').value);
-      if (!sku || !name || isNaN(qty) || qty < 0) { showToast('Please fill all fields validly', 'error'); return; }
-      if (baseStock.find(item => item.sku === sku)) { showToast('SKU already exists', 'error'); return; }
+      if (!sku || !name || isNaN(qty) || qty < 0) { showToast('Fill all fields validly', 'error'); return; }
+      if (baseStock.find(item => item.sku === sku)) { showToast('SKU exists', 'error'); return; }
       baseStock.push({ sku, name, baseQty: qty }); updateBaseStockTable();
       document.getElementById('itemSku').value = ''; document.getElementById('itemName').value = ''; document.getElementById('baseQty').value = '';
       showToast('Item added');
@@ -367,11 +358,10 @@
         updateBaseStockTable();
         storeStock = [];
         baseStock.forEach(item => { stores.forEach(st => { storeStock.push({ storeId: st.id, sku: item.sku, qty: Math.floor(Math.random() * (item.baseQty + 30)) }); }); });
-        showToast('Demo data loaded! Go to Analysis tab.');
+        showToast('Demo data loaded!');
         document.getElementById('exportBtn').disabled = false;
     }
 
-    // === RENDER FUNCTIONS ===
     function updateBaseStockTable() {
       const tbody = document.getElementById('baseStockBody'); const countEl = document.getElementById('baseStockCount');
       countEl.textContent = baseStock.length + ' items';
@@ -389,7 +379,6 @@
     function deleteBaseStock(sku) { baseStock = baseStock.filter(i => i.sku !== sku); updateBaseStockTable(); }
     function deleteStore(id) { stores = stores.filter(s => s.id !== id); storeStock = storeStock.filter(s => s.storeId !== id); updateStoresTable(); }
 
-    // === FILE PROCESSING ===
     function handleBaseStockUpload(e) { const file = e.target.files[0]; if(file) processFile(file, 'base'); e.target.value = ''; }
     function handleStoreStockUpload(e) { const file = e.target.files[0]; if(file) processFile(file, 'store'); e.target.value = ''; }
 
@@ -397,10 +386,7 @@
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                const json = XLSX.utils.sheet_to_json(sheet);
+                const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const json = XLSX.utils.sheet_to_json(sheet);
                 if(type === 'base') importBaseStock(json); else importStoreStock(json);
             } catch(err) { console.error(err); showToast('Error parsing file', 'error'); }
         };
@@ -410,9 +396,7 @@
     function importBaseStock(json) {
         let added = 0;
         json.forEach(row => {
-            const sku = row['SKU'] || row['sku'] || Object.values(row)[0];
-            const name = row['Name'] || row['name'] || Object.values(row)[1];
-            const qty = parseInt(row['Base Qty'] || row['Base'] || row['Quantity'] || Object.values(row)[2]);
+            const sku = row['SKU'] || row['sku'] || Object.values(row)[0]; const name = row['Name'] || row['name'] || Object.values(row)[1]; const qty = parseInt(row['Base Qty'] || row['Base'] || row['Quantity'] || Object.values(row)[2]);
             if (sku && name && !isNaN(qty)) { const sSku = String(sku).trim(); if (!baseStock.find(i => i.sku === sSku)) { baseStock.push({ sku: sSku, name: String(name).trim(), baseQty: qty }); added++; } }
         });
         updateBaseStockTable(); showToast(`Imported ${added} base items`);
@@ -421,31 +405,20 @@
     function importStoreStock(json) {
         let added = 0; let newStores = 0;
         json.forEach(row => {
-            let storeId = row['Store ID'] || row['StoreId'] || Object.values(row)[0];
-            const sku = row['SKU'] || row['sku'] || Object.values(row)[1];
-            const qty = parseInt(row['Quantity'] || row['Qty'] || Object.values(row)[2]);
-            
-            // Try to match by name if ID doesn't match
-            if (storeId && !stores.find(s => s.id === String(storeId).trim())) {
-                const foundStore = stores.find(s => s.name.toLowerCase() === String(storeId).toLowerCase().trim());
-                if (foundStore) storeId = foundStore.id;
-            }
-
+            let storeId = row['Store ID'] || row['StoreId'] || Object.values(row)[0]; const sku = row['SKU'] || row['sku'] || Object.values(row)[1]; const qty = parseInt(row['Quantity'] || row['Qty'] || Object.values(row)[2]);
+            if (storeId && !stores.find(s => s.id === String(storeId).trim())) { const foundStore = stores.find(s => s.name.toLowerCase() === String(storeId).toLowerCase().trim()); if (foundStore) storeId = foundStore.id; }
             if (storeId && sku && !isNaN(qty)) {
                 const sId = String(storeId).trim(); const sSku = String(sku).trim();
                 if (!stores.find(s => s.id === sId)) { stores.push({ id: sId, name: sId }); newStores++; }
-                const existing = storeStock.find(s => s.storeId === sId && s.sku === sSku);
-                if (existing) existing.qty = qty; else { storeStock.push({ storeId: sId, sku: sSku, qty }); added++; }
+                const existing = storeStock.find(s => s.storeId === sId && s.sku === sSku); if (existing) existing.qty = qty; else { storeStock.push({ storeId: sId, sku: sSku, qty }); added++; }
             }
         });
         updateStoresTable(); showToast(`Imported ${added} stock entries. Added ${newStores} new stores.`);
     }
 
-    // === ANALYSIS LOGIC ===
     function generateAnalysis() {
       if (baseStock.length === 0 || stores.length === 0 || storeStock.length === 0) { document.getElementById('colorChartBody').innerHTML = '<tr><td colspan="20" class="text-center text-[#5a6a80] py-8">Load Demo Data or Upload files</td></tr>'; return; }
       analysisData = { items: [], summary: { excess: 0, deficit: 0, equal: 0, critical: 0 } };
-
       baseStock.forEach(item => {
         const itemAnalysis = { sku: item.sku, name: item.name, baseQty: item.baseQty, stores: [] };
         stores.forEach(store => {
@@ -466,15 +439,14 @@
 
     function renderColorChart() {
         const thead = document.getElementById('colorChartHead'); const tbody = document.getElementById('colorChartBody');
-        let headerHtml = `<tr><th class="sticky-col sticky-col-1" style="min-width:100px; left:0">SKU</th><th class="sticky-col sticky-col-2" style="min-width:150px; left:100px">Item</th><th style="min-width:50px">Base</th>`;
-        stores.forEach(store => { headerHtml += `<th style="min-width:75px" title="${escapeHtml(store.name)}">${escapeHtml(store.id)}</th>`; });
+        let headerHtml = `<tr><th class="sticky-col sticky-col-1">SKU</th><th class="sticky-col sticky-col-2">Item</th><th>Base</th>`;
+        stores.forEach(store => { headerHtml += `<th>${escapeHtml(store.id)}</th>`; });
         headerHtml += '</tr>'; thead.innerHTML = headerHtml;
-
         tbody.innerHTML = analysisData.items.map(item => {
             let row = `<tr><td class="sticky-col sticky-col-1 font-mono text-sm">${escapeHtml(item.sku)}</td><td class="sticky-col sticky-col-2">${escapeHtml(item.name)}</td><td class="font-bold">${item.baseQty}</td>`;
             item.stores.forEach(store => {
                 const cls = `cell-${store.status}`; const varStr = store.variance > 0 ? `+${store.variance}` : store.variance;
-                row += `<td class="${cls}" title="${escapeHtml(store.storeName)}"><div class="flex flex-col"><span>${store.currentQty}</span><span class="text-xs opacity-80">(${varStr})</span></div></td>`;
+                row += `<td class="${cls}"><div class="flex flex-col"><span>${store.currentQty}</span><span class="text-xs opacity-80">(${varStr})</span></div></td>`;
             });
             row += '</tr>'; return row;
         }).join('');
@@ -491,7 +463,6 @@
     function generateTransferSuggestions() {
         if (!analysisData) generateAnalysis(); if (!analysisData || analysisData.items.length === 0) return;
         const transfers = []; let totalUnits = 0; const priorityItems = [];
-
         analysisData.items.forEach(item => {
             const excessStores = item.stores.filter(s => s.variance > 0).sort((a, b) => b.variance - a.variance);
             const deficitStores = item.stores.filter(s => s.variance < 0).sort((a, b) => a.variance - b.variance);
@@ -500,12 +471,12 @@
                     let available = excessStore.variance;
                     deficitStores.forEach(deficitStore => {
                         if (available <= 0) return; const needed = Math.abs(deficitStore.variance); const qty = Math.min(available, needed);
-                        if (qty > 0) { transfers.push({ item: item.name, sku: item.sku, from: excessStore.storeName, fromId: excessStore.storeId, to: deficitStore.storeName, toId: deficitStore.storeId, qty: qty, baseQty: item.baseQty }); totalUnits += qty; available -= qty; }
+                        if (qty > 0) { transfers.push({ item: item.name, sku: item.sku, from: excessStore.storeName, to: deficitStore.storeName, qty: qty }); totalUnits += qty; available -= qty; }
                     });
                 });
             }
             const critical = item.stores.filter(s => s.status === 'critical');
-            if (critical.length > 0) priorityItems.push({ sku: item.sku, name: item.name, count: critical.length, stores: critical.map(s=>s.storeName) });
+            if (critical.length > 0) priorityItems.push({ sku: item.sku, name: item.name, count: critical.length });
         });
         renderTransfers(transfers, totalUnits, priorityItems);
     }
@@ -514,113 +485,152 @@
         document.getElementById('totalTransfers').textContent = transfers.length;
         document.getElementById('itemsToTransfer').textContent = [...new Set(transfers.map(t=>t.sku))].length;
         document.getElementById('totalUnits').textContent = totalUnits;
-        document.getElementById('priorityItems').innerHTML = priorityItems.length > 0 ? priorityItems.slice(0,4).map(i => `<div class="p-2 rounded" style="background: var(--critical-bg)"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full" style="background: var(--critical)"></span><span class="text-sm font-medium">${escapeHtml(i.name)}</span></div><p class="text-xs text-[#5a6a80] mt-1">${i.count} stores at zero</p></div>`).join('') : '<p class="text-[#5a6a80] text-sm">None</p>';
-        
         const container = document.getElementById('transferSuggestions');
         if (transfers.length === 0) { container.innerHTML = '<div class="text-center text-[#5a6a80] py-8">Inventory is balanced</div>'; return; }
         const grouped = {}; transfers.forEach(t => { if(!grouped[t.sku]) grouped[t.sku] = { name: t.item, list: [] }; grouped[t.sku].list.push(t); });
-        container.innerHTML = Object.entries(grouped).map(([sku, data]) => `<div class="mb-6"><div class="flex justify-between items-center mb-2"><h4 class="font-semibold">${escapeHtml(data.name)} <span class="text-xs text-[#5a6a80] font-mono ml-2">${sku}</span></h4></div>${data.list.map(t => `<div class="transfer-card"><div class="flex items-center justify-between"><div class="flex items-center gap-2 flex-1 min-w-0"><div class="truncate"><p class="text-xs text-[#5a6a80]">From</p><p class="text-sm text-green-400 font-medium truncate">${escapeHtml(t.from)}</p></div><span class="text-lg text-[#00d4aa] flex-shrink-0">→</span><div class="truncate"><p class="text-xs text-[#5a6a80]">To</p><p class="text-sm text-orange-400 font-medium truncate">${escapeHtml(t.to)}</p></div></div><div class="text-right ml-4 flex-shrink-0"><p class="text-xs text-[#5a6a80]">Qty</p><p class="text-xl font-bold text-[#00d4aa]">${t.qty}</p></div></div></div>`).join('')}</div>`).join('');
+        container.innerHTML = Object.entries(grouped).map(([sku, data]) => `<div class="mb-6"><h4 class="font-semibold mb-2">${escapeHtml(data.name)}</h4>${data.list.map(t => `<div class="transfer-card p-3 mb-2"><p class="text-sm"><span class="text-green-400">${escapeHtml(t.from)}</span> → <span class="text-orange-400">${escapeHtml(t.to)}</span> <span class="font-bold text-[#00d4aa] ml-2">${t.qty} units</span></p></div>`).join('')}</div>`).join('');
     }
 
-    // === EXPORT LOGIC (ExcelJS with Colors) ===
-    async function exportToExcel() {
-        if (!analysisData || analysisData.items.length === 0) { showToast('No data to export', 'error'); return; }
+    // === NEW: SMART VIEW LOGIC ===
+    function generateSmartView() {
+        if (!analysisData) generateAnalysis();
+        if (!analysisData) return;
 
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Stock Color Chart');
+        const totalSlots = baseStock.length * stores.length;
+        if (totalSlots === 0) return;
 
-        // Styles
-        const headerStyle = { font: { bold: true, color: { argb: 'FFFFFFFF' } }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F2937' } }, alignment: { vertical: 'middle', horizontal: 'center' } };
-        const styles = {
-            excess: { font: { color: { argb: 'FF10B981' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD1FAE5' } } },
-            deficit: { font: { color: { argb: 'FFF59E0B' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } } },
-            critical: { font: { color: { argb: 'FFEF4444' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } } },
-            equal: { font: { color: { argb: 'FF3B82F6' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDBEAFE' } } }
-        };
+        // 1. Calculate Health Score (0-100)
+        // Formula: 100 - (Critical% + Half of Deficit%)
+        const critPct = (analysisData.summary.critical / totalSlots) * 100;
+        const defPct = (analysisData.summary.deficit / totalSlots) * 100;
+        const score = Math.max(0, Math.round(100 - (critPct + (defPct/2))));
 
-        // Headers
-        const headers = ['SKU', 'Item Name', 'Base Qty'];
-        stores.forEach(s => headers.push(`${s.name} (Stock)`, `${s.name} (Var)`, `${s.name} (Status)`));
-        worksheet.addRow(headers);
-        worksheet.getRow(1).eachCell((cell) => Object.assign(cell, headerStyle));
+        // Update Score UI
+        document.getElementById('healthScore').textContent = score + '%';
+        const color = score > 80 ? '#10b981' : (score > 50 ? '#f59e0b' : '#ef4444');
+        document.getElementById('healthBar').style.borderColor = color;
+        document.getElementById('healthScore').style.color = color;
+        
+        const title = score > 80 ? 'Great Job!' : (score > 50 ? 'Needs Work' : 'Critical');
+        document.getElementById('healthTitle').textContent = title;
+        document.getElementById('healthDesc').textContent = `Based on ${totalSlots} inventory slots.`;
 
-        // Data
+        // 2. Update Bars
+        const eqPct = Math.round((analysisData.summary.equal / totalSlots) * 100);
+        const exPct = Math.round((analysisData.summary.excess / totalSlots) * 100);
+        
+        document.getElementById('smartEqualPct').textContent = eqPct + '%';
+        document.getElementById('barEqual').style.width = eqPct + '%';
+        
+        document.getElementById('smartExcessPct').textContent = exPct + '%';
+        document.getElementById('barExcess').style.width = exPct + '%';
+        
+        document.getElementById('smartDeficitPct').textContent = Math.round(defPct) + '%';
+        document.getElementById('barDeficit').style.width = defPct + '%';
+        
+        document.getElementById('smartCriticalPct').textContent = Math.round(critPct) + '%';
+        document.getElementById('barCritical').style.width = critPct + '%';
+
+        // 3. Simple Math
+        let totalNeed = 0;
+        let totalHave = 0;
+        baseStock.forEach(item => {
+            totalNeed += (item.baseQty * stores.length);
+        });
+        storeStock.forEach(s => totalHave += s.qty);
+
+        document.getElementById('smartTotalNeed').textContent = totalNeed.toLocaleString();
+        document.getElementById('smartTotalHave').textContent = totalHave.toLocaleString();
+        const diff = totalHave - totalNeed;
+        const diffEl = document.getElementById('smartDiff');
+        diffEl.textContent = (diff > 0 ? '+' : '') + diff.toLocaleString();
+        diffEl.style.color = diff >= 0 ? '#10b981' : '#ef4444';
+
+        // 4. Problems & Advice (Simple English)
+        const probDiv = document.getElementById('smartProblems');
+        const advDiv = document.getElementById('smartAdvice');
+        
+        // Find Critical Items
+        const criticalItems = [];
         analysisData.items.forEach(item => {
-            const row = [item.sku, item.name, item.baseQty];
-            item.stores.forEach(s => row.push(s.currentQty, s.variance, s.status.toUpperCase()));
-            worksheet.addRow(row);
-        });
-
-        // Apply Conditional Formatting Colors
-        worksheet.eachRow((row, rowNumber) => {
-            if (rowNumber === 1) return; // Skip header
-            
-            // Loop through store columns (start at col 4, step 3)
-            let colIndex = 4;
-            item.stores.forEach((store, i) => {
-                // We need the status from the analysisData using the row number
-                const itemData = analysisData.items[rowNumber - 2];
-                if(!itemData) return;
-                
-                // Status is at colIndex + 2
-                const statusCell = row.getCell(colIndex + 2);
-                const stockCell = row.getCell(colIndex);
-                const varCell = row.getCell(colIndex + 1);
-
-                const status = itemData.stores[i].status;
-                
-                if (styles[status]) {
-                    Object.assign(stockCell, styles[status]);
-                    Object.assign(varCell, styles[status]);
-                    Object.assign(statusCell, styles[status]);
-                }
-                colIndex += 3;
+            item.stores.forEach(st => {
+                if(st.status === 'critical') criticalItems.push({ name: item.name, store: st.storeName });
             });
         });
 
-        // Adjust Column Widths
-        worksheet.columns.forEach((col, i) => { col.width = i < 3 ? 15 : 18; });
-
-        // Transfer Sheet
-        if (analysisData.items.length > 0) {
-            const ws2 = workbook.addWorksheet('Transfer Suggestions');
-            ws2.addRow(['SKU', 'Item', 'From Store', 'To Store', 'Transfer Qty']);
-            ws2.getRow(1).eachCell((cell) => Object.assign(cell, headerStyle));
-            
-            analysisData.items.forEach(item => {
-                const excessStores = item.stores.filter(s => s.variance > 0).sort((a, b) => b.variance - a.variance);
-                const deficitStores = item.stores.filter(s => s.variance < 0).sort((a, b) => a.variance - b.variance);
-                excessStores.forEach(excessStore => {
-                    let available = excessStore.variance;
-                    deficitStores.forEach(deficitStore => {
-                        if (available <= 0) return;
-                        const needed = Math.abs(deficitStore.variance);
-                        const qty = Math.min(available, needed);
-                        if (qty > 0) {
-                            ws2.addRow([item.sku, item.name, excessStore.storeName, deficitStore.storeName, qty]);
-                            available -= qty;
-                        }
-                    });
-                });
-            });
-            ws2.columns.forEach(col => col.width = 20);
+        if(criticalItems.length > 0) {
+            const list = criticalItems.slice(0, 3).map(i => `<div class="p-2 bg-red-500/10 rounded text-sm text-red-300"><b>${i.name}</b> is empty at <b>${i.store}</b></div>`).join('');
+            probDiv.innerHTML = list;
+        } else {
+            probDiv.innerHTML = '<p class="text-green-400">No empty shelves found! 👍</p>';
         }
 
-        // Save
-        const buffer = await workbook.xlsx.writeBuffer();
-        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Stock_Analysis_${new Date().toISOString().split('T')[0]}.xlsx`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-        showToast('Excel exported with colors!');
+        // Advice
+        if(analysisData.summary.excess > 0 && analysisData.summary.deficit > 0) {
+            advDiv.innerHTML = `
+                <div class="p-3 bg-green-500/10 rounded text-sm text-green-300 mb-2">
+                    You have extra stock in some stores. Move it to stores that need it.
+                </div>
+                <p class="text-xs text-[#5a6a80]">Go to the "Transfers" tab to see exactly how much to move.</p>
+            `;
+        } else if (diff < 0) {
+            advDiv.innerHTML = `<div class="p-3 bg-orange-500/10 rounded text-sm text-orange-300">You have less stock than needed. You need to buy <b>${Math.abs(diff)}</b> more items.</div>`;
+        } else {
+            advDiv.innerHTML = `<div class="p-3 bg-blue-500/10 rounded text-sm text-blue-300">Stock looks balanced. Good job! 🎉</div>`;
+        }
+    }
+
+    // === EXPORT LOGIC ===
+    async function exportToExcel() {
+        if (!analysisData || analysisData.items.length === 0) { showToast('No data to export', 'error'); return; }
+        
+        try {
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('Stock Color Chart');
+            const headerStyle = { font: { bold: true, color: { argb: 'FFFFFFFF' } }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F2937' } }, alignment: { vertical: 'middle', horizontal: 'center' } };
+            const styles = {
+                excess: { font: { color: { argb: 'FF065F46' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD1FAE5' } } },
+                deficit: { font: { color: { argb: 'FF92400E' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } } },
+                critical: { font: { color: { argb: 'FF991B1B' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } } },
+                equal: { font: { color: { argb: 'FF1E40AF' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDBEAFE' } } }
+            };
+
+            const headers = ['SKU', 'Item Name', 'Base Qty'];
+            stores.forEach(s => headers.push(`${s.name} (Stock)`, `${s.name} (Var)`, `${s.name} (Status)`));
+            worksheet.addRow(headers);
+            worksheet.getRow(1).eachCell((cell) => Object.assign(cell, headerStyle));
+
+            analysisData.items.forEach(item => {
+                const rowData = [item.sku, item.name, item.baseQty];
+                item.stores.forEach(s => rowData.push(s.currentQty, s.variance, s.status.toUpperCase()));
+                const row = worksheet.addRow(rowData);
+                let colStart = 4;
+                item.stores.forEach((store) => {
+                    const style = styles[store.status] || {};
+                    Object.assign(row.getCell(colStart), style);
+                    Object.assign(row.getCell(colStart + 1), style);
+                    Object.assign(row.getCell(colStart + 2), style);
+                    colStart += 3;
+                });
+            });
+
+            worksheet.columns.forEach((col, i) => { col.width = i < 3 ? 15 : 18; });
+
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `Stock_Analysis.xlsx`; a.click();
+            window.URL.revokeObjectURL(url);
+            showToast('Excel exported!');
+        } catch (err) {
+            console.error(err);
+            showToast('Export failed', 'error');
+        }
     }
 
     function escapeHtml(text) {
       if (typeof text !== 'string') return text;
-      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
   </script>
 </body>
