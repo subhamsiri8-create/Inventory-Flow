@@ -1,564 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stock Color Chart Builder (Cloud Connected)</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
-  
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-primary: #0a0f1a; --bg-secondary: #111827; --bg-card: #1a2332; --border: #2a3548;
-      --text-primary: #e8edf5; --text-secondary: #8896ab; --text-muted: #5a6a80;
-      --accent: #00d4aa;
-      --excess: #10b981; --excess-bg: rgba(16, 185, 129, 0.15);
-      --deficit: #f59e0b; --deficit-bg: rgba(245, 158, 11, 0.15);
-      --critical: #ef4444; --critical-bg: rgba(239, 68, 68, 0.15);
-      --equal: #3b82f6; --equal-bg: rgba(59, 130, 246, 0.15);
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
-    h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; }
-    .gradient-mesh { position: fixed; inset: 0; z-index: -1; background: radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0, 212, 170, 0.08) 0%, transparent 50%), var(--bg-primary); }
-    
-    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; backdrop-filter: blur(10px); }
-    .btn-primary { background: linear-gradient(135deg, var(--accent) 0%, #00a88a 100%); color: var(--bg-primary); font-weight: 600; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s ease; font-size: 14px; }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0, 212, 170, 0.3); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-secondary { background: transparent; color: var(--text-primary); font-weight: 500; padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; font-size: 14px; }
-    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
-    .input-field { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); padding: 12px 16px; border-radius: 8px; width: 100%; }
-    
-    .upload-zone { position: relative; border: 2px dashed var(--border); border-radius: 12px; padding: 40px 20px; text-align: center; transition: all 0.3s ease; cursor: pointer; overflow: hidden; }
-    .upload-zone:hover { border-color: var(--accent); background: rgba(0, 212, 170, 0.05); }
-    .upload-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; }
-    
-    .data-table { width: 100%; border-collapse: separate; border-spacing: 0; }
-    .data-table th { background: var(--bg-secondary); padding: 14px 16px; text-align: left; font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
-    .sticky-col { position: sticky; background: var(--bg-card); z-index: 5; }
-    .sticky-col-1 { left: 0; }
-    .sticky-col-2 { left: 100px; border-right: 1px solid var(--border); }
-    .data-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
-    .cell-excess { background: var(--excess-bg); color: var(--excess); font-weight: 600; }
-    .cell-deficit { background: var(--deficit-bg); color: var(--deficit); font-weight: 600; }
-    .cell-critical { background: var(--critical-bg); color: var(--critical); font-weight: 600; }
-    .cell-equal { background: var(--equal-bg); color: var(--equal); font-weight: 600; }
-    
-    .tab-btn { padding: 12px 20px; background: transparent; border: none; color: var(--text-secondary); cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.2s ease; font-size: 14px; }
-    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-    .health-circle { width: 160px; height: 160px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: bold; margin: 0 auto; }
-    .health-bg { position: absolute; inset: 0; border-radius: 50%; border: 12px solid #1f2937; }
-    .health-bar { position: absolute; inset: 0; border-radius: 50%; border: 12px solid transparent; transform: rotate(-45deg); }
-    
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-in { animation: fadeInUp 0.4s ease forwards; }
-    .stagger-1 { animation-delay: 0.1s; opacity: 0; }
-    .stagger-2 { animation-delay: 0.2s; opacity: 0; }
-    .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
-    .scrollbar-thin::-webkit-scrollbar-track { background: var(--bg-secondary); }
-    .scrollbar-thin::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-    
-    .sync-badge { font-size: 10px; padding: 2px 8px; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
-    .sync-connected { background: #10b981; color: white; }
-    .sync-offline { background: #5a6a80; color: white; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subham Grand | Smart Chart Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .yellow-header { background-color: #facc15; font-weight: bold; text-transform: uppercase; border: 1px solid #000; }
+        .table-cell { border: 1px solid #000; padding: 6px; text-align: center; }
+        .shortage { color: #b91c1c; font-weight: bold; background-color: #fef2f2; }
+        .surplus { color: #15803d; font-weight: bold; background-color: #f0fdf4; }
+        .intel-badge { font-size: 8px; padding: 2px 5px; border-radius: 4px; font-weight: 900; }
+        .bg-transfer { background: #dbeafe; color: #1e40af; border: 1px solid #1e40af; }
+        .bg-purchase { background: #fee2e2; color: #991b1b; border: 1px solid #991b1b; }
+    </style>
 </head>
-<body>
-  <div class="gradient-mesh"></div>
-  
-  <header class="border-b border-[#2a3548] bg-[#0a0f1a]/80 backdrop-blur-lg sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-[#00d4aa] to-[#3b82f6] flex items-center justify-center">
-          <svg class="w-6 h-6 text-[#0a0f1a]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-        </div>
-        <div>
-            <h1 class="text-lg font-bold tracking-tight">Stock Color Chart Builder <span id="syncStatus" class="sync-badge sync-offline">Offline</span></h1>
-            <p class="text-xs text-[#5a6a80]">Inventory Transfer System</p>
-        </div>
-      </div>
-      
-      <!-- Cloud Sync Bar -->
-      <div class="flex items-center gap-2 w-full lg:w-auto">
-        <!-- PRE-FILLED YOUR URL HERE -->
-        <input type="text" id="serverUrl" class="input-field text-xs py-2 px-3" style="min-width: 200px;" value="https://script.google.com/macros/s/AKfycby62hN4I746DYlO4ikWI7ma9aU3xoLrmv2owREm43sCIW-keZ1orkdfemihNEpNVX3H/exec">
-        <button onclick="connectServer()" class="btn-secondary text-xs py-2 px-3">Connect</button>
-        <button onclick="saveToServer()" class="btn-primary text-xs py-2 px-3">Save Cloud</button>
-      </div>
-    </div>
-  </header>
+<body class="bg-gray-100 font-sans text-[11px]">
 
-  <main class="max-w-7xl mx-auto px-6 py-8">
-    <div class="flex border-b border-[#2a3548] mb-8 overflow-x-auto">
-      <button class="tab-btn active" data-tab="setup" onclick="switchTab('setup')">1. Setup Base</button>
-      <button class="tab-btn" data-tab="upload" onclick="switchTab('upload')">2. Manage Stores</button>
-      <button class="tab-btn" data-tab="analysis" onclick="switchTab('analysis')">3. Analysis Chart</button>
-      <button class="tab-btn" data-tab="transfers" onclick="switchTab('transfers')">4. Transfers</button>
-      <button class="tab-btn" data-tab="smart" onclick="switchTab('smart')">5. Smart Overview</button>
-    </div>
-
-    <!-- Setup Tab -->
-    <div id="tab-setup" class="tab-content">
-      <div class="grid lg:grid-cols-2 gap-6">
-        <div class="card p-6 animate-in">
-          <h3 class="text-lg font-semibold mb-4">Add Base Stock Item</h3>
-          <div class="space-y-4">
-            <div><label class="block text-sm text-[#8896ab] mb-2">SKU</label><input type="text" id="itemSku" class="input-field" placeholder="e.g., SKU-001"></div>
-            <div><label class="block text-sm text-[#8896ab] mb-2">Item Name</label><input type="text" id="itemName" class="input-field" placeholder="e.g., Premium Shirt"></div>
-            <div><label class="block text-sm text-[#8896ab] mb-2">Base Qty</label><input type="number" id="baseQty" class="input-field" placeholder="e.g., 100"></div>
-            <button onclick="addBaseStock()" class="btn-primary w-full">Add Item</button>
-          </div>
-        </div>
-        <div class="card p-6 animate-in stagger-1">
-          <h3 class="text-lg font-semibold mb-4">Import Base Stock (CSV/Excel)</h3>
-          <div class="upload-zone" id="baseUploadZone">
-            <input type="file" class="upload-input" id="baseStockFile" accept=".csv,.xlsx,.xls">
-            <svg class="w-12 h-12 mx-auto mb-4 text-[#5a6a80]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <p class="text-[#8896ab] mb-2 pointer-events-none">Click or Drop file</p>
-          </div>
-        </div>
-      </div>
-      <div class="card mt-6 animate-in stagger-2">
-        <div class="p-4 border-b border-[#2a3548] flex items-center justify-between"><h3 class="font-semibold">Base Stock Inventory</h3><span class="text-sm text-[#5a6a80]" id="baseStockCount">0 items</span></div>
-        <div class="overflow-x-auto scrollbar-thin max-h-80"><table class="data-table"><thead><tr><th>SKU</th><th>Item Name</th><th>Base Qty</th><th>Action</th></tr></thead><tbody id="baseStockBody"></tbody></table></div>
-      </div>
-    </div>
-
-    <!-- Upload Tab -->
-    <div id="tab-upload" class="tab-content hidden">
-      <div class="grid lg:grid-cols-2 gap-6">
-        <div class="card p-6 animate-in">
-          <h3 class="text-lg font-semibold mb-4">Add Store</h3>
-          <div class="space-y-4">
-            <div><label class="block text-sm text-[#8896ab] mb-2">Store ID</label><input type="text" id="storeId" class="input-field" placeholder="e.g., SUB-ELU"></div>
-            <div><label class="block text-sm text-[#8896ab] mb-2">Store Name</label><input type="text" id="storeName" class="input-field" placeholder="e.g., Subham Grand - Eluru"></div>
-            <button onclick="addStore()" class="btn-primary w-full">Add Store</button>
-          </div>
-        </div>
-        <div class="card p-6 animate-in stagger-1">
-          <h3 class="text-lg font-semibold mb-4">Upload Store Stock (CSV/Excel)</h3>
-          <div class="upload-zone" id="storeUploadZone">
-            <input type="file" class="upload-input" id="storeStockFile" accept=".csv,.xlsx,.xls">
-            <svg class="w-12 h-12 mx-auto mb-4 text-[#5a6a80]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <p class="text-[#8896ab] mb-2 pointer-events-none">Click or Drop file</p>
-          </div>
-        </div>
-      </div>
-      <div class="card mt-6 animate-in stagger-2">
-        <div class="p-4 border-b border-[#2a3548] flex items-center justify-between"><h3 class="font-semibold">Registered Stores</h3><span class="text-sm text-[#5a6a80]" id="storeCount">0 stores</span></div>
-        <div class="overflow-x-auto scrollbar-thin max-h-96"><table class="data-table"><thead><tr><th>ID</th><th>Full Name</th><th>Items</th><th>Action</th></tr></thead><tbody id="storesBody"></tbody></table></div>
-      </div>
-    </div>
-
-    <!-- Analysis Tab -->
-    <div id="tab-analysis" class="tab-content hidden">
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="card p-4 animate-in"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--excess-bg)"><svg class="w-5 h-5" style="color: var(--excess)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg></div><div><p class="text-2xl font-bold" id="excessCount">0</p><p class="text-xs text-[#5a6a80]">Excess</p></div></div></div>
-        <div class="card p-4 animate-in stagger-1"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--deficit-bg)"><svg class="w-5 h-5" style="color: var(--deficit)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg></div><div><p class="text-2xl font-bold" id="deficitCount">0</p><p class="text-xs text-[#5a6a80]">Deficit</p></div></div></div>
-        <div class="card p-4 animate-in stagger-1"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--equal-bg)"><svg class="w-5 h-5" style="color: var(--equal)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13h14"/></svg></div><div><p class="text-2xl font-bold" id="equalCount">0</p><p class="text-xs text-[#5a6a80]">Equal</p></div></div></div>
-        <div class="card p-4 animate-in stagger-1"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--critical-bg)"><svg class="w-5 h-5" style="color: var(--critical)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg></div><div><p class="text-2xl font-bold" id="criticalCount">0</p><p class="text-xs text-[#5a6a80]">Critical</p></div></div></div>
-      </div>
-      <div class="card animate-in">
-        <div class="p-4 border-b border-[#2a3548]"><h3 class="font-semibold">Stock Color Chart Matrix</h3></div>
-        <div class="overflow-x-auto scrollbar-thin" style="max-height: 600px"><table class="data-table"><thead id="colorChartHead"></thead><tbody id="colorChartBody"></tbody></table></div>
-      </div>
-    </div>
-
-    <!-- Transfers Tab -->
-    <div id="tab-transfers" class="tab-content hidden">
-      <div class="grid lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2"><div class="card animate-in"><div class="p-4 border-b border-[#2a3548]"><h3 class="font-semibold">Transfer Suggestions</h3></div><div class="p-4 max-h-[600px] overflow-y-auto scrollbar-thin" id="transferSuggestions"></div></div></div>
-        <div><div class="card p-4 mb-4 animate-in stagger-1"><h4 class="font-semibold mb-3">Summary</h4><div class="space-y-3"><div class="flex justify-between"><span class="text-[#8896ab] text-sm">Total Transfers</span><span class="font-bold text-[#00d4aa]" id="totalTransfers">0</span></div><div class="flex justify-between"><span class="text-[#8896ab] text-sm">Items Involved</span><span class="font-bold" id="itemsToTransfer">0</span></div><div class="flex justify-between"><span class="text-[#8896ab] text-sm">Total Units</span><span class="font-bold" id="totalUnits">0</span></div></div></div></div>
-      </div>
-    </div>
-
-    <!-- Smart Overview Tab -->
-    <div id="tab-smart" class="tab-content hidden">
-        <div class="text-center mb-8 animate-in"><h2 class="text-3xl font-bold mb-2">Inventory Health Check</h2><p class="text-[#8896ab]">A simple report card for your stores</p></div>
-        <div class="grid lg:grid-cols-3 gap-6 mb-8">
-            <div class="card p-6 flex flex-col items-center justify-center animate-in stagger-1">
-                <div class="health-circle mb-4"><div class="health-bg"></div><div class="health-bar" id="healthBar"></div><div class="z-10 text-center"><span id="healthScore">0%</span></div></div>
-                <h3 class="text-xl font-bold" id="healthTitle">Calculating...</h3><p class="text-sm text-[#8896ab]" id="healthDesc">Analyze data to see score</p>
+    <div class="max-w-full mx-auto p-4 bg-white shadow-2xl min-h-screen">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 bg-slate-900 p-4 text-white rounded border-b-4 border-yellow-500">
+            <div>
+                <h1 class="text-2xl font-black italic tracking-tighter uppercase">Subham Grand</h1>
+                <p class="text-yellow-400 font-bold uppercase tracking-widest text-[9px]">Logistics & Smart Analytics Dashboard</p>
             </div>
-            <div class="card p-6 animate-in stagger-2">
-                <h3 class="font-semibold mb-4">Stock Status Levels</h3>
-                <div class="space-y-4">
-                    <div><div class="flex justify-between text-sm mb-1"><span>Good (Equal)</span><span id="smartEqualPct">0%</span></div><div style="height:24px;background:#1f2937;border-radius:12px;overflow:hidden;"><div id="barEqual" style="height:100%;width:0%;background:#3b82f6;"></div></div></div>
-                    <div><div class="flex justify-between text-sm mb-1"><span>Extra Stock</span><span id="smartExcessPct">0%</span></div><div style="height:24px;background:#1f2937;border-radius:12px;overflow:hidden;"><div id="barExcess" style="height:100%;width:0%;background:#10b981;"></div></div></div>
-                    <div><div class="flex justify-between text-sm mb-1"><span>Low Stock</span><span id="smartDeficitPct">0%</span></div><div style="height:24px;background:#1f2937;border-radius:12px;overflow:hidden;"><div id="barDeficit" style="height:100%;width:0%;background:#f59e0b;"></div></div></div>
-                    <div><div class="flex justify-between text-sm mb-1"><span>Empty (Critical)</span><span id="smartCriticalPct">0%</span></div><div style="height:24px;background:#1f2937;border-radius:12px;overflow:hidden;"><div id="barCritical" style="height:100%;width:0%;background:#ef4444;"></div></div></div>
+            <div class="flex gap-2">
+                <button onclick="toggleSmartChart()" class="bg-indigo-600 px-4 py-2 rounded font-bold hover:bg-indigo-500 transition-all border-b-2 border-indigo-900 uppercase">📊 Smart Chart</button>
+                <input type="file" id="uploadInput" class="hidden" accept=".xlsx, .xls" onchange="handleFileUpload(event)">
+                <button onclick="document.getElementById('uploadInput').click()" class="bg-green-600 px-4 py-2 rounded font-bold hover:bg-green-700">Sync Inventory</button>
+            </div>
+        </div>
+
+        <div id="smartChartSection" class="hidden mb-8 bg-slate-50 p-6 rounded-xl border-2 border-slate-200 shadow-inner">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-black text-slate-800 uppercase italic">Network Performance Visualizer</h3>
+                <select id="chartCategorySelect" onchange="renderSmartCharts()" class="p-2 border rounded font-bold text-slate-700 bg-white">
+                    </select>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2 bg-white p-4 rounded shadow border h-80">
+                    <canvas id="mainStockChart"></canvas>
                 </div>
-            </div>
-            <div class="card p-6 animate-in stagger-2">
-                <h3 class="font-semibold mb-4">The Simple Math</h3>
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center border-b border-[#2a3548] pb-2"><span class="text-[#8896ab]">Total Items Needed:</span><span class="font-bold text-lg" id="smartTotalNeed">0</span></div>
-                    <div class="flex justify-between items-center border-b border-[#2a3548] pb-2"><span class="text-[#8896ab]">Total Items in Stores:</span><span class="font-bold text-lg" id="smartTotalHave">0</span></div>
-                    <div class="flex justify-between items-center"><span class="text-[#8896ab]">Difference:</span><span class="font-bold text-lg" id="smartDiff">0</span></div>
+                <div class="bg-white p-4 rounded shadow border h-80">
+                    <canvas id="actionPieChart"></canvas>
                 </div>
             </div>
         </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 bg-slate-100 p-4 rounded border-2 border-slate-200">
+            <div class="flex flex-col"><label class="text-[9px] font-bold uppercase mb-1">Add Name</label>
+                <input type="text" id="newName" placeholder="Store or Category" class="p-2 border rounded font-bold"></div>
+            <div class="flex flex-col"><label class="text-[9px] font-bold uppercase mb-1">Target Base</label>
+                <input type="number" id="newBase" placeholder="0" class="p-2 border rounded font-bold"></div>
+            <div class="flex flex-col"><label class="text-[9px] font-bold uppercase mb-1">Actions</label>
+                <div class="flex gap-1"><button onclick="addNewCategory()" class="bg-slate-800 text-white flex-1 py-2 rounded font-black text-[9px]">ADD CAT</button>
+                <button onclick="addNewBranch()" class="bg-slate-800 text-white flex-1 py-2 rounded font-black text-[9px]">ADD STORE</button></div></div>
+            <div class="flex flex-col"><label class="text-[9px] font-bold uppercase mb-1">Edit</label>
+                <button onclick="toggleBaseEdit()" id="editBtn" class="bg-yellow-500 text-slate-900 py-2 rounded font-black text-[9px] uppercase">Enable Base Edit</button></div>
+        </div>
+
+        <div class="overflow-x-auto shadow-xl border border-black">
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="yellow-header">
+                        <th class="p-2 border border-black text-left">Category</th>
+                        <th class="p-2 border border-black">Store (Click for Detail)</th>
+                        <th class="p-2 border border-black bg-blue-50">Base</th>
+                        <th class="p-2 border border-black bg-yellow-50">Present</th>
+                        <th class="p-2 border border-black">Gap</th>
+                        <th class="p-2 border border-black bg-slate-800 text-white">Instruction</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody" class="font-medium text-center"></tbody>
+            </table>
+        </div>
     </div>
-  </main>
 
-  <div id="toast" class="fixed bottom-6 right-6 bg-[#1a2332] border border-[#2a3548] px-4 py-3 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 z-50"><p id="toastMessage" class="text-sm"></p></div>
+    <div id="actionModal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl overflow-hidden border-t-8 border-yellow-500">
+            <div class="p-4 border-b bg-slate-50 flex justify-between items-center">
+                <h2 id="modalStoreName" class="text-xl font-black text-slate-900 uppercase"></h2>
+                <button onclick="closeModal()" class="text-3xl text-gray-400">&times;</button>
+            </div>
+            <div id="modalActionBody" class="p-6 overflow-y-auto max-h-[70vh] space-y-3"></div>
+        </div>
+    </div>
 
-  <script>
-    // === DATA ===
-    let baseStock = [];
-    let stores = [];
-    let storeStock = [];
-    let analysisData = null;
-    
-    // PRE-SET SERVER URL
-    let SERVER_URL = "https://script.google.com/macros/s/AKfycby62hN4I746DYlO4ikWI7ma9aU3xoLrmv2owREm43sCIW-keZ1orkdfemihNEpNVX3H/exec";
+    <script>
+        let stores = ["SG HYD", "SG", "SGRJY", "SGTNL", "SIRI ELR", "ST", "TUNI", "SIRICPT", "VS"];
+        let inventoryData = [
+            { name: "Silk Work (501-1000)", base: [185, 370, 185, 295, 245, 295, 345, 50, 295], present: [180, 300, 200, 250, 300, 280, 400, 40, 280] },
+            { name: "BNS Handloom (501-1000)", base: [450, 1000, 450, 800, 700, 700, 800, 400, 800], present: [400, 900, 500, 750, 800, 680, 850, 380, 780] },
+            { name: "Pattu (1001-2000)", base: [125, 150, 125, 200, 100, 175, 250, 100, 250], present: [120, 160, 110, 190, 120, 180, 240, 90, 260] },
+            { name: "Handloom Cotton", base: [150, 300, 150, 300, 175, 100, 100, 150, 300], present: [140, 320, 160, 290, 180, 110, 90, 160, 280] }
+        ];
 
-    document.addEventListener('DOMContentLoaded', () => { 
-        initUploads(); 
-        initDragDrop(); 
-        updateBaseStockTable(); // Initialize empty state
-        updateStoresTable(); // Initialize empty state
-    });
+        let baseEditMode = false;
+        let mainChart, actionChart;
 
-    // === TAB LOGIC ===
-    function switchTab(tabName) {
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.getElementById('tab-' + tabName).classList.remove('hidden');
-      document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-      
-      if (tabName === 'analysis') generateAnalysis();
-      if (tabName === 'transfers') generateTransferSuggestions();
-      if (tabName === 'smart') generateSmartView();
-    }
-
-    function showToast(message, type = 'success') {
-      const toast = document.getElementById('toast'); const toastMessage = document.getElementById('toastMessage');
-      toastMessage.textContent = message; toast.style.borderColor = type === 'success' ? '#00d4aa' : '#ef4444';
-      toast.classList.remove('translate-y-20', 'opacity-0'); setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
-    }
-
-    function updateSyncStatus(connected) {
-        const badge = document.getElementById('syncStatus');
-        if(connected) {
-            badge.className = "sync-badge sync-connected";
-            badge.textContent = "Connected";
-        } else {
-            badge.className = "sync-badge sync-offline";
-            badge.textContent = "Offline";
-        }
-    }
-
-    // === SERVER LOGIC ===
-    async function connectServer() {
-        const url = document.getElementById('serverUrl').value.trim();
-        if(!url) { showToast('Please enter URL', 'error'); return; }
-        
-        SERVER_URL = url; // Update local variable
-        showToast('Connecting...');
-        
-        try {
-            const response = await fetch(SERVER_URL);
-            const data = await response.json();
-            
-            // Map data from server format (case-insensitive mapping handled in getCol usually, but here we handle direct object keys)
-            if(data.baseStock) baseStock = data.baseStock.map(r => ({ 
-                sku: r.sku || r.SKU, 
-                name: r.name || r.Name, 
-                baseQty: parseInt(r.baseqty || r.baseQty || r.BaseQty) 
-            }));
-            if(data.stores) stores = data.stores.map(r => ({ id: r.id || r.ID, name: r.name || r.Name }));
-            if(data.storeStock) storeStock = data.storeStock.map(r => ({ 
-                storeId: r.storeid || r.storeId || r.StoreId, 
-                sku: r.sku || r.SKU, 
-                qty: parseInt(r.qty || r.Qty) 
-            }));
-            
-            updateBaseStockTable();
-            updateStoresTable();
-            updateSyncStatus(true);
-            showToast('Data loaded from Cloud');
-        } catch (err) {
-            console.error(err);
-            updateSyncStatus(false);
-            showToast('Connection failed. Check URL.', 'error');
-        }
-    }
-
-    async function saveToServer() {
-        if(!SERVER_URL) { showToast('Connect to server first', 'error'); return; }
-        
-        showToast('Saving to Cloud...');
-        try {
-            // Google Apps Script Web Apps often require JSON.stringify for the payload
-            await fetch(SERVER_URL, {
-                method: 'POST',
-                mode: 'no-cors', // Required for standard GAS Web Apps
-                headers: { 'Content-Type': 'text/plain' }, // Use text/plain to avoid CORS preflight issues
-                body: JSON.stringify({ baseStock, stores, storeStock })
-            });
-            
-            showToast('Save request sent!');
-        } catch (err) {
-            console.error(err);
-            showToast('Save failed', 'error');
-        }
-    }
-
-    // === MANUAL ENTRY ===
-    function addBaseStock() {
-      const sku = document.getElementById('itemSku').value.trim(); const name = document.getElementById('itemName').value.trim(); const qty = parseInt(document.getElementById('baseQty').value);
-      if (!sku || !name || isNaN(qty) || qty < 0) { showToast('Fill all fields validly', 'error'); return; }
-      if (baseStock.find(item => item.sku === sku)) { showToast('SKU exists', 'error'); return; }
-      baseStock.push({ sku, name, baseQty: qty }); updateBaseStockTable();
-      document.getElementById('itemSku').value = ''; document.getElementById('itemName').value = ''; document.getElementById('baseQty').value = '';
-      showToast('Item added');
-    }
-
-    function addStore() {
-      const id = document.getElementById('storeId').value.trim(); const name = document.getElementById('storeName').value.trim();
-      if (!id || !name) { showToast('Fill ID and Name', 'error'); return; }
-      if (stores.find(s => s.id === id)) { showToast('Store ID exists', 'error'); return; }
-      stores.push({ id, name }); updateStoresTable();
-      document.getElementById('storeId').value = ''; document.getElementById('storeName').value = '';
-      showToast('Store added');
-    }
-
-    function updateBaseStockTable() {
-      const tbody = document.getElementById('baseStockBody'); const countEl = document.getElementById('baseStockCount');
-      countEl.textContent = baseStock.length + ' items';
-      if (baseStock.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-[#5a6a80] py-8">No items</td></tr>'; return; }
-      tbody.innerHTML = baseStock.map(item => `<tr><td class="font-mono text-sm">${escapeHtml(item.sku)}</td><td>${escapeHtml(item.name)}</td><td>${item.baseQty}</td><td><button onclick="deleteBaseStock('${escapeHtml(item.sku)}')" class="text-red-400 text-sm hover:underline">Remove</button></td></tr>`).join('');
-    }
-
-    function updateStoresTable() {
-      const tbody = document.getElementById('storesBody'); const countEl = document.getElementById('storeCount');
-      countEl.textContent = stores.length + ' stores';
-      if (stores.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-[#5a6a80] py-8">No stores</td></tr>'; return; }
-      tbody.innerHTML = stores.map(store => `<tr><td class="font-mono text-sm text-[#00d4aa]">${escapeHtml(store.id)}</td><td class="font-medium">${escapeHtml(store.name)}</td><td>${storeStock.filter(s => s.storeId === store.id).length}</td><td><button onclick="deleteStore('${escapeHtml(store.id)}')" class="text-red-400 text-sm hover:underline">Remove</button></td></tr>`).join('');
-    }
-
-    function deleteBaseStock(sku) { baseStock = baseStock.filter(i => i.sku !== sku); updateBaseStockTable(); }
-    function deleteStore(id) { stores = stores.filter(s => s.id !== id); storeStock = storeStock.filter(s => s.storeId !== id); updateStoresTable(); }
-
-    // === UPLOAD LOGIC ===
-    function initUploads() {
-        document.getElementById('baseStockFile').addEventListener('change', (e) => { const file = e.target.files[0]; if(file) processFile(file, 'base'); e.target.value = ''; });
-        document.getElementById('storeStockFile').addEventListener('change', (e) => { const file = e.target.files[0]; if(file) processFile(file, 'store'); e.target.value = ''; });
-    }
-
-    function initDragDrop() {
-        ['baseUploadZone', 'storeUploadZone'].forEach(id => {
-            const zone = document.getElementById(id); if(!zone) return;
-            ['dragenter', 'dragover'].forEach(eventName => { zone.addEventListener(eventName, (e) => { e.preventDefault(); zone.classList.add('dragover'); }, false); });
-            ['dragleave', 'drop'].forEach(eventName => { zone.addEventListener(eventName, (e) => { e.preventDefault(); zone.classList.remove('dragover'); }, false); });
-            zone.addEventListener('drop', (e) => { e.preventDefault(); const file = e.dataTransfer.files[0]; if (!file) return; const type = (id === 'baseUploadZone') ? 'base' : 'store'; processFile(file, type); }, false);
-        });
-    }
-
-    function processFile(file, type) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-                if (json.length <= 1) { showToast('File is empty or has only headers', 'error'); return; }
-                const headers = json[0].map(h => String(h).trim().toLowerCase());
-                const rows = json.slice(1).map(row => { let obj = {}; headers.forEach((h, i) => obj[h] = row[i]); return obj; });
-                if(type === 'base') { importBaseStock(rows, headers); if (baseStock.length > 0) setTimeout(() => switchTab('upload'), 500); } else { importStoreStock(rows, headers); }
-            } catch(err) { console.error(err); showToast('Error reading file', 'error'); }
-        };
-        reader.readAsArrayBuffer(file);
-    }
-
-    // === SMART IMPORT LOGIC ===
-    function getCol(row, keys, indexFallback) {
-        for(let k of keys) { if(row.hasOwnProperty(k)) return row[k]; }
-        if(indexFallback !== undefined) return row[Object.keys(row)[indexFallback]];
-        return undefined;
-    }
-
-    function importBaseStock(rows, headers) {
-        let added = 0;
-        rows.forEach(row => {
-            let sku = String(getCol(row, ['sku', 'item code', 'style', 'id'], 0) || '').trim();
-            let name = String(getCol(row, ['name', 'item name', 'description', 'item'], 1) || '').trim();
-            let qty = parseInt(getCol(row, ['base qty', 'base', 'quantity', 'qty', 'target'], 2));
-
-            if (sku && name && !isNaN(qty) && qty >= 0) {
-                if (!baseStock.find(i => i.sku === sku)) { baseStock.push({ sku, name, baseQty: qty }); added++; }
+        function getSmartLogic(cIdx, sIdx) {
+            const cat = inventoryData[cIdx];
+            const gap = cat.present[sIdx] - cat.base[sIdx];
+            if (gap < 0) {
+                let best = cat.present.map((p, i) => ({i, s: p - cat.base[i]})).filter(c => c.s > 5).sort((a,b) => b.s - a.s)[0];
+                return best ? {type:'TRANSFER', qty: Math.min(Math.abs(gap), best.s), from: stores[best.i]} : {type:'PURCHASE', qty: Math.abs(gap)};
             }
-        });
-        updateBaseStockTable(); showToast(`Imported ${added} base items`);
-    }
+            return {type:'OK'};
+        }
 
-    function importStoreStock(rows, headers) {
-        let added = 0; let newStores = 0;
-        rows.forEach(row => {
-            let storeId = String(getCol(row, ['store id', 'storeid', 'store', 'location'], 0) || '').trim();
-            let sku = String(getCol(row, ['sku', 'item', 'style'], 1) || '').trim();
-            let qty = parseInt(getCol(row, ['qty', 'quantity', 'stock', 'current', 'count'], 2));
+        function renderTable() {
+            const body = document.getElementById('tableBody');
+            const select = document.getElementById('chartCategorySelect');
+            let rows = "";
+            let selectHtml = "";
+            
+            inventoryData.forEach((cat, cIdx) => {
+                selectHtml += `<option value="${cIdx}">${cat.name}</option>`;
+                cat.base.forEach((baseVal, sIdx) => {
+                    const present = cat.present[sIdx];
+                    const gap = present - baseVal;
+                    const action = getSmartLogic(cIdx, sIdx);
+                    
+                    let baseDisp = baseEditMode ? `<input type="number" value="${baseVal}" onchange="updateBase(${cIdx},${sIdx},this.value)" class="w-12 border">` : baseVal;
+                    let actionHtml = action.type === 'PURCHASE' ? `<span class="badge badge-purchase">BUY ${action.qty}</span>` : (action.type === 'TRANSFER' ? `<span class="badge badge-transfer">TAKE ${action.qty} FROM ${action.from}</span>` : 'OK');
 
-            if (storeId && !stores.find(s => s.id === storeId)) { const foundStore = stores.find(s => s.name.toLowerCase() === storeId.toLowerCase()); if (foundStore) storeId = foundStore.id; }
-            if (storeId && sku && !isNaN(qty)) {
-                if (!stores.find(s => s.id === storeId)) { stores.push({ id: storeId, name: storeId }); newStores++; }
-                const existing = storeStock.find(s => s.storeId === storeId && s.sku === sku);
-                if (existing) { existing.qty = qty; } else { storeStock.push({ storeId, sku, qty }); added++; }
-            }
-        });
-        updateStoresTable(); 
-        if (added > 0 && baseStock.length > 0) { showToast('Stock imported. Generating analysis...'); setTimeout(() => switchTab('analysis'), 500); }
-        else if (baseStock.length === 0) { showToast('Please upload Base Stock first', 'error'); } else { showToast(`Processed file.`); }
-    }
-
-    function generateAnalysis() {
-      if (baseStock.length === 0 || stores.length === 0 || storeStock.length === 0) { document.getElementById('colorChartBody').innerHTML = '<tr><td colspan="20" class="text-center text-[#5a6a80] py-8">Upload data to see analysis</td></tr>'; return; }
-      analysisData = { items: [], summary: { excess: 0, deficit: 0, equal: 0, critical: 0 } };
-      baseStock.forEach(item => {
-        const itemAnalysis = { sku: item.sku, name: item.name, baseQty: item.baseQty, stores: [] };
-        stores.forEach(store => {
-          const stock = storeStock.find(s => s.storeId === store.id && s.sku === item.sku);
-          const currentQty = stock ? stock.qty : 0; const variance = currentQty - item.baseQty;
-          let status;
-          if (currentQty === 0) { status = 'critical'; analysisData.summary.critical++; }
-          else if (variance > 0) { status = 'excess'; analysisData.summary.excess++; }
-          else if (variance < 0) { status = 'deficit'; analysisData.summary.deficit++; }
-          else { status = 'equal'; analysisData.summary.equal++; }
-          itemAnalysis.stores.push({ storeId: store.id, storeName: store.name, currentQty, variance, status });
-        });
-        analysisData.items.push(itemAnalysis);
-      });
-      renderColorChart(); updateSummary();
-      document.getElementById('exportBtn').disabled = false;
-    }
-
-    function renderColorChart() {
-        const thead = document.getElementById('colorChartHead'); const tbody = document.getElementById('colorChartBody');
-        let headerHtml = `<tr><th class="sticky-col sticky-col-1">SKU</th><th class="sticky-col sticky-col-2">Item</th><th>Base</th>`;
-        stores.forEach(store => { headerHtml += `<th>${escapeHtml(store.id)}</th>`; });
-        headerHtml += '</tr>'; thead.innerHTML = headerHtml;
-        tbody.innerHTML = analysisData.items.map(item => {
-            let row = `<tr><td class="sticky-col sticky-col-1 font-mono text-sm">${escapeHtml(item.sku)}</td><td class="sticky-col sticky-col-2">${escapeHtml(item.name)}</td><td class="font-bold">${item.baseQty}</td>`;
-            item.stores.forEach(store => {
-                const cls = `cell-${store.status}`; const varStr = store.variance > 0 ? `+${store.variance}` : store.variance;
-                row += `<td class="${cls}"><div class="flex flex-col"><span>${store.currentQty}</span><span class="text-xs opacity-80">(${varStr})</span></div></td>`;
-            });
-            row += '</tr>'; return row;
-        }).join('');
-    }
-
-    function updateSummary() {
-        if(!analysisData) return;
-        document.getElementById('excessCount').textContent = analysisData.summary.excess;
-        document.getElementById('deficitCount').textContent = analysisData.summary.deficit;
-        document.getElementById('equalCount').textContent = analysisData.summary.equal;
-        document.getElementById('criticalCount').textContent = analysisData.summary.critical;
-    }
-
-    function generateTransferSuggestions() {
-        if (!analysisData) generateAnalysis(); if (!analysisData || analysisData.items.length === 0) return;
-        const transfers = []; let totalUnits = 0;
-        analysisData.items.forEach(item => {
-            const excessStores = item.stores.filter(s => s.variance > 0).sort((a, b) => b.variance - a.variance);
-            const deficitStores = item.stores.filter(s => s.variance < 0).sort((a, b) => a.variance - b.variance);
-            if (excessStores.length > 0 && deficitStores.length > 0) {
-                excessStores.forEach(excessStore => {
-                    let available = excessStore.variance;
-                    deficitStores.forEach(deficitStore => {
-                        if (available <= 0) return; const needed = Math.abs(deficitStore.variance); const qty = Math.min(available, needed);
-                        if (qty > 0) { transfers.push({ item: item.name, sku: item.sku, from: excessStore.storeName, to: deficitStore.storeName, qty: qty }); totalUnits += qty; available -= qty; }
-                    });
-                });
-            }
-        });
-        renderTransfers(transfers, totalUnits);
-    }
-
-    function renderTransfers(transfers, totalUnits) {
-        document.getElementById('totalTransfers').textContent = transfers.length;
-        document.getElementById('itemsToTransfer').textContent = [...new Set(transfers.map(t=>t.sku))].length;
-        document.getElementById('totalUnits').textContent = totalUnits;
-        const container = document.getElementById('transferSuggestions');
-        if (transfers.length === 0) { container.innerHTML = '<div class="text-center text-[#5a6a80] py-8">Inventory is balanced</div>'; return; }
-        const grouped = {}; transfers.forEach(t => { if(!grouped[t.sku]) grouped[t.sku] = { name: t.item, list: [] }; grouped[t.sku].list.push(t); });
-        container.innerHTML = Object.entries(grouped).map(([sku, data]) => `<div class="mb-6"><h4 class="font-semibold mb-2">${escapeHtml(data.name)}</h4>${data.list.map(t => `<div class="p-3 mb-2 rounded-lg" style="background: linear-gradient(135deg, rgba(0, 212, 170, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%); border: 1px solid rgba(0, 212, 170, 0.2);"><p class="text-sm"><span class="text-green-400">${escapeHtml(t.from)}</span> → <span class="text-orange-400">${escapeHtml(t.to)}</span> <span class="font-bold text-[#00d4aa] ml-2">${t.qty} units</span></p></div>`).join('')}</div>`).join('');
-    }
-
-    function generateSmartView() {
-        if (!analysisData) generateAnalysis(); if (!analysisData) return;
-        const totalSlots = baseStock.length * stores.length; if (totalSlots === 0) return;
-        const critPct = (analysisData.summary.critical / totalSlots) * 100;
-        const defPct = (analysisData.summary.deficit / totalSlots) * 100;
-        const score = Math.max(0, Math.round(100 - (critPct + (defPct/2))));
-        document.getElementById('healthScore').textContent = score + '%';
-        const color = score > 80 ? '#10b981' : (score > 50 ? '#f59e0b' : '#ef4444');
-        document.getElementById('healthBar').style.borderColor = color;
-        document.getElementById('healthScore').style.color = color;
-        const title = score > 80 ? 'Great Job!' : (score > 50 ? 'Needs Work' : 'Critical');
-        document.getElementById('healthTitle').textContent = title; document.getElementById('healthDesc').textContent = `Based on ${totalSlots} inventory slots.`;
-        const eqPct = Math.round((analysisData.summary.equal / totalSlots) * 100);
-        const exPct = Math.round((analysisData.summary.excess / totalSlots) * 100);
-        document.getElementById('smartEqualPct').textContent = eqPct + '%'; document.getElementById('barEqual').style.width = eqPct + '%';
-        document.getElementById('smartExcessPct').textContent = exPct + '%'; document.getElementById('barExcess').style.width = exPct + '%';
-        document.getElementById('smartDeficitPct').textContent = Math.round(defPct) + '%'; document.getElementById('barDeficit').style.width = defPct + '%';
-        document.getElementById('smartCriticalPct').textContent = Math.round(critPct) + '%'; document.getElementById('barCritical').style.width = critPct + '%';
-        let totalNeed = 0; let totalHave = 0;
-        baseStock.forEach(item => { totalNeed += (item.baseQty * stores.length); });
-        storeStock.forEach(s => totalHave += s.qty);
-        document.getElementById('smartTotalNeed').textContent = totalNeed.toLocaleString();
-        document.getElementById('smartTotalHave').textContent = totalHave.toLocaleString();
-        const diff = totalHave - totalNeed;
-        const diffEl = document.getElementById('smartDiff');
-        diffEl.textContent = (diff > 0 ? '+' : '') + diff.toLocaleString();
-        diffEl.style.color = diff >= 0 ? '#10b981' : '#ef4444';
-    }
-
-    async function exportToExcel() {
-        if (!analysisData || analysisData.items.length === 0) { showToast('No data to export', 'error'); return; }
-        try {
-            const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Stock Color Chart');
-            const headerStyle = { font: { bold: true, color: { argb: 'FFFFFFFF' } }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F2937' } }, alignment: { vertical: 'middle', horizontal: 'center' } };
-            const styles = {
-                excess:   { font: { color: { argb: 'FF000000' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD1FAE5' } } },
-                deficit:  { font: { color: { argb: 'FF000000' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } } },
-                critical: { font: { color: { argb: 'FF000000' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } } },
-                equal:    { font: { color: { argb: 'FF000000' }, bold: true }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDBEAFE' } } }
-            };
-            const headers = ['SKU', 'Item Name', 'Base Qty'];
-            stores.forEach(s => headers.push(`${s.name} (Stock)`, `${s.name} (Var)`, `${s.name} (Status)`));
-            worksheet.addRow(headers);
-            worksheet.getRow(1).eachCell((cell) => Object.assign(cell, headerStyle));
-            analysisData.items.forEach(item => {
-                const rowData = [item.sku, item.name, item.baseQty];
-                item.stores.forEach(s => rowData.push(s.currentQty, s.variance, s.status.toUpperCase()));
-                const row = worksheet.addRow(rowData);
-                let colStart = 4;
-                item.stores.forEach((store) => {
-                    const style = styles[store.status] || {};
-                    Object.assign(row.getCell(colStart), style);
-                    Object.assign(row.getCell(colStart + 1), style);
-                    Object.assign(row.getCell(colStart + 2), style);
-                    colStart += 3;
+                    rows += `<tr class="border-b border-black">
+                        <td class="p-2 border-r border-black font-bold text-left uppercase">${cat.name}</td>
+                        <td onclick="openActionModal(${sIdx})" class="table-cell font-black cursor-pointer text-indigo-700 underline">${stores[sIdx]}</td>
+                        <td class="table-cell font-bold">${baseDisp}</td>
+                        <td class="table-cell font-bold bg-yellow-50">${present}</td>
+                        <td class="table-cell ${gap < 0 ? 'shortage' : 'surplus'}">${gap}</td>
+                        <td class="table-cell">${actionHtml}</td>
+                    </tr>`;
                 });
             });
-            worksheet.columns.forEach((col, i) => { col.width = i < 3 ? 15 : 18; });
-            const buffer = await workbook.xlsx.writeBuffer();
-            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `Stock_Analysis.xlsx`; a.click();
-            window.URL.revokeObjectURL(url);
-            showToast('Excel exported!');
-        } catch (err) { console.error(err); showToast('Export failed', 'error'); }
-    }
+            body.innerHTML = rows;
+            select.innerHTML = selectHtml;
+        }
 
-    function escapeHtml(text) {
-      if (typeof text !== 'string') return text;
-      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-  </script>
+        function toggleSmartChart() {
+            const sec = document.getElementById('smartChartSection');
+            sec.classList.toggle('hidden');
+            if(!sec.classList.contains('hidden')) renderSmartCharts();
+        }
+
+        function renderSmartCharts() {
+            const cIdx = document.getElementById('chartCategorySelect').value;
+            const cat = inventoryData[cIdx];
+            
+            if(mainChart) mainChart.destroy();
+            if(actionChart) actionChart.destroy();
+
+            const mCtx = document.getElementById('mainStockChart').getContext('2d');
+            const aCtx = document.getElementById('actionPieChart').getContext('2d');
+
+            mainChart = new Chart(mCtx, {
+                type: 'bar',
+                data: {
+                    labels: stores,
+                    datasets: [
+                        { label: 'Target Base', data: cat.base, backgroundColor: '#1e293b' },
+                        { label: 'Present Stock', data: cat.present, backgroundColor: '#facc15' }
+                    ]
+                },
+                options: { maintainAspectRatio: false, plugins: { title: { display: true, text: 'Store Stock Comparison' } } }
+            });
+
+            const actionCounts = { transfer: 0, purchase: 0, ok: 0 };
+            cat.base.forEach((_, sIdx) => {
+                const a = getSmartLogic(cIdx, sIdx);
+                if(a.type === 'TRANSFER') actionCounts.transfer++;
+                else if(a.type === 'PURCHASE') actionCounts.purchase++;
+                else actionCounts.ok++;
+            });
+
+            actionChart = new Chart(aCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Transfers', 'Purchases', 'Optimal'],
+                    datasets: [{ data: [actionCounts.transfer, actionCounts.purchase, actionCounts.ok], backgroundColor: ['#3b82f6', '#ef4444', '#10b981'] }]
+                },
+                options: { maintainAspectRatio: false, plugins: { title: { display: true, text: 'Network Action Breakdown' } } }
+            });
+        }
+
+        function openActionModal(sIdx) {
+            document.getElementById('modalStoreName').innerText = stores[sIdx];
+            let html = "";
+            inventoryData.forEach((cat, cIdx) => {
+                const a = getSmartLogic(cIdx, sIdx);
+                html += `<div class="p-3 border rounded ${a.type==='PURCHASE'?'bg-red-50':'bg-blue-50'}">
+                    <span class="font-black text-[9px] uppercase">${cat.name}</span>
+                    <p class="font-bold">Base: ${cat.base[sIdx]} | Present: ${cat.present[sIdx]}</p>
+                    <p class="text-indigo-900 font-black uppercase italic">${a.type==='PURCHASE'?'🛒 BUY '+a.qty : (a.type==='TRANSFER'?'🚚 TAKE '+a.qty+' FROM '+a.from : '✅ OK')}</p>
+                </div>`;
+            });
+            document.getElementById('modalActionBody').innerHTML = html;
+            document.getElementById('actionModal').classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('actionModal').classList.add('hidden'); }
+        function toggleBaseEdit() { baseEditMode = !baseEditMode; renderTable(); }
+        function addNewBranch() { const n = document.getElementById('newName').value; if(n){ stores.push(n); inventoryData.forEach(c=>{c.base.push(0);c.present.push(0)}); renderTable(); } }
+        function addNewCategory() { const n = document.getElementById('newName').value; const b = parseInt(document.getElementById('newBase').value)||0; if(n){ inventoryData.push({name:n, base:stores.map(()=>b), present:stores.map(()=>0)}); renderTable(); } }
+        function updateBase(c,s,v) { inventoryData[c].base[s] = parseInt(v)||0; renderTable(); }
+        function handleFileUpload() { inventoryData.forEach(c=>c.present=c.base.map(b=>Math.floor(b*(Math.random()*1.4)))); renderTable(); }
+
+        window.onload = renderTable;
+    </script>
 </body>
 </html>
