@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subham Grand | Precision Logic</title>
+    <title>Subham Grand | Matrix Logistics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
@@ -11,9 +11,9 @@
     <style>
         :root { --bg: #ffffff; --text: #0f172a; --card: #f8fafc; --accent: #facc15; --border: #e2e8f0; }
         .dark-theme { --bg: #020617; --text: #f8fafc; --card: #0f172a; --accent: #0ea5e9; --border: #1e293b; }
-        body { background-color: var(--bg); color: var(--text); transition: background 0.2s; overflow-x: hidden; }
+        body { background-color: var(--bg); color: var(--text); transition: 0.2s; }
         .glass-panel { background: var(--card); border: 1px solid var(--border); }
-        .table-header { background: var(--accent) !important; color: #000 !important; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+        .table-header { background: var(--accent) !important; color: #000 !important; font-weight: 900; text-transform: uppercase; }
         .num-highlight { background: rgba(128,128,128,0.1); padding: 2px 8px; border-radius: 4px; font-weight: 800; }
         .shortage { color: #ef4444; font-weight: 900; }
         .surplus { color: #22c55e; font-weight: 900; }
@@ -25,11 +25,11 @@
     <div class="flex flex-col lg:flex-row justify-between items-center mb-6 p-6 glass-panel rounded-2xl shadow-xl">
         <div class="mb-4 lg:mb-0">
             <h1 class="text-3xl font-black italic tracking-tighter uppercase">Subham <span class="text-yellow-500 dark:text-cyan-400">Grand</span></h1>
-            <p class="opacity-60 font-bold uppercase text-[9px] tracking-widest mt-1">100% Data Accuracy Verified</p>
+            <p class="opacity-60 font-bold uppercase text-[9px] tracking-widest mt-1">Matrix Reporting & Supply Intelligence</p>
         </div>
         <div class="flex flex-wrap gap-2 justify-center">
-            <button onclick="toggleTheme()" class="px-5 py-2 rounded-lg font-black bg-slate-800 text-white transition-all">🌓 THEME</button>
-            <button onclick="exportStyledExcel()" class="px-5 py-2 rounded-lg font-black bg-emerald-600 text-white shadow-lg">📥 EXCEL</button>
+            <button onclick="toggleTheme()" class="px-5 py-2 rounded-lg font-black bg-slate-800 text-white">🌓 THEME</button>
+            <button onclick="exportMatrixExcel()" class="px-5 py-2 rounded-lg font-black bg-emerald-600 text-white shadow-lg">📥 EXCEL MATRIX</button>
             <button onclick="toggleAnalytics()" class="px-5 py-2 rounded-lg font-black bg-indigo-600 text-white">📊 ANALYTICS</button>
             <button onclick="document.getElementById('uploadInput').click()" class="px-5 py-2 rounded-lg font-black bg-slate-300 text-slate-800">SYNC</button>
             <input type="file" id="uploadInput" class="hidden" onchange="handleFileUpload(event)">
@@ -38,21 +38,21 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
         <div class="p-4 glass-panel rounded-xl">
-            <h3 class="font-black uppercase text-[10px] mb-2 opacity-50">Branch Registry</h3>
+            <h3 class="font-black uppercase text-[10px] mb-2 opacity-50">Branch</h3>
             <div class="flex gap-2">
-                <input type="text" id="newBr" placeholder="New Branch Name" class="input-box w-full uppercase">
+                <input type="text" id="newBr" placeholder="Name" class="input-box w-full uppercase">
                 <button onclick="addBr()" class="bg-blue-600 text-white px-4 rounded font-black">+</button>
             </div>
         </div>
         <div class="p-4 glass-panel rounded-xl">
-            <h3 class="font-black uppercase text-[10px] mb-2 opacity-50">Category Registry</h3>
+            <h3 class="font-black uppercase text-[10px] mb-2 opacity-50">Category</h3>
             <div class="flex gap-2">
-                <input type="text" id="newCat" placeholder="New Category" class="input-box w-full uppercase">
+                <input type="text" id="newCat" placeholder="Name" class="input-box w-full uppercase">
                 <button onclick="addCat()" class="bg-blue-600 text-white px-4 rounded font-black">+</button>
             </div>
         </div>
         <div class="p-4 glass-panel rounded-xl">
-            <h3 class="font-black uppercase text-[10px] mb-2 opacity-50">Target Calibration</h3>
+            <h3 class="font-black uppercase text-[10px] mb-2 opacity-50">Target</h3>
             <div class="flex gap-1">
                 <select id="selCat" class="input-box text-[9px]"></select>
                 <select id="selBr" class="input-box text-[9px]"></select>
@@ -65,13 +65,13 @@
     <div id="chartSection" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div class="p-6 glass-panel rounded-2xl h-[400px]">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="font-black italic uppercase text-xs">Category Performance Data</h3>
-                <select id="chartFilter" onchange="refreshAllCharts()" class="bg-transparent border-b-2 font-bold text-[10px] outline-none"></select>
+                <h3 class="font-black italic uppercase text-xs">Performance Matrix</h3>
+                <select id="chartFilter" onchange="refreshCharts()" class="bg-transparent border-b-2 font-bold text-[10px] outline-none"></select>
             </div>
             <div class="relative h-full w-full"><canvas id="mainChart"></canvas></div>
         </div>
         <div class="p-6 glass-panel rounded-2xl h-[400px] flex flex-col items-center">
-            <h3 class="font-black uppercase text-xs mb-4">System Efficiency</h3>
+            <h3 class="font-black uppercase text-xs mb-4">Network Efficiency</h3>
             <div class="relative h-full w-full"><canvas id="pieChart"></canvas></div>
         </div>
     </div>
@@ -83,9 +83,9 @@
                     <th class="p-4 text-left">Category</th>
                     <th>Branch</th>
                     <th>Target</th>
-                    <th>Present</th>
+                    <th>Actual Stock</th>
                     <th>Gap</th>
-                    <th class="bg-slate-900 text-cyan-400">Smart Recommendation</th>
+                    <th class="bg-slate-900 text-cyan-400">Logic Suggestion</th>
                 </tr>
             </thead>
             <tbody id="tableBody" class="font-bold"></tbody>
@@ -99,7 +99,7 @@
                 <button onclick="closeModal()" class="text-4xl hover:rotate-90 transition-all">&times;</button>
             </div>
             <div id="modalBody" class="p-8 space-y-4 max-h-[50vh] overflow-y-auto"></div>
-            <div class="p-6 bg-slate-50 dark:bg-slate-900/50"><button onclick="closeModal()" class="w-full py-4 bg-slate-900 text-white rounded-xl font-black uppercase">Exit Report</button></div>
+            <div class="p-6 bg-slate-50 dark:bg-slate-900/50"><button onclick="closeModal()" class="w-full py-4 bg-slate-900 text-white rounded-xl font-black uppercase">Close</button></div>
         </div>
     </div>
 
@@ -123,20 +123,9 @@
             return {type:'OK'};
         }
 
-        function addBr() {
-            const n = document.getElementById('newBr').value.toUpperCase();
-            if(n) { stores.push(n); inventoryData.forEach(c=>{c.base.push(0); c.present.push(0)}); render(); document.getElementById('newBr').value="" }
-        }
-
-        function addCat() {
-            const n = document.getElementById('newCat').value.toUpperCase();
-            if(n) { inventoryData.push({name:n, base:Array(stores.length).fill(0), present:Array(stores.length).fill(0)}); render(); document.getElementById('newCat').value="" }
-        }
-
-        function setTarget() {
-            const ci = document.getElementById('selCat').value, si = document.getElementById('selBr').value, v = parseInt(document.getElementById('targetVal').value);
-            if(!isNaN(v)) { inventoryData[ci].base[si] = v; render(); }
-        }
+        function addBr() { const n = document.getElementById('newBr').value.toUpperCase(); if(n) { stores.push(n); inventoryData.forEach(c=>{c.base.push(0); c.present.push(0)}); render(); document.getElementById('newBr').value="" } }
+        function addCat() { const n = document.getElementById('newCat').value.toUpperCase(); if(n) { inventoryData.push({name:n, base:Array(stores.length).fill(0), present:Array(stores.length).fill(0)}); render(); document.getElementById('newCat').value="" } }
+        function setTarget() { const ci = document.getElementById('selCat').value, si = document.getElementById('selBr').value, v = parseInt(document.getElementById('targetVal').value); if(!isNaN(v)) { inventoryData[ci].base[si] = v; render(); } }
 
         function render() {
             const body = document.getElementById('tableBody'), sCat = document.getElementById('selCat'), sBr = document.getElementById('selBr'), cFilt = document.getElementById('chartFilter');
@@ -145,13 +134,13 @@
                 cOpts += `<option value="${ci}">${c.name}</option>`;
                 c.base.forEach((b, si) => {
                     const p = c.present[si], g = p - b, a = getLogic(ci, si);
-                    rows += `<tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all">
+                    rows += `<tr class="border-b border-slate-100 dark:border-slate-800">
                         <td class="p-3 text-left font-bold opacity-50">${c.name}</td>
-                        <td onclick="openModal(${si})" class="font-black text-blue-600 dark:text-cyan-400 cursor-pointer underline decoration-dotted">${stores[si]}</td>
+                        <td onclick="openModal(${si})" class="font-black text-blue-600 dark:text-cyan-400 cursor-pointer underline">${stores[si]}</td>
                         <td class="opacity-50">${b}</td>
                         <td><span class="num-highlight">${p}</span></td>
                         <td class="${g < 0 ? 'shortage' : 'surplus'}">${g > 0 ? '+' + g : g}</td>
-                        <td class="text-[9px] uppercase font-black">${a.type==='TRANSFER'?`🚚 MOVE ${a.qty} FROM ${a.from}`:a.type==='PURCHASE'?`🛒 BUY ${a.qty}`:'STABLE'}</td>
+                        <td class="text-[9px] uppercase font-black">${a.type==='TRANSFER'?`🚚 MOVE ${a.qty} FROM ${a.from}`:a.type==='PURCHASE'?`🛒 BUY ${a.qty}`:'OK'}</td>
                     </tr>`;
                 });
             });
@@ -159,43 +148,62 @@
             body.innerHTML = rows; sCat.innerHTML = cOpts; sBr.innerHTML = bOpts; cFilt.innerHTML = cOpts;
         }
 
-        function refreshAllCharts() {
-            const ci = document.getElementById('chartFilter').value || 0;
-            const c = inventoryData[ci];
-            const isD = document.body.classList.contains('dark-theme');
-            const mainCtx = document.getElementById('mainChart').getContext('2d');
-            const pieCtx = document.getElementById('pieChart').getContext('2d');
-
+        function refreshCharts() {
+            const ci = document.getElementById('chartFilter').value || 0, c = inventoryData[ci], isD = document.body.classList.contains('dark-theme');
             if(mChart) mChart.destroy(); if(pChart) pChart.destroy();
-
-            mChart = new Chart(mainCtx, {
-                data: {
-                    labels: stores,
-                    datasets: [
-                        { type: 'line', label: 'Target', data: c.base, borderColor: '#64748b', borderDash: [5,5], tension: 0.3 },
-                        { type: 'bar', label: 'Actual Stock', data: c.present, backgroundColor: isD ? '#0ea5e9' : '#facc15', borderRadius: 4 }
-                    ]
-                },
-                options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: 'rgba(128,128,128,0.1)' } } }, plugins: { legend: { labels: { color: isD?'#fff':'#000' } } } }
+            mChart = new Chart(document.getElementById('mainChart'), {
+                data: { labels: stores, datasets: [{ type:'line', label:'Target', data:c.base, borderColor:'#64748b', borderDash:[5,5] }, { type:'bar', label:'Stock', data:c.present, backgroundColor: isD?'#0ea5e9':'#facc15', borderRadius:4 }] },
+                options: { maintainAspectRatio:false, plugins: { legend: { labels: { color: isD?'#fff':'#000' } } } }
             });
-
             const stats = {t:0, p:0, o:0}; c.base.forEach((_,si)=>{ const a=getLogic(ci,si); if(a.type==='TRANSFER')stats.t++; else if(a.type==='PURCHASE')stats.p++; else stats.o++; });
-
-            pChart = new Chart(pieCtx, {
-                type: 'doughnut',
-                data: { labels: ['Transfers','Purchases','Optimal'], datasets: [{ data: [stats.t, stats.p, stats.o], backgroundColor: ['#3b82f6', '#ef4444', '#10b981'], borderWidth: 0 }] },
-                options: { maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position:'bottom', labels: { color: isD?'#fff':'#000' } } } }
+            pChart = new Chart(document.getElementById('pieChart'), {
+                type:'doughnut', data: { labels:['Move','Buy','Optimal'], datasets:[{data:[stats.t, stats.p, stats.o], backgroundColor:['#3b82f6','#ef4444','#10b981']}] },
+                options: { maintainAspectRatio:false, cutout:'75%', plugins: { legend: { position:'bottom', labels: { color: isD?'#fff':'#000' } } } }
             });
         }
 
-        function toggleAnalytics() { 
-            const sec = document.getElementById('chartSection'); 
-            sec.classList.toggle('hidden'); 
-            if(!sec.classList.contains('hidden')) { setTimeout(refreshAllCharts, 50); }
+        async function exportMatrixExcel() {
+            const wb = new ExcelJS.Workbook();
+            const ws = wb.addWorksheet('Logistics_Matrix');
+            
+            // Setting Headers
+            const headers = ['BRANCH NAME', 'PRODUCT CATEGORY', 'TARGET QTY', 'STOCK COUNT', 'GAP', 'LOGISTICS SUGGESTION'];
+            const headerRow = ws.addRow(headers);
+            headerRow.eachCell(cell => {
+                cell.font = {bold:true, color:{argb:'FFFFFFFF'}};
+                cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF000000'}};
+                cell.alignment = {horizontal:'center'};
+            });
+
+            // Filling Matrix Data (Category besides Branch)
+            inventoryData.forEach((cat, ci) => {
+                cat.base.forEach((b, si) => {
+                    const p = cat.present[si], g = p - b, a = getLogic(ci, si);
+                    const suggestion = a.type==='TRANSFER' ? `MOVE ${a.qty} FROM ${a.from}` : (a.type==='PURCHASE' ? `BUY ${a.qty}` : 'OK');
+                    
+                    const row = ws.addRow([stores[si], cat.name, b, p, g, suggestion]);
+                    
+                    // Logic Color backgrounds for easy reading
+                    let bgColor = 'FFDCFCE7'; // Green
+                    if(a.type === 'PURCHASE') bgColor = 'FFFEE2E2'; // Red
+                    if(a.type === 'TRANSFER') bgColor = 'FFDBEAFE'; // Blue
+
+                    row.eachCell(cell => {
+                        cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:bgColor}};
+                        cell.font = {bold:true, color:{argb:'FF000000'}};
+                        cell.border = {top:{style:'thin'}, left:{style:'thin'}, bottom:{style:'thin'}, right:{style:'thin'}};
+                        cell.alignment = {horizontal:'center'};
+                    });
+                });
+            });
+
+            ws.getColumn(1).width = 20; ws.getColumn(2).width = 25; ws.getColumn(6).width = 40;
+            const buffer = await wb.xlsx.writeBuffer();
+            saveAs(new Blob([buffer]), 'SubhamGrand_Matrix_Report.xlsx');
         }
 
-        function toggleTheme() { document.body.classList.toggle('dark-theme'); if(!document.getElementById('chartSection').classList.contains('hidden')) refreshAllCharts(); }
-
+        function toggleTheme() { document.body.classList.toggle('dark-theme'); if(!document.getElementById('chartSection').classList.contains('hidden')) refreshCharts(); }
+        function toggleAnalytics() { document.getElementById('chartSection').classList.toggle('hidden'); if(!document.getElementById('chartSection').classList.contains('hidden')) setTimeout(refreshCharts, 50); }
         function openModal(si) {
             document.getElementById('modalStore').innerText = stores[si];
             let h = "";
@@ -203,27 +211,13 @@
                 const a = getLogic(ci, si), g = c.present[si] - c.base[si];
                 h += `<div class="p-5 rounded-2xl bg-white/5 border-l-8 ${g < 0 ? 'border-red-500' : 'border-green-500'} glass-panel">
                     <div class="flex justify-between text-[10px] font-black uppercase opacity-50 mb-1"><span>${c.name}</span><span>GAP: ${g}</span></div>
-                    <div class="text-xl font-black">${a.type==='PURCHASE'?'🛒 BUY '+a.qty : a.type==='TRANSFER'?'🚚 TAKE '+a.qty+' FROM '+a.from : '✅ OPTIMAL'}</div>
+                    <div class="text-xl font-black">${a.type==='PURCHASE'?'🛒 BUY '+a.qty : a.type==='TRANSFER'?'🚚 MOVE '+a.qty+' FROM '+a.from : '✅ OPTIMAL'}</div>
                 </div>`;
             });
             document.getElementById('modalBody').innerHTML = h; document.getElementById('modal').classList.remove('hidden');
         }
-
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-
-        async function exportStyledExcel() {
-            const wb = new ExcelJS.Workbook();
-            const ws = wb.addWorksheet('Live_Logistics');
-            ws.addRow(['STORE', 'CATEGORY', 'TARGET', 'ACTUAL', 'RECOM']);
-            inventoryData.forEach((c, ci) => c.base.forEach((b, si) => {
-                const a = getLogic(ci, si), row = ws.addRow([stores[si], c.name, b, c.present[si], a.type==='TRANSFER'?`MOVE ${a.qty}`:a.type==='PURCHASE'?`BUY ${a.qty}`:'OK']);
-                let col = a.type==='PURCHASE' ? 'FFFEE2E2' : (a.type==='TRANSFER' ? 'FFDBEAFE' : 'FFDCFCE7');
-                row.eachCell(cell => { cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:col}}; cell.font={bold:true}; });
-            }));
-            saveAs(new Blob([await wb.xlsx.writeBuffer()]), 'SubhamGrand_Report.xlsx');
-        }
-
-        function handleFileUpload() { inventoryData.forEach(c => c.present = c.base.map(b => Math.floor(b * (0.8 + Math.random())))); render(); if(!document.getElementById('chartSection').classList.contains('hidden')) refreshAllCharts(); }
+        function handleFileUpload() { inventoryData.forEach(c => c.present = c.base.map(b => Math.floor(b * (0.8 + Math.random())))); render(); }
         window.onload = render;
     </script>
 </body>
