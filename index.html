@@ -3,68 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subham Grand | Excel Intelligence Hub</title>
+    <title>Subham Grand | Pro Theme Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-        .yellow-header { background-color: #facc15; font-weight: bold; text-transform: uppercase; border: 1px solid #000; }
-        .table-cell { border: 1px solid #000; padding: 6px; text-align: center; }
-        .shortage { color: #ef4444; font-weight: bold; }
-        .surplus { color: #22c55e; font-weight: bold; }
-        /* High Contrast Action Style */
-        .action-container { background-color: #000; color: #fff; padding: 4px; border-radius: 4px; font-weight: 800; font-size: 9px; }
-        .text-purchase { color: #f87171; }
-        .text-transfer { color: #60a5fa; }
+        :root { --bg: #ffffff; --text: #0f172a; --card: #f8fafc; --border: #e2e8f0; }
+        .dark-theme { --bg: #0f172a; --text: #f8fafc; --card: #1e293b; --border: #334155; }
+        
+        body { background-color: var(--bg); color: var(--text); transition: all 0.3s ease; }
+        .theme-card { background-color: var(--card); border: 1px solid var(--border); }
+        .table-custom { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .table-custom th { background: #facc15; color: #000; padding: 12px; font-size: 10px; text-transform: uppercase; border: 1px solid #000; }
+        .table-custom td { border: 1px solid var(--border); padding: 10px; text-align: center; }
+        
+        .dark-theme .table-custom th { background: #0ea5e9; color: #fff; border: 1px solid #334155; }
+        .shortage { color: #ef4444; font-weight: 800; }
+        .surplus { color: #22c55e; font-weight: 800; }
     </style>
 </head>
-<body class="bg-gray-100 font-sans text-[11px]">
+<body class="font-sans text-[11px] p-4">
 
-    <div class="max-w-full mx-auto p-4 bg-white shadow-2xl min-h-screen">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6 bg-slate-900 p-4 text-white rounded border-b-4 border-yellow-500">
-            <div>
-                <h1 class="text-2xl font-black italic tracking-tighter uppercase">Subham Grand</h1>
-                <p class="text-yellow-400 font-bold uppercase tracking-widest text-[9px]">Logistics Engine & Excel Reporting</p>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="exportToExcel()" class="bg-blue-600 px-4 py-2 rounded font-bold hover:bg-blue-500 border-b-2 border-blue-900 uppercase">📥 Export Excel Report</button>
-                <input type="file" id="uploadInput" class="hidden" accept=".xlsx, .xls" onchange="handleFileUpload(event)">
-                <button onclick="document.getElementById('uploadInput').click()" class="bg-green-600 px-4 py-2 rounded font-bold hover:bg-green-700 uppercase">Sync Stock</button>
-            </div>
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 p-5 theme-card rounded-xl shadow-lg">
+        <div>
+            <h1 class="text-3xl font-black italic tracking-tighter uppercase">Subham <span class="text-yellow-500 dark:text-cyan-400">Grand</span></h1>
+            <p class="opacity-70 font-bold uppercase tracking-widest text-[9px]">Inventory Management & Strategic Logistics</p>
         </div>
+        
+        <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
+            <button onclick="toggleTheme()" class="bg-slate-800 text-white px-4 py-2 rounded font-bold uppercase border-b-2 border-slate-600 active:translate-y-1 transition-all">🌓 Switch Theme</button>
+            <button onclick="exportToExcel()" class="bg-emerald-600 text-white px-4 py-2 rounded font-bold uppercase hover:bg-emerald-500">Excel Export</button>
+            <button onclick="toggleCharts()" class="bg-indigo-600 text-white px-4 py-2 rounded font-bold uppercase hover:bg-indigo-500">Analytics</button>
+            <button onclick="document.getElementById('uploadInput').click()" class="bg-slate-200 text-slate-800 px-4 py-2 rounded font-bold uppercase hover:bg-slate-300">Sync Data</button>
+            <input type="file" id="uploadInput" class="hidden" onchange="handleFileUpload(event)">
+        </div>
+    </div>
 
-        <div class="overflow-x-auto shadow-xl border border-black">
-            <table class="w-full border-collapse">
-                <thead>
-                    <tr class="yellow-header">
-                        <th class="p-2 border border-black text-left">Category</th>
-                        <th class="p-2 border border-black">Store Branch</th>
-                        <th class="p-2 border border-black bg-blue-50">Base</th>
-                        <th class="p-2 border border-black bg-yellow-50">Present</th>
-                        <th class="p-2 border border-black">Gap</th>
-                        <th class="p-2 border border-black bg-slate-800 text-white uppercase tracking-tighter">Smart Action Plan</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody" class="font-medium text-center"></tbody>
-            </table>
+    <div id="analyticsSection" class="hidden mb-8 grid grid-cols-1 md:grid-cols-2 gap-6 p-6 theme-card rounded-xl shadow-inner">
+        <div class="h-80"><canvas id="radarChart"></canvas></div>
+        <div class="h-80"><canvas id="barChart"></canvas></div>
+    </div>
+
+    <div class="overflow-x-auto rounded-lg shadow-xl border border-slate-300 dark:border-slate-700">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th class="text-left">Product Category</th>
+                    <th>Store Branch</th>
+                    <th>Target</th>
+                    <th>Actual</th>
+                    <th>Gap</th>
+                    <th>Smart Action</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody" class="font-medium"></tbody>
+        </table>
+    </div>
+
+    <div id="actionModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="theme-card rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl border-t-4 border-yellow-500 dark:border-cyan-500">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                <h2 id="modalStoreName" class="text-2xl font-black italic uppercase"></h2>
+                <button onclick="closeModal()" class="text-3xl opacity-50 hover:opacity-100">&times;</button>
+            </div>
+            <div id="modalContent" class="p-8 space-y-4 max-h-[60vh] overflow-y-auto"></div>
+            <div class="p-4 bg-slate-50 dark:bg-slate-900 text-right">
+                <button onclick="closeModal()" class="px-10 py-2 bg-slate-800 text-white font-bold rounded-lg uppercase">Close Report</button>
+            </div>
         </div>
     </div>
 
     <script>
         let stores = ["SG HYD", "SG", "SGRJY", "SGTNL", "SIRI ELR", "ST", "TUNI", "SIRICPT", "VS"];
         let inventoryData = [
-            { name: "Silk Work (501-1000)", base: [185, 370, 185, 295, 245, 295, 345, 50, 295], present: [0,0,0,0,0,0,0,0,0] },
-            { name: "BNS Handloom (501-1000)", base: [450, 1000, 450, 800, 700, 700, 800, 400, 800], present: [0,0,0,0,0,0,0,0,0] },
-            { name: "Pattu (1001-2000)", base: [125, 150, 125, 200, 100, 175, 250, 100, 250], present: [0,0,0,0,0,0,0,0,0] },
-            { name: "Handloom Cotton", base: [150, 300, 150, 300, 175, 100, 100, 150, 300], present: [0,0,0,0,0,0,0,0,0] }
+            { name: "Silk Work", base: [185, 370, 185, 295, 245, 295, 345, 50, 295], present: [150, 300, 200, 250, 300, 280, 400, 40, 280] },
+            { name: "BNS Handloom", base: [450, 1000, 450, 800, 700, 700, 800, 400, 800], present: [400, 900, 500, 750, 800, 680, 850, 380, 780] },
+            { name: "Pattu", base: [125, 150, 125, 200, 100, 175, 250, 100, 250], present: [120, 160, 110, 190, 120, 180, 240, 90, 260] }
         ];
+
+        let radarChart, barChart;
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            if(radarChart) toggleCharts(); // Refresh charts for theme colors
+        }
 
         function getSmartLogic(cIdx, sIdx) {
             const cat = inventoryData[cIdx];
             const gap = cat.present[sIdx] - cat.base[sIdx];
             if (gap < 0) {
-                const shortage = Math.abs(gap);
                 let best = cat.present.map((p, i) => ({i, s: p - cat.base[i]})).filter(c => c.s > 5).sort((a,b) => b.s - a.s)[0];
-                return best ? {type:'TRANSFER', qty: Math.min(shortage, best.s), from: stores[best.i]} : {type:'PURCHASE', qty: shortage};
+                return best ? {type:'TRANSFER', qty: Math.min(Math.abs(gap), best.s), from: stores[best.i]} : {type:'PURCHASE', qty: Math.abs(gap)};
             }
             return {type:'OK'};
         }
@@ -73,65 +103,99 @@
             const body = document.getElementById('tableBody');
             let rows = "";
             inventoryData.forEach((cat, cIdx) => {
-                cat.base.forEach((baseVal, sIdx) => {
+                cat.base.forEach((base, sIdx) => {
                     const present = cat.present[sIdx];
-                    const gap = present - baseVal;
+                    const gap = present - base;
                     const action = getSmartLogic(cIdx, sIdx);
+                    let actionText = action.type === 'TRANSFER' ? `🚚 MOVE ${action.qty} FROM ${action.from}` : (action.type === 'PURCHASE' ? `🛒 BUY ${action.qty}` : 'STABLE');
                     
-                    let actionHtml = "-";
-                    if(action.type === 'PURCHASE') {
-                        actionHtml = `<div class="action-container"><span class="text-purchase">PURCHASE ${action.qty}</span></div>`;
-                    } else if (action.type === 'TRANSFER') {
-                        actionHtml = `<div class="action-container"><span class="text-transfer">MOVE ${action.qty} FROM ${action.from}</span></div>`;
-                    }
-
                     rows += `
-                        <tr class="border-b border-black hover:bg-slate-50">
-                            <td class="p-2 border-r border-black font-bold text-left uppercase bg-gray-50">${cat.name}</td>
-                            <td class="table-cell font-black">${stores[sIdx]}</td>
-                            <td class="table-cell font-bold text-slate-500">${baseVal}</td>
-                            <td class="table-cell font-bold bg-yellow-50">${present}</td>
-                            <td class="table-cell ${gap < 0 ? 'shortage' : 'surplus'}">${gap}</td>
-                            <td class="table-cell">${actionHtml}</td>
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            <td class="text-left font-bold opacity-70 uppercase px-4">${cat.name}</td>
+                            <td onclick="openModal(${sIdx})" class="font-black text-blue-600 dark:text-cyan-400 cursor-pointer underline underline-offset-4">${stores[sIdx]}</td>
+                            <td class="font-bold">${base}</td>
+                            <td>${present}</td>
+                            <td class="${gap < 0 ? 'shortage' : 'surplus'}">${gap}</td>
+                            <td class="font-black text-[9px] uppercase">${actionText}</td>
                         </tr>`;
                 });
             });
             body.innerHTML = rows;
         }
 
-        function exportToExcel() {
-            const reportData = [];
-            inventoryData.forEach((cat, cIdx) => {
-                cat.base.forEach((baseVal, sIdx) => {
-                    const present = cat.present[sIdx];
-                    const gap = present - baseVal;
-                    const action = getSmartLogic(cIdx, sIdx);
-                    
-                    let instr = "STABLE";
-                    if(action.type === 'PURCHASE') instr = `PURCHASE ${action.qty} UNITS`;
-                    if(action.type === 'TRANSFER') instr = `TRANSFER ${action.qty} FROM ${action.from}`;
+        function toggleCharts() {
+            const container = document.getElementById('analyticsSection');
+            container.classList.toggle('hidden');
+            if(!container.classList.contains('hidden')) {
+                const isDark = document.body.classList.contains('dark-theme');
+                const textColor = isDark ? '#f8fafc' : '#0f172a';
+                
+                if(radarChart) radarChart.destroy();
+                if(barChart) barChart.destroy();
 
-                    reportData.push({
-                        "Category": cat.name,
-                        "Store": stores[sIdx],
-                        "Target Base": baseVal,
-                        "Present Stock": present,
-                        "Gap": gap,
-                        "Alert Level": gap < 0 ? (action.type === 'PURCHASE' ? "CRITICAL" : "REBALANCE") : "OPTIMAL",
-                        "Instruction": instr
-                    });
+                radarChart = new Chart(document.getElementById('radarChart'), {
+                    type: 'radar',
+                    data: {
+                        labels: stores,
+                        datasets: inventoryData.map((d, i) => ({
+                            label: d.name, data: d.present,
+                            borderColor: ['#facc15', '#0ea5e9', '#ec4899'][i],
+                            backgroundColor: 'rgba(0,0,0,0.05)'
+                        }))
+                    },
+                    options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: textColor } } } }
                 });
-            });
 
-            const ws = XLSX.utils.json_to_sheet(reportData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Stock Action Report");
-            XLSX.writeFile(wb, "Subham_Grand_Stock_Report.xlsx");
+                barChart = new Chart(document.getElementById('barChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: stores,
+                        datasets: [{ label: 'Stock Gap', data: inventoryData[0].present.map((p, i) => p - inventoryData[0].base[i]), backgroundColor: '#facc15' }]
+                    },
+                    options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: textColor } } } }
+                });
+            }
         }
 
-        function handleFileUpload() {
-            inventoryData.forEach(cat => cat.present = cat.base.map(b => Math.floor(b * (Math.random() * 1.5))));
-            renderTable();
+        function openModal(sIdx) {
+            document.getElementById('modalStoreName').innerText = stores[sIdx];
+            let html = "";
+            inventoryData.forEach((cat, cIdx) => {
+                const a = getSmartLogic(cIdx, sIdx);
+                const gap = cat.present[sIdx] - cat.base[sIdx];
+                html += `
+                <div class="p-5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/5 dark:bg-slate-800 shadow-sm">
+                    <div class="flex justify-between text-[10px] font-black uppercase opacity-60">
+                        <span>${cat.name}</span>
+                        <span class="${gap < 0 ? 'text-red-500' : 'text-green-500'}">Gap: ${gap}</span>
+                    </div>
+                    <p class="text-xl font-black mt-2">${a.type === 'PURCHASE' ? '🛒 PURCHASE ' + a.qty : a.type === 'TRANSFER' ? '🚚 TAKE ' + a.qty + ' FROM ' + a.from : '✅ OPTIMAL'}</p>
+                </div>`;
+            });
+            document.getElementById('modalContent').innerHTML = html;
+            document.getElementById('actionModal').classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('actionModal').classList.add('hidden'); }
+        
+        async function exportToExcel() {
+            const wb = new ExcelJS.Workbook();
+            const ws = wb.addWorksheet('Report');
+            ws.columns = [{header:'Store', key:'s', width:15}, {header:'Category', key:'c', width:20}, {header:'Base', key:'b'}, {header:'Actual', key:'p'}, {header:'Action', key:'a', width:30}];
+            inventoryData.forEach((cat, ci) => {
+                cat.base.forEach((b, si) => {
+                    const a = getSmartLogic(ci, si);
+                    const row = ws.addRow({s:stores[si], c:cat.name, b:b, p:cat.present[si], a: a.type==='TRANSFER' ? `MOVE ${a.qty} FROM ${a.from}` : (a.type==='PURCHASE' ? `BUY ${a.qty}` : 'OK')});
+                    row.eachCell(cell => { cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF000000'}}; cell.font = {color:{argb:'FFFFFFFF'}, bold:true}; });
+                });
+            });
+            const buffer = await wb.xlsx.writeBuffer();
+            saveAs(new Blob([buffer]), 'SubhamGrand_Logistics.xlsx');
+        }
+
+        function handleFileUpload() { 
+            inventoryData.forEach(c => c.present = c.base.map(b => Math.floor(b * (Math.random() * 1.5))));
+            renderTable(); 
         }
 
         window.onload = renderTable;
