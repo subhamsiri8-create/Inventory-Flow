@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subham Grand | Master Logistics</title>
+    <title>Subham Grand | Management Console</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
@@ -11,44 +11,59 @@
     <style>
         :root { --bg: #ffffff; --text: #0f172a; --card: #f8fafc; --accent: #facc15; --border: #e2e8f0; }
         .dark-theme { --bg: #020617; --text: #f8fafc; --card: #0f172a; --accent: #0ea5e9; --border: #1e293b; }
-        
         body { background-color: var(--bg); color: var(--text); transition: 0.3s ease; }
         .glass-panel { background: var(--card); border: 1px solid var(--border); }
         .table-header { background: var(--accent) !important; color: #000 !important; font-weight: 900; text-transform: uppercase; }
-        .num-box { background: rgba(128,128,128,0.1); padding: 2px 6px; border-radius: 4px; font-weight: 800; color: var(--text); }
+        .input-field { background: rgba(128,128,128,0.1); border: 1px solid var(--border); padding: 8px; border-radius: 6px; font-weight: bold; width: 100%; color: var(--text); }
         .shortage { color: #ef4444; font-weight: 900; }
         .surplus { color: #22c55e; font-weight: 900; }
     </style>
 </head>
 <body class="font-sans text-[11px] p-4 lg:p-8">
 
-    <div class="flex flex-col lg:flex-row justify-between items-center mb-8 p-6 glass-panel rounded-2xl shadow-xl">
+    <div class="flex flex-col lg:flex-row justify-between items-center mb-6 p-6 glass-panel rounded-2xl shadow-xl">
         <div>
             <h1 class="text-3xl font-black italic tracking-tighter uppercase">Subham <span class="text-yellow-500 dark:text-cyan-400">Grand</span></h1>
-            <p class="opacity-60 font-bold uppercase text-[9px] tracking-[0.2em]">Logistics Neural Network v4.0</p>
+            <p class="opacity-60 font-bold uppercase text-[9px] tracking-[0.2em]">Manual Entry & Logistics Neural Network</p>
         </div>
-        
         <div class="flex flex-wrap gap-2 mt-4 lg:mt-0">
-            <button onclick="toggleTheme()" class="px-5 py-2 rounded-lg font-black bg-slate-800 text-white hover:bg-black transition-all">🌓 THEME</button>
-            <button onclick="exportStyledExcel()" class="px-5 py-2 rounded-lg font-black bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-900/20">📥 EXCEL REPORT</button>
-            <button onclick="toggleCharts()" class="px-5 py-2 rounded-lg font-black bg-indigo-600 text-white hover:bg-indigo-700">ANALYTICS</button>
-            <button onclick="document.getElementById('uploadInput').click()" class="px-5 py-2 rounded-lg font-black bg-slate-200 text-slate-800 hover:bg-slate-300">SYNC</button>
+            <button onclick="toggleTheme()" class="px-5 py-2 rounded-lg font-black bg-slate-800 text-white transition-all">🌓 THEME</button>
+            <button onclick="exportStyledExcel()" class="px-5 py-2 rounded-lg font-black bg-emerald-600 text-white shadow-lg">📥 EXCEL</button>
+            <button onclick="toggleCharts()" class="px-5 py-2 rounded-lg font-black bg-indigo-600 text-white">CHARTS</button>
+            <button onclick="document.getElementById('uploadInput').click()" class="px-5 py-2 rounded-lg font-black bg-slate-300 text-slate-800">SYNC</button>
             <input type="file" id="uploadInput" class="hidden" onchange="handleFileUpload(event)">
         </div>
     </div>
 
-    <div id="analyticsSection" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-        <div class="lg:col-span-2 p-6 glass-panel rounded-2xl h-96">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-black italic uppercase text-sm">Stock Variance Flow</h3>
-                <select id="catSelector" onchange="updateCharts()" class="bg-transparent border-b-2 font-bold text-[10px] outline-none"></select>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <div class="p-4 glass-panel rounded-xl">
+            <label class="block font-black uppercase text-[9px] mb-1 opacity-60">Add New Branch</label>
+            <div class="flex gap-2">
+                <input type="text" id="newBranch" placeholder="Branch Name" class="input-field">
+                <button onclick="addBranch()" class="bg-blue-600 text-white px-4 rounded font-bold uppercase">+</button>
             </div>
-            <canvas id="mainChart"></canvas>
         </div>
-        <div class="p-6 glass-panel rounded-2xl h-96 flex flex-col items-center justify-center">
-            <h3 class="font-black uppercase text-sm mb-4">Network Health</h3>
-            <canvas id="healthChart"></canvas>
+        <div class="p-4 glass-panel rounded-xl">
+            <label class="block font-black uppercase text-[9px] mb-1 opacity-60">Add New Category</label>
+            <div class="flex gap-2">
+                <input type="text" id="newCategory" placeholder="Category Name" class="input-field">
+                <button onclick="addCategory()" class="bg-blue-600 text-white px-4 rounded font-bold uppercase">+</button>
+            </div>
         </div>
+        <div class="p-4 glass-panel rounded-xl">
+            <label class="block font-black uppercase text-[9px] mb-1 opacity-60">Quick Target Update</label>
+            <div class="flex gap-1">
+                <select id="updateCat" class="input-field text-[10px]"></select>
+                <select id="updateBranch" class="input-field text-[10px]"></select>
+                <input type="number" id="newTargetVal" placeholder="Qty" class="input-field w-20">
+                <button onclick="updateTarget()" class="bg-yellow-500 text-black px-4 rounded font-black uppercase">SET</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="analyticsSection" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div class="lg:col-span-2 p-6 glass-panel rounded-2xl h-80"><canvas id="mainChart"></canvas></div>
+        <div class="p-6 glass-panel rounded-2xl h-80"><canvas id="healthChart"></canvas></div>
     </div>
 
     <div class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl">
@@ -57,8 +72,8 @@
                 <tr class="table-header">
                     <th class="p-4 text-left">Category</th>
                     <th>Branch</th>
-                    <th>Target</th>
-                    <th>Actual</th>
+                    <th>Base Target</th>
+                    <th>Actual Stock</th>
                     <th>Gap</th>
                     <th class="bg-slate-900 text-cyan-400">AI Suggestion</th>
                 </tr>
@@ -68,15 +83,13 @@
     </div>
 
     <div id="modal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center z-50 p-4">
-        <div class="glass-panel rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl border-t-8 border-yellow-500 dark:border-cyan-500">
+        <div class="glass-panel rounded-3xl w-full max-w-2xl shadow-2xl border-t-8 border-yellow-500 dark:border-cyan-500">
             <div class="p-8 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                 <h2 id="modalStore" class="text-3xl font-black italic uppercase"></h2>
-                <button onclick="closeModal()" class="text-4xl opacity-50 hover:opacity-100">&times;</button>
+                <button onclick="closeModal()" class="text-4xl opacity-50">&times;</button>
             </div>
             <div id="modalBody" class="p-8 space-y-4 max-h-[50vh] overflow-y-auto"></div>
-            <div class="p-6 bg-slate-50 dark:bg-slate-900/50">
-                <button onclick="closeModal()" class="w-full py-4 bg-slate-900 text-white rounded-xl font-black uppercase tracking-widest">Close Dashboard</button>
-            </div>
+            <div class="p-6 bg-slate-50 dark:bg-slate-900/50"><button onclick="closeModal()" class="w-full py-4 bg-slate-900 text-white rounded-xl font-black uppercase">Close Report</button></div>
         </div>
     </div>
 
@@ -100,101 +113,84 @@
             return {type:'OK'};
         }
 
+        function addBranch() {
+            const name = document.getElementById('newBranch').value.toUpperCase();
+            if(name) {
+                stores.push(name);
+                inventoryData.forEach(c => { c.base.push(0); c.present.push(0); });
+                render(); document.getElementById('newBranch').value = "";
+            }
+        }
+
+        function addCategory() {
+            const name = document.getElementById('newCategory').value.toUpperCase();
+            if(name) {
+                const base = Array(stores.length).fill(0);
+                const present = Array(stores.length).fill(0);
+                inventoryData.push({ name, base, present });
+                render(); document.getElementById('newCategory').value = "";
+            }
+        }
+
+        function updateTarget() {
+            const ci = document.getElementById('updateCat').value;
+            const si = document.getElementById('updateBranch').value;
+            const val = parseInt(document.getElementById('newTargetVal').value);
+            if(!isNaN(val)) { inventoryData[ci].base[si] = val; render(); }
+        }
+
         function render() {
             const body = document.getElementById('tableBody');
-            const sel = document.getElementById('catSelector');
-            let rows = "", opts = "";
+            const uCat = document.getElementById('updateCat');
+            const uBranch = document.getElementById('updateBranch');
+            let rows = "", cOpts = "", bOpts = "";
+            
             inventoryData.forEach((c, ci) => {
-                opts += `<option value="${ci}">${c.name.toUpperCase()}</option>`;
+                cOpts += `<option value="${ci}">${c.name}</option>`;
                 c.base.forEach((b, si) => {
                     const p = c.present[si], g = p - b, a = getLogic(ci, si);
-                    rows += `<tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
-                        <td class="p-4 text-left font-bold opacity-50 uppercase">${c.name}</td>
-                        <td onclick="openModal(${si})" class="font-black text-blue-600 dark:text-cyan-400 cursor-pointer underline decoration-2">${stores[si]}</td>
-                        <td class="opacity-40">${b}</td>
-                        <td><span class="num-box">${p}</span></td>
+                    rows += `<tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900">
+                        <td class="p-3 text-left font-bold opacity-50 uppercase">${c.name}</td>
+                        <td onclick="openModal(${si})" class="font-black text-blue-600 dark:text-cyan-400 cursor-pointer underline">${stores[si]}</td>
+                        <td>${b}</td><td>${p}</td>
                         <td class="${g < 0 ? 'shortage' : 'surplus'}">${g > 0 ? '+' + g : g}</td>
-                        <td class="text-[9px] uppercase font-black px-2">${a.type==='TRANSFER'?`🚚 MOVE ${a.qty} FROM ${a.from}`:a.type==='PURCHASE'?`🛒 BUY ${a.qty}`:'STABLE'}</td>
+                        <td class="text-[9px] uppercase font-black">${a.type==='TRANSFER'?`🚚 MOVE ${a.qty} FROM ${a.from}`:a.type==='PURCHASE'?`🛒 BUY ${a.qty}`:'STABLE'}</td>
                     </tr>`;
                 });
             });
-            body.innerHTML = rows; sel.innerHTML = opts;
-        }
-
-        function updateCharts() {
-            const ci = document.getElementById('catSelector').value;
-            const c = inventoryData[ci];
-            const isD = document.body.classList.contains('dark-theme');
-            if(mChart) mChart.destroy(); if(hChart) hChart.destroy();
-            mChart = new Chart(document.getElementById('mainChart'), {
-                data: { labels: stores, datasets: [{ type:'line', label:'Target', data:c.base, borderColor:'#64748b', borderDash:[5,5] }, { type:'bar', label:'Actual', data:c.present, backgroundColor: isD?'#0ea5e9':'#facc15', borderRadius:4 }] },
-                options: { maintainAspectRatio:false, plugins: { legend: { labels: { color: isD?'#fff':'#000' } } } }
-            });
-            const s = {t:0, p:0, o:0}; c.base.forEach((_,si)=>{const a=getLogic(ci,si); if(a.type==='TRANSFER')s.t++; else if(a.type==='PURCHASE')s.p++; else s.o++});
-            hChart = new Chart(document.getElementById('healthChart'), {
-                type:'doughnut', data: { labels:['Move','Buy','Stable'], datasets:[{data:[s.t,s.p,s.o], backgroundColor:['#3b82f6','#ef4444','#10b981']}] },
-                options: { maintainAspectRatio:false, cutout:'80%', plugins: { legend: { position:'bottom', labels: { color: isD?'#fff':'#000' } } } }
-            });
+            stores.forEach((s, si) => bOpts += `<option value="${si}">${s}</option>`);
+            body.innerHTML = rows; uCat.innerHTML = cOpts; uBranch.innerHTML = bOpts;
         }
 
         async function exportStyledExcel() {
             const wb = new ExcelJS.Workbook();
-            const ws = wb.addWorksheet('Logistics_Report');
-            
-            ws.columns = [
-                {header:'STORE', key:'s', width:15}, {header:'CATEGORY', key:'c', width:20},
-                {header:'TARGET', key:'b', width:10}, {header:'STOCK', key:'p', width:10},
-                {header:'GAP', key:'g', width:10}, {header:'SUGGESTION', key:'a', width:35}
-            ];
-
-            // Header Style
-            ws.getRow(1).eachCell(cell => {
-                cell.font = {bold:true, color:{argb:'FFFFFFFF'}};
-                cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF000000'}};
-                cell.alignment = {horizontal:'center'};
-            });
-
-            inventoryData.forEach((cat, ci) => {
-                cat.base.forEach((b, si) => {
-                    const p = cat.present[si], g = p - b, a = getLogic(ci, si);
-                    const suggestion = a.type==='TRANSFER' ? `MOVE ${a.qty} FROM ${a.from}` : (a.type==='PURCHASE' ? `BUY ${a.qty}` : 'OK');
-                    
-                    const row = ws.addRow({s:stores[si], c:cat.name, b:b, p:p, g:g, a:suggestion});
-                    
-                    // Logic Color Backgrounds
-                    let bgColor = 'FFDCFCE7'; // Green (Stable)
-                    if(a.type === 'PURCHASE') bgColor = 'FFFEE2E2'; // Red (Buy)
-                    if(a.type === 'TRANSFER') bgColor = 'FFDBEAFE'; // Blue (Move)
-
-                    row.eachCell(cell => {
-                        cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:bgColor}};
-                        cell.font = {color:{argb:'FF000000'}, bold:true}; // Numbers in Black
-                        cell.border = {top:{style:'thin'}, left:{style:'thin'}, bottom:{style:'thin'}, right:{style:'thin'}};
-                        cell.alignment = {horizontal:'center'};
-                    });
-                });
-            });
-
-            const buffer = await wb.xlsx.writeBuffer();
-            saveAs(new Blob([buffer]), 'SubhamGrand_Logistics_Report.xlsx');
+            const ws = wb.addWorksheet('Logistics');
+            ws.columns = [{header:'STORE', key:'s'}, {header:'CATEGORY', key:'c'}, {header:'TARGET', key:'b'}, {header:'STOCK', key:'p'}, {header:'ACTION', key:'a', width:30}];
+            inventoryData.forEach((cat, ci) => cat.base.forEach((b, si) => {
+                const p = cat.present[si], a = getLogic(ci, si);
+                const row = ws.addRow({s:stores[si], c:cat.name, b:b, p:p, a: a.type==='TRANSFER'?`MOVE ${a.qty} FROM ${a.from}`:a.type==='PURCHASE'?`BUY ${a.qty}`:'OK'});
+                let color = a.type==='PURCHASE' ? 'FFFEE2E2' : (a.type==='TRANSFER' ? 'FFDBEAFE' : 'FFDCFCE7');
+                row.eachCell(cell => { cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:color}}; cell.font = {bold:true}; });
+            }));
+            saveAs(new Blob([await wb.xlsx.writeBuffer()]), 'SubhamGrand_Logistics.xlsx');
         }
 
-        function toggleTheme() { document.body.classList.toggle('dark-theme'); if(!document.getElementById('analyticsSection').classList.contains('hidden')) updateCharts(); }
+        function toggleTheme() { document.body.classList.toggle('dark-theme'); }
         function toggleCharts() { document.getElementById('analyticsSection').classList.toggle('hidden'); updateCharts(); }
         function openModal(si) {
             document.getElementById('modalStore').innerText = stores[si];
             let h = "";
             inventoryData.forEach((c, ci) => {
                 const a = getLogic(ci, si), g = c.present[si] - c.base[si];
-                h += `<div class="p-6 rounded-2xl bg-white/5 border-l-8 ${g < 0 ? 'border-red-500' : 'border-green-500'} glass-panel">
-                    <div class="flex justify-between text-[10px] font-black opacity-50 mb-1"><span>${c.name}</span><span>GAP: ${g}</span></div>
-                    <div class="text-xl font-black">${a.type==='PURCHASE'?'🛒 BUY '+a.qty : a.type==='TRANSFER'?'🚚 MOVE '+a.qty+' FROM '+a.from : '✅ OPTIMAL'}</div>
+                h += `<div class="p-5 rounded-2xl bg-white/5 border-l-8 ${g < 0 ? 'border-red-500' : 'border-green-500'} glass-panel">
+                    <div class="flex justify-between text-[10px] font-black uppercase opacity-50 mb-1"><span>${c.name}</span><span>GAP: ${g}</span></div>
+                    <div class="text-xl font-black">${a.type==='PURCHASE'?'🛒 BUY '+a.qty : a.type==='TRANSFER'?'🚚 MOVE '+a.qty : '✅ OPTIMAL'}</div>
                 </div>`;
             });
             document.getElementById('modalBody').innerHTML = h; document.getElementById('modal').classList.remove('hidden');
         }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-        function handleFileUpload() { inventoryData.forEach(c => c.present = c.base.map(b => Math.floor(b * (0.7 + Math.random())))); render(); }
+        function handleFileUpload() { inventoryData.forEach(c => c.present = c.base.map(b => Math.floor(b * (0.8 + Math.random())))); render(); }
         window.onload = render;
     </script>
 </body>
