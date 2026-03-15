@@ -3,81 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subham Grand | Advanced Precision Analytics</title>
+    <title>Subham Grand | High-Contrast Intelligence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-        :root { --accent: #facc15; --bg: #ffffff; --card: #f8fafc; --text: #0f172a; }
-        .dark-theme { --accent: #0ea5e9; --bg: #020617; --card: #1e293b; --text: #f8fafc; }
+        /* Professional Theme Variables */
+        :root { 
+            --bg: #ffffff; --text: #0f172a; --card: #f1f5f9; 
+            --accent: #facc15; --row-hover: #f8fafc; --num-bg: #e2e8f0;
+        }
+        .dark-theme { 
+            --bg: #020617; --text: #f8fafc; --card: #0f172a; 
+            --accent: #0ea5e9; --row-hover: #1e293b; --num-bg: #1e293b;
+        }
         
-        body { background-color: var(--bg); color: var(--text); transition: background 0.3s; }
-        .glass-panel { background: var(--card); border: 1px solid rgba(128,128,128,0.2); backdrop-filter: blur(10px); }
-        .table-header { background: var(--accent) !important; color: #000 !important; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
-        .chart-container { position: relative; height: 350px; width: 100%; }
-        .neon-glow { box-shadow: 0 0 15px rgba(14, 165, 233, 0.2); }
+        body { background-color: var(--bg); color: var(--text); transition: 0.2s ease-in-out; }
+        .glass-panel { background: var(--card); border: 1px solid rgba(128,128,128,0.2); }
+        
+        /* Table Visibility Fixes */
+        .table-header { background: var(--accent) !important; color: #000 !important; font-weight: 900; }
+        .data-row { border-bottom: 1px solid rgba(128,128,128,0.2); transition: background 0.2s; }
+        .data-row:hover { background-color: var(--row-hover); }
+        
+        /* Number Contrast Locks */
+        .num-highlight { background-color: var(--num-bg); color: var(--text); font-weight: 800; border-radius: 4px; padding: 2px 6px; }
+        .dark-theme .num-highlight { color: #ffffff !important; box-shadow: inset 0 0 5px rgba(255,255,255,0.05); }
+        
+        .shortage { color: #f87171 !important; font-weight: 900; }
+        .surplus { color: #4ade80 !important; font-weight: 900; }
     </style>
 </head>
-<body class="font-sans text-[11px] p-4 lg:p-8">
+<body class="font-sans text-[11px] p-4 lg:p-6">
 
-    <div class="flex flex-col lg:flex-row justify-between items-center mb-8 p-6 glass-panel rounded-2xl shadow-sm">
-        <div class="mb-4 lg:mb-0">
-            <h1 class="text-4xl font-black italic tracking-tighter">SUBHAM <span class="text-yellow-500 dark:text-cyan-400">GRAND</span></h1>
-            <div class="flex items-center gap-2 mt-1">
-                <span class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-                <p class="opacity-60 font-bold uppercase text-[9px]">Live Supply Chain Intelligence</p>
-            </div>
+    <div class="flex flex-col lg:flex-row justify-between items-center mb-6 p-6 glass-panel rounded-2xl shadow-lg">
+        <div>
+            <h1 class="text-3xl font-black italic tracking-tighter uppercase">Subham <span class="text-yellow-500 dark:text-cyan-400">Grand</span></h1>
+            <p class="opacity-70 font-bold uppercase text-[9px] tracking-widest mt-1">Smart Logistics Dashboard</p>
         </div>
         
-        <div class="flex flex-wrap gap-2 justify-center">
-            <button onclick="toggleTheme()" class="px-4 py-2 rounded-lg font-black bg-slate-800 text-white hover:bg-black transition-all">THEME</button>
-            <button onclick="exportToExcel()" class="px-4 py-2 rounded-lg font-black bg-emerald-600 text-white hover:bg-emerald-700">EXCEL</button>
-            <button onclick="toggleAnalytics()" class="px-4 py-2 rounded-lg font-black bg-indigo-600 text-white hover:bg-indigo-700">ANALYTICS</button>
-            <button onclick="document.getElementById('uploadInput').click()" class="px-4 py-2 rounded-lg font-black bg-slate-200 text-slate-800 hover:bg-slate-300">SYNC</button>
+        <div class="flex flex-wrap gap-2 mt-4 lg:mt-0">
+            <button onclick="toggleTheme()" class="px-5 py-2 rounded-lg font-black bg-slate-800 text-white hover:bg-black transition-all border-b-2 border-slate-600">🌓 THEME</button>
+            <button onclick="exportToExcel()" class="px-5 py-2 rounded-lg font-black bg-emerald-600 text-white hover:bg-emerald-700">EXCEL</button>
+            <button onclick="toggleAnalytics()" class="px-5 py-2 rounded-lg font-black bg-indigo-600 text-white hover:bg-indigo-700">CHARTS</button>
+            <button onclick="document.getElementById('uploadInput').click()" class="px-5 py-2 rounded-lg font-black bg-slate-300 text-slate-800 hover:bg-slate-400">SYNC</button>
             <input type="file" id="uploadInput" class="hidden" onchange="handleFileUpload(event)">
         </div>
     </div>
 
-    <div id="analyticsWrapper" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-        <div class="lg:col-span-2 p-6 glass-panel rounded-2xl neon-glow">
+    <div id="analyticsWrapper" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div class="lg:col-span-2 p-6 glass-panel rounded-2xl">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="font-black uppercase italic text-sm">Inventory Deviation Analysis</h3>
-                <select id="catFilter" onchange="updateCharts()" class="bg-transparent border-b-2 border-slate-400 font-bold text-[10px] outline-none"></select>
+                <h3 class="font-black uppercase italic text-sm">Stock Deviation Flow</h3>
+                <select id="catFilter" onchange="updateCharts()" class="bg-transparent border-b-2 border-slate-500 font-bold text-[10px] p-1 outline-none"></select>
             </div>
-            <div class="chart-container"><canvas id="advancedChart"></canvas></div>
+            <div class="h-80"><canvas id="mainChart"></canvas></div>
         </div>
         <div class="p-6 glass-panel rounded-2xl flex flex-col justify-center">
-            <h3 class="font-black uppercase text-center mb-6 text-sm">Network Efficiency</h3>
-            <div class="h-64"><canvas id="efficiencyChart"></canvas></div>
+            <h3 class="font-black uppercase text-center mb-6 text-sm">Network Status</h3>
+            <div class="h-64"><canvas id="donutChart"></canvas></div>
         </div>
     </div>
 
-    <div class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl">
+    <div class="overflow-hidden rounded-xl border border-slate-300 dark:border-slate-800 shadow-2xl">
         <table class="w-full text-center border-collapse">
             <thead>
                 <tr class="table-header">
                     <th class="p-4 text-left">Category</th>
                     <th>Branch</th>
-                    <th>Target</th>
-                    <th>Actual</th>
-                    <th>Variance</th>
-                    <th>Action Protocol</th>
+                    <th>Base Target</th>
+                    <th>Present Stock</th>
+                    <th>Difference</th>
+                    <th class="bg-slate-900 text-cyan-400">Logic Action</th>
                 </tr>
             </thead>
-            <tbody id="inventoryBody" class="font-bold"></tbody>
+            <tbody id="inventoryBody" class="font-medium"></tbody>
         </table>
     </div>
 
-    <div id="reportModal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden flex items-center justify-center z-50 p-4">
+    <div id="reportModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center z-50 p-4">
         <div class="glass-panel rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl border-t-8 border-yellow-500 dark:border-cyan-500">
             <div class="p-8 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-                <h2 id="modalStoreTitle" class="text-3xl font-black italic uppercase"></h2>
-                <button onclick="closeModal()" class="text-4xl hover:rotate-90 transition-all">&times;</button>
+                <h2 id="modalTitle" class="text-3xl font-black italic uppercase"></h2>
+                <button onclick="closeModal()" class="text-4xl opacity-50 hover:opacity-100">&times;</button>
             </div>
             <div id="modalData" class="p-8 space-y-4 max-h-[50vh] overflow-y-auto"></div>
-            <div class="p-6 bg-slate-50 dark:bg-slate-900/50 text-center">
-                <button onclick="closeModal()" class="w-full py-4 bg-slate-900 text-white rounded-xl font-black tracking-widest uppercase hover:bg-black">Finalize Review</button>
+            <div class="p-6 bg-slate-50 dark:bg-slate-900/50">
+                <button onclick="closeModal()" class="w-full py-4 bg-slate-900 text-white rounded-xl font-black uppercase">Close Report</button>
             </div>
         </div>
     </div>
@@ -90,7 +103,7 @@
             { name: "Pattu", base: [125, 150, 125, 200, 100, 175, 250, 100, 250], present: [110, 160, 140, 185, 115, 190, 240, 95, 270] }
         ];
 
-        let mainChart, donutChart;
+        let mChart, dChart;
 
         function getSmartLogic(cIdx, sIdx) {
             const cat = inventoryData[cIdx];
@@ -116,13 +129,13 @@
                     let protocol = action.type === 'TRANSFER' ? `🚚 MOVE ${action.qty} FROM ${action.from}` : (action.type === 'PURCHASE' ? `🛒 BUY ${action.qty}` : 'STABLE');
                     
                     rows += `
-                        <tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
-                            <td class="p-4 text-left font-bold opacity-50 uppercase">${cat.name}</td>
+                        <tr class="data-row">
+                            <td class="p-4 text-left font-bold opacity-60 uppercase">${cat.name}</td>
                             <td onclick="openModal(${si})" class="font-black text-blue-600 dark:text-cyan-400 cursor-pointer underline decoration-2">${stores[si]}</td>
-                            <td class="text-slate-400">${base}</td>
-                            <td class="bg-slate-50 dark:bg-slate-800/30">${present}</td>
-                            <td class="${gap < 0 ? 'text-red-500' : 'text-green-500'} font-black">${gap > 0 ? '+' + gap : gap}</td>
-                            <td class="text-[9px] uppercase font-black">${protocol}</td>
+                            <td class="opacity-50 font-bold">${base}</td>
+                            <td><span class="num-highlight">${present}</span></td>
+                            <td class="${gap < 0 ? 'shortage' : 'surplus'}">${gap > 0 ? '+' + gap : gap}</td>
+                            <td class="text-[9px] uppercase font-black px-2">${protocol}</td>
                         </tr>`;
                 });
             });
@@ -134,61 +147,62 @@
             const ci = document.getElementById('catFilter').value;
             const cat = inventoryData[ci];
             const isDark = document.body.classList.contains('dark-theme');
-            const themeColor = isDark ? '#0ea5e9' : '#facc15';
+            const color = isDark ? '#0ea5e9' : '#facc15';
 
-            if(mainChart) mainChart.destroy();
-            if(donutChart) donutChart.destroy();
+            if(mChart) mChart.destroy();
+            if(dChart) dChart.destroy();
 
-            mainChart = new Chart(document.getElementById('advancedChart'), {
+            mChart = new Chart(document.getElementById('mainChart'), {
                 data: {
                     labels: stores,
                     datasets: [
-                        { type: 'line', label: 'Target Threshold', data: cat.base, borderColor: '#64748b', borderDash: [5,5], fill: false, tension: 0.4 },
-                        { type: 'bar', label: 'Actual Inventory', data: cat.present, backgroundColor: themeColor, borderRadius: 5 }
+                        { type: 'line', label: 'Target', data: cat.base, borderColor: '#64748b', borderDash: [5,5], fill: false },
+                        { type: 'bar', label: 'Actual', data: cat.present, backgroundColor: color, borderRadius: 4 }
                     ]
                 },
-                options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: isDark ? '#fff' : '#000', font: { weight: 'bold' } } } } }
+                options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: isDark ? '#fff' : '#000' } } } }
             });
 
             const stats = { move: 0, buy: 0, ok: 0 };
             cat.base.forEach((_, si) => {
                 const a = getSmartLogic(ci, si);
-                if(a.type === 'TRANSFER') stats.move++;
-                else if(a.type === 'PURCHASE') stats.buy++;
-                else stats.ok++;
+                if(a.type === 'TRANSFER') stats.move++; else if(a.type === 'PURCHASE') stats.buy++; else stats.ok++;
             });
 
-            donutChart = new Chart(document.getElementById('efficiencyChart'), {
+            dChart = new Chart(document.getElementById('donutChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Transfers', 'Purchases', 'Stable'],
+                    labels: ['Move', 'Buy', 'OK'],
                     datasets: [{ data: [stats.move, stats.buy, stats.ok], backgroundColor: ['#3b82f6', '#ef4444', '#10b981'], borderWidth: 0 }]
                 },
-                options: { maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: isDark ? '#fff' : '#000' } } } }
+                options: { maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { color: isDark ? '#fff' : '#000' } } } }
             });
         }
 
-        function toggleAnalytics() { document.getElementById('analyticsWrapper').classList.toggle('hidden'); updateCharts(); }
         function toggleTheme() { document.body.classList.toggle('dark-theme'); if(!document.getElementById('analyticsWrapper').classList.contains('hidden')) updateCharts(); }
+        function toggleAnalytics() { document.getElementById('analyticsWrapper').classList.toggle('hidden'); updateCharts(); }
+        
         function openModal(si) {
-            document.getElementById('modalStoreTitle').innerText = stores[si];
+            document.getElementById('modalTitle').innerText = stores[si];
             let h = "";
             inventoryData.forEach((c, ci) => {
                 const a = getSmartLogic(ci, si);
                 const g = c.present[si] - c.base[si];
-                h += `<div class="p-6 rounded-2xl bg-slate-100 dark:bg-slate-800 border-l-8 ${g < 0 ? 'border-red-500' : 'border-green-500'}">
-                    <div class="flex justify-between text-[10px] font-black opacity-50 mb-2"><span>${c.name}</span><span>GAP: ${g}</span></div>
+                h += `<div class="p-5 rounded-2xl bg-white/5 border-l-8 ${g < 0 ? 'border-red-500' : 'border-green-500'} glass-panel">
+                    <div class="flex justify-between text-[10px] font-black uppercase opacity-50 mb-1"><span>${c.name}</span><span>GAP: ${g}</span></div>
                     <div class="text-xl font-black">${a.type === 'PURCHASE' ? '🛒 ORDER ' + a.qty : a.type === 'TRANSFER' ? '🚚 TAKE ' + a.qty + ' FROM ' + a.from : '✅ OPTIMAL'}</div>
                 </div>`;
             });
             document.getElementById('modalData').innerHTML = h;
             document.getElementById('reportModal').classList.remove('hidden');
         }
+
         function closeModal() { document.getElementById('reportModal').classList.add('hidden'); }
+        
         async function exportToExcel() {
             const wb = new ExcelJS.Workbook();
-            const ws = wb.addWorksheet('Master_Stock');
-            ws.addRow(['STORE', 'CATEGORY', 'TARGET', 'PRESENT', 'ACTION']);
+            const ws = wb.addWorksheet('Logistics');
+            ws.addRow(['STORE', 'CATEGORY', 'TARGET', 'ACTUAL', 'ACTION']);
             inventoryData.forEach((c, ci) => c.base.forEach((b, si) => {
                 const a = getSmartLogic(ci, si);
                 const r = ws.addRow([stores[si], c.name, b, c.present[si], a.type==='TRANSFER'?`MOVE ${a.qty} FROM ${a.from}`:a.type==='PURCHASE'?`BUY ${a.qty}`:'OK']);
@@ -196,10 +210,8 @@
             }));
             saveAs(new Blob([await wb.xlsx.writeBuffer()]), 'SubhamGrand_Logistics.xlsx');
         }
-        function handleFileUpload() { 
-            inventoryData.forEach(c => c.present = c.base.map(b => Math.floor(b * (0.8 + Math.random()))));
-            renderUI(); 
-        }
+
+        function handleFileUpload() { inventoryData.forEach(c => c.present = c.base.map(b => Math.floor(b * (0.8 + Math.random())))); renderUI(); }
         window.onload = renderUI;
     </script>
 </body>
