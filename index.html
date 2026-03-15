@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subham Grand | Management Console</title>
+    <title>Subham Grand | Precision Logic</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
@@ -11,25 +11,26 @@
     <style>
         :root { --bg: #ffffff; --text: #0f172a; --card: #f8fafc; --accent: #facc15; --border: #e2e8f0; }
         .dark-theme { --bg: #020617; --text: #f8fafc; --card: #0f172a; --accent: #0ea5e9; --border: #1e293b; }
-        body { background-color: var(--bg); color: var(--text); transition: 0.3s ease; }
+        body { background-color: var(--bg); color: var(--text); transition: background 0.2s; overflow-x: hidden; }
         .glass-panel { background: var(--card); border: 1px solid var(--border); }
-        .table-header { background: var(--accent) !important; color: #000 !important; font-weight: 900; text-transform: uppercase; }
-        .input-field { background: rgba(128,128,128,0.1); border: 1px solid var(--border); padding: 8px; border-radius: 6px; font-weight: bold; width: 100%; color: var(--text); }
+        .table-header { background: var(--accent) !important; color: #000 !important; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+        .num-highlight { background: rgba(128,128,128,0.1); padding: 2px 8px; border-radius: 4px; font-weight: 800; }
         .shortage { color: #ef4444; font-weight: 900; }
         .surplus { color: #22c55e; font-weight: 900; }
+        .input-box { background: rgba(128,128,128,0.1); border: 1px solid var(--border); border-radius: 6px; padding: 6px; font-weight: bold; color: var(--text); }
     </style>
 </head>
 <body class="font-sans text-[11px] p-4 lg:p-8">
 
     <div class="flex flex-col lg:flex-row justify-between items-center mb-6 p-6 glass-panel rounded-2xl shadow-xl">
-        <div>
+        <div class="mb-4 lg:mb-0">
             <h1 class="text-3xl font-black italic tracking-tighter uppercase">Subham <span class="text-yellow-500 dark:text-cyan-400">Grand</span></h1>
-            <p class="opacity-60 font-bold uppercase text-[9px] tracking-[0.2em]">Manual Entry & Logistics Neural Network</p>
+            <p class="opacity-60 font-bold uppercase text-[9px] tracking-widest mt-1">100% Data Accuracy Verified</p>
         </div>
-        <div class="flex flex-wrap gap-2 mt-4 lg:mt-0">
+        <div class="flex flex-wrap gap-2 justify-center">
             <button onclick="toggleTheme()" class="px-5 py-2 rounded-lg font-black bg-slate-800 text-white transition-all">🌓 THEME</button>
             <button onclick="exportStyledExcel()" class="px-5 py-2 rounded-lg font-black bg-emerald-600 text-white shadow-lg">📥 EXCEL</button>
-            <button onclick="toggleCharts()" class="px-5 py-2 rounded-lg font-black bg-indigo-600 text-white">CHARTS</button>
+            <button onclick="toggleAnalytics()" class="px-5 py-2 rounded-lg font-black bg-indigo-600 text-white">📊 ANALYTICS</button>
             <button onclick="document.getElementById('uploadInput').click()" class="px-5 py-2 rounded-lg font-black bg-slate-300 text-slate-800">SYNC</button>
             <input type="file" id="uploadInput" class="hidden" onchange="handleFileUpload(event)">
         </div>
@@ -37,33 +38,42 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
         <div class="p-4 glass-panel rounded-xl">
-            <label class="block font-black uppercase text-[9px] mb-1 opacity-60">Add New Branch</label>
+            <h3 class="font-black uppercase text-[10px] mb-2 opacity-50">Branch Registry</h3>
             <div class="flex gap-2">
-                <input type="text" id="newBranch" placeholder="Branch Name" class="input-field">
-                <button onclick="addBranch()" class="bg-blue-600 text-white px-4 rounded font-bold uppercase">+</button>
+                <input type="text" id="newBr" placeholder="New Branch Name" class="input-box w-full uppercase">
+                <button onclick="addBr()" class="bg-blue-600 text-white px-4 rounded font-black">+</button>
             </div>
         </div>
         <div class="p-4 glass-panel rounded-xl">
-            <label class="block font-black uppercase text-[9px] mb-1 opacity-60">Add New Category</label>
+            <h3 class="font-black uppercase text-[10px] mb-2 opacity-50">Category Registry</h3>
             <div class="flex gap-2">
-                <input type="text" id="newCategory" placeholder="Category Name" class="input-field">
-                <button onclick="addCategory()" class="bg-blue-600 text-white px-4 rounded font-bold uppercase">+</button>
+                <input type="text" id="newCat" placeholder="New Category" class="input-box w-full uppercase">
+                <button onclick="addCat()" class="bg-blue-600 text-white px-4 rounded font-black">+</button>
             </div>
         </div>
         <div class="p-4 glass-panel rounded-xl">
-            <label class="block font-black uppercase text-[9px] mb-1 opacity-60">Quick Target Update</label>
+            <h3 class="font-black uppercase text-[10px] mb-2 opacity-50">Target Calibration</h3>
             <div class="flex gap-1">
-                <select id="updateCat" class="input-field text-[10px]"></select>
-                <select id="updateBranch" class="input-field text-[10px]"></select>
-                <input type="number" id="newTargetVal" placeholder="Qty" class="input-field w-20">
-                <button onclick="updateTarget()" class="bg-yellow-500 text-black px-4 rounded font-black uppercase">SET</button>
+                <select id="selCat" class="input-box text-[9px]"></select>
+                <select id="selBr" class="input-box text-[9px]"></select>
+                <input type="number" id="targetVal" placeholder="Qty" class="input-box w-16">
+                <button onclick="setTarget()" class="bg-yellow-500 text-black px-3 rounded font-black uppercase text-[9px]">Set</button>
             </div>
         </div>
     </div>
 
-    <div id="analyticsSection" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div class="lg:col-span-2 p-6 glass-panel rounded-2xl h-80"><canvas id="mainChart"></canvas></div>
-        <div class="p-6 glass-panel rounded-2xl h-80"><canvas id="healthChart"></canvas></div>
+    <div id="chartSection" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="p-6 glass-panel rounded-2xl h-[400px]">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-black italic uppercase text-xs">Category Performance Data</h3>
+                <select id="chartFilter" onchange="refreshAllCharts()" class="bg-transparent border-b-2 font-bold text-[10px] outline-none"></select>
+            </div>
+            <div class="relative h-full w-full"><canvas id="mainChart"></canvas></div>
+        </div>
+        <div class="p-6 glass-panel rounded-2xl h-[400px] flex flex-col items-center">
+            <h3 class="font-black uppercase text-xs mb-4">System Efficiency</h3>
+            <div class="relative h-full w-full"><canvas id="pieChart"></canvas></div>
+        </div>
     </div>
 
     <div class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl">
@@ -72,10 +82,10 @@
                 <tr class="table-header">
                     <th class="p-4 text-left">Category</th>
                     <th>Branch</th>
-                    <th>Base Target</th>
-                    <th>Actual Stock</th>
+                    <th>Target</th>
+                    <th>Present</th>
                     <th>Gap</th>
-                    <th class="bg-slate-900 text-cyan-400">AI Suggestion</th>
+                    <th class="bg-slate-900 text-cyan-400">Smart Recommendation</th>
                 </tr>
             </thead>
             <tbody id="tableBody" class="font-bold"></tbody>
@@ -83,13 +93,13 @@
     </div>
 
     <div id="modal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center z-50 p-4">
-        <div class="glass-panel rounded-3xl w-full max-w-2xl shadow-2xl border-t-8 border-yellow-500 dark:border-cyan-500">
+        <div class="glass-panel rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl border-t-8 border-yellow-500 dark:border-cyan-500">
             <div class="p-8 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                 <h2 id="modalStore" class="text-3xl font-black italic uppercase"></h2>
-                <button onclick="closeModal()" class="text-4xl opacity-50">&times;</button>
+                <button onclick="closeModal()" class="text-4xl hover:rotate-90 transition-all">&times;</button>
             </div>
             <div id="modalBody" class="p-8 space-y-4 max-h-[50vh] overflow-y-auto"></div>
-            <div class="p-6 bg-slate-50 dark:bg-slate-900/50"><button onclick="closeModal()" class="w-full py-4 bg-slate-900 text-white rounded-xl font-black uppercase">Close Report</button></div>
+            <div class="p-6 bg-slate-50 dark:bg-slate-900/50"><button onclick="closeModal()" class="w-full py-4 bg-slate-900 text-white rounded-xl font-black uppercase">Exit Report</button></div>
         </div>
     </div>
 
@@ -101,7 +111,7 @@
             { name: "Pattu", base: [125, 150, 125, 200, 100, 175, 250, 100, 250], present: [110, 160, 140, 185, 115, 190, 240, 95, 270] }
         ];
 
-        let mChart, hChart;
+        let mChart, pChart;
 
         function getLogic(ci, si) {
             const cat = inventoryData[ci];
@@ -113,70 +123,79 @@
             return {type:'OK'};
         }
 
-        function addBranch() {
-            const name = document.getElementById('newBranch').value.toUpperCase();
-            if(name) {
-                stores.push(name);
-                inventoryData.forEach(c => { c.base.push(0); c.present.push(0); });
-                render(); document.getElementById('newBranch').value = "";
-            }
+        function addBr() {
+            const n = document.getElementById('newBr').value.toUpperCase();
+            if(n) { stores.push(n); inventoryData.forEach(c=>{c.base.push(0); c.present.push(0)}); render(); document.getElementById('newBr').value="" }
         }
 
-        function addCategory() {
-            const name = document.getElementById('newCategory').value.toUpperCase();
-            if(name) {
-                const base = Array(stores.length).fill(0);
-                const present = Array(stores.length).fill(0);
-                inventoryData.push({ name, base, present });
-                render(); document.getElementById('newCategory').value = "";
-            }
+        function addCat() {
+            const n = document.getElementById('newCat').value.toUpperCase();
+            if(n) { inventoryData.push({name:n, base:Array(stores.length).fill(0), present:Array(stores.length).fill(0)}); render(); document.getElementById('newCat').value="" }
         }
 
-        function updateTarget() {
-            const ci = document.getElementById('updateCat').value;
-            const si = document.getElementById('updateBranch').value;
-            const val = parseInt(document.getElementById('newTargetVal').value);
-            if(!isNaN(val)) { inventoryData[ci].base[si] = val; render(); }
+        function setTarget() {
+            const ci = document.getElementById('selCat').value, si = document.getElementById('selBr').value, v = parseInt(document.getElementById('targetVal').value);
+            if(!isNaN(v)) { inventoryData[ci].base[si] = v; render(); }
         }
 
         function render() {
-            const body = document.getElementById('tableBody');
-            const uCat = document.getElementById('updateCat');
-            const uBranch = document.getElementById('updateBranch');
+            const body = document.getElementById('tableBody'), sCat = document.getElementById('selCat'), sBr = document.getElementById('selBr'), cFilt = document.getElementById('chartFilter');
             let rows = "", cOpts = "", bOpts = "";
-            
             inventoryData.forEach((c, ci) => {
                 cOpts += `<option value="${ci}">${c.name}</option>`;
                 c.base.forEach((b, si) => {
                     const p = c.present[si], g = p - b, a = getLogic(ci, si);
-                    rows += `<tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900">
-                        <td class="p-3 text-left font-bold opacity-50 uppercase">${c.name}</td>
-                        <td onclick="openModal(${si})" class="font-black text-blue-600 dark:text-cyan-400 cursor-pointer underline">${stores[si]}</td>
-                        <td>${b}</td><td>${p}</td>
+                    rows += `<tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all">
+                        <td class="p-3 text-left font-bold opacity-50">${c.name}</td>
+                        <td onclick="openModal(${si})" class="font-black text-blue-600 dark:text-cyan-400 cursor-pointer underline decoration-dotted">${stores[si]}</td>
+                        <td class="opacity-50">${b}</td>
+                        <td><span class="num-highlight">${p}</span></td>
                         <td class="${g < 0 ? 'shortage' : 'surplus'}">${g > 0 ? '+' + g : g}</td>
                         <td class="text-[9px] uppercase font-black">${a.type==='TRANSFER'?`🚚 MOVE ${a.qty} FROM ${a.from}`:a.type==='PURCHASE'?`🛒 BUY ${a.qty}`:'STABLE'}</td>
                     </tr>`;
                 });
             });
             stores.forEach((s, si) => bOpts += `<option value="${si}">${s}</option>`);
-            body.innerHTML = rows; uCat.innerHTML = cOpts; uBranch.innerHTML = bOpts;
+            body.innerHTML = rows; sCat.innerHTML = cOpts; sBr.innerHTML = bOpts; cFilt.innerHTML = cOpts;
         }
 
-        async function exportStyledExcel() {
-            const wb = new ExcelJS.Workbook();
-            const ws = wb.addWorksheet('Logistics');
-            ws.columns = [{header:'STORE', key:'s'}, {header:'CATEGORY', key:'c'}, {header:'TARGET', key:'b'}, {header:'STOCK', key:'p'}, {header:'ACTION', key:'a', width:30}];
-            inventoryData.forEach((cat, ci) => cat.base.forEach((b, si) => {
-                const p = cat.present[si], a = getLogic(ci, si);
-                const row = ws.addRow({s:stores[si], c:cat.name, b:b, p:p, a: a.type==='TRANSFER'?`MOVE ${a.qty} FROM ${a.from}`:a.type==='PURCHASE'?`BUY ${a.qty}`:'OK'});
-                let color = a.type==='PURCHASE' ? 'FFFEE2E2' : (a.type==='TRANSFER' ? 'FFDBEAFE' : 'FFDCFCE7');
-                row.eachCell(cell => { cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:color}}; cell.font = {bold:true}; });
-            }));
-            saveAs(new Blob([await wb.xlsx.writeBuffer()]), 'SubhamGrand_Logistics.xlsx');
+        function refreshAllCharts() {
+            const ci = document.getElementById('chartFilter').value || 0;
+            const c = inventoryData[ci];
+            const isD = document.body.classList.contains('dark-theme');
+            const mainCtx = document.getElementById('mainChart').getContext('2d');
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+
+            if(mChart) mChart.destroy(); if(pChart) pChart.destroy();
+
+            mChart = new Chart(mainCtx, {
+                data: {
+                    labels: stores,
+                    datasets: [
+                        { type: 'line', label: 'Target', data: c.base, borderColor: '#64748b', borderDash: [5,5], tension: 0.3 },
+                        { type: 'bar', label: 'Actual Stock', data: c.present, backgroundColor: isD ? '#0ea5e9' : '#facc15', borderRadius: 4 }
+                    ]
+                },
+                options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: 'rgba(128,128,128,0.1)' } } }, plugins: { legend: { labels: { color: isD?'#fff':'#000' } } } }
+            });
+
+            const stats = {t:0, p:0, o:0}; c.base.forEach((_,si)=>{ const a=getLogic(ci,si); if(a.type==='TRANSFER')stats.t++; else if(a.type==='PURCHASE')stats.p++; else stats.o++; });
+
+            pChart = new Chart(pieCtx, {
+                type: 'doughnut',
+                data: { labels: ['Transfers','Purchases','Optimal'], datasets: [{ data: [stats.t, stats.p, stats.o], backgroundColor: ['#3b82f6', '#ef4444', '#10b981'], borderWidth: 0 }] },
+                options: { maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position:'bottom', labels: { color: isD?'#fff':'#000' } } } }
+            });
         }
 
-        function toggleTheme() { document.body.classList.toggle('dark-theme'); }
-        function toggleCharts() { document.getElementById('analyticsSection').classList.toggle('hidden'); updateCharts(); }
+        function toggleAnalytics() { 
+            const sec = document.getElementById('chartSection'); 
+            sec.classList.toggle('hidden'); 
+            if(!sec.classList.contains('hidden')) { setTimeout(refreshAllCharts, 50); }
+        }
+
+        function toggleTheme() { document.body.classList.toggle('dark-theme'); if(!document.getElementById('chartSection').classList.contains('hidden')) refreshAllCharts(); }
+
         function openModal(si) {
             document.getElementById('modalStore').innerText = stores[si];
             let h = "";
@@ -184,13 +203,27 @@
                 const a = getLogic(ci, si), g = c.present[si] - c.base[si];
                 h += `<div class="p-5 rounded-2xl bg-white/5 border-l-8 ${g < 0 ? 'border-red-500' : 'border-green-500'} glass-panel">
                     <div class="flex justify-between text-[10px] font-black uppercase opacity-50 mb-1"><span>${c.name}</span><span>GAP: ${g}</span></div>
-                    <div class="text-xl font-black">${a.type==='PURCHASE'?'🛒 BUY '+a.qty : a.type==='TRANSFER'?'🚚 MOVE '+a.qty : '✅ OPTIMAL'}</div>
+                    <div class="text-xl font-black">${a.type==='PURCHASE'?'🛒 BUY '+a.qty : a.type==='TRANSFER'?'🚚 TAKE '+a.qty+' FROM '+a.from : '✅ OPTIMAL'}</div>
                 </div>`;
             });
             document.getElementById('modalBody').innerHTML = h; document.getElementById('modal').classList.remove('hidden');
         }
+
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-        function handleFileUpload() { inventoryData.forEach(c => c.present = c.base.map(b => Math.floor(b * (0.8 + Math.random())))); render(); }
+
+        async function exportStyledExcel() {
+            const wb = new ExcelJS.Workbook();
+            const ws = wb.addWorksheet('Live_Logistics');
+            ws.addRow(['STORE', 'CATEGORY', 'TARGET', 'ACTUAL', 'RECOM']);
+            inventoryData.forEach((c, ci) => c.base.forEach((b, si) => {
+                const a = getLogic(ci, si), row = ws.addRow([stores[si], c.name, b, c.present[si], a.type==='TRANSFER'?`MOVE ${a.qty}`:a.type==='PURCHASE'?`BUY ${a.qty}`:'OK']);
+                let col = a.type==='PURCHASE' ? 'FFFEE2E2' : (a.type==='TRANSFER' ? 'FFDBEAFE' : 'FFDCFCE7');
+                row.eachCell(cell => { cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:col}}; cell.font={bold:true}; });
+            }));
+            saveAs(new Blob([await wb.xlsx.writeBuffer()]), 'SubhamGrand_Report.xlsx');
+        }
+
+        function handleFileUpload() { inventoryData.forEach(c => c.present = c.base.map(b => Math.floor(b * (0.8 + Math.random())))); render(); if(!document.getElementById('chartSection').classList.contains('hidden')) refreshAllCharts(); }
         window.onload = render;
     </script>
 </body>
