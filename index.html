@@ -11,217 +11,75 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #f1f5f9;
-            --bg-secondary: #ffffff;
-            --text: #0f172a;
-            --text-muted: #64748b;
-            --accent: #0d9488;
-            --accent-light: #14b8a6;
-            --danger: #dc2626;
-            --warning: #f59e0b;
-            --success: #059669;
-            --info: #2563eb;
-            --border: #e2e8f0;
+            --bg: #f1f5f9; --bg-secondary: #ffffff; --text: #0f172a; --text-muted: #64748b;
+            --accent: #0d9488; --accent-light: #14b8a6; --danger: #dc2626; --warning: #f59e0b;
+            --success: #059669; --info: #2563eb; --border: #e2e8f0;
         }
-        
         .dark-mode {
-            --bg: #0f172a;
-            --bg-secondary: #1e293b;
-            --text: #f1f5f9;
-            --text-muted: #94a3b8;
-            --accent: #14b8a6;
-            --accent-light: #2dd4bf;
-            --danger: #f87171;
-            --warning: #fbbf24;
-            --success: #34d399;
-            --info: #60a5fa;
-            --border: #334155;
+            --bg: #0f172a; --bg-secondary: #1e293b; --text: #f1f5f9; --text-muted: #94a3b8;
+            --accent: #14b8a6; --accent-light: #2dd4bf; --danger: #f87171; --warning: #fbbf24;
+            --success: #34d399; --info: #60a5fa; --border: #334155;
         }
-        
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.5;
-            min-height: 100vh;
-        }
-        
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; min-height: 100vh; }
         .mono { font-family: 'Space Mono', monospace; }
-        
         .container { max-width: 1600px; margin: 0 auto; padding: 24px; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         
-        .card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        
-        /* Simplified Tabs */
-        .tab-bar {
-            display: flex;
-            gap: 4px;
-            background: var(--bg-secondary);
-            padding: 4px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            margin-bottom: 20px;
-        }
-        
-        .tab-btn {
-            flex: 1;
-            padding: 10px;
-            border-radius: 8px;
-            border: none;
-            background: transparent;
-            color: var(--text-muted);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .tab-btn.active {
-            background: var(--accent);
-            color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
+        /* Tabs */
+        .tab-bar { display: flex; gap: 4px; background: var(--bg-secondary); padding: 4px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .tab-btn.active { background: var(--accent); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .tab-btn:hover:not(.active) { background: var(--border); }
         
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 10px 18px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-        
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; white-space: nowrap; }
         .btn-primary { background: var(--accent); color: #fff; }
         .btn-danger { background: var(--danger); color: #fff; }
         .btn-success { background: var(--success); color: #fff; }
         .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+        .btn-info { background: var(--info); color: #fff; }
         
-        .input-field {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 13px;
-            background: var(--bg);
-            color: var(--text);
-        }
-        
+        .input-field { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; background: var(--bg); color: var(--text); }
         .input-field:focus { outline: none; border-color: var(--accent); }
         
         /* Tables */
         .table-container { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        
-        th {
-            background: var(--bg);
-            padding: 12px 16px;
-            text-align: left;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            border-bottom: 2px solid var(--border);
-        }
-        
-        td {
-            padding: 12px 16px;
-            font-size: 13px;
-            border-bottom: 1px solid var(--border);
-            vertical-align: middle;
-        }
-        
+        th { background: var(--bg); padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 2px solid var(--border); }
+        td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
         tr:hover { background: rgba(13,148,136,0.03); }
         
-        .num-cell {
-            font-family: 'Space Mono', monospace;
-            font-weight: 600;
-            padding: 4px 8px;
-            background: rgba(0,0,0,0.03);
-            border-radius: 4px;
-            display: inline-block;
-            min-width: 40px;
-            text-align: right;
-        }
-        
-        .badge {
-            display: inline-flex;
-            padding: 4px 8px;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 700;
-        }
-        
+        .num-cell { font-family: 'Space Mono', monospace; font-weight: 600; padding: 4px 8px; background: rgba(0,0,0,0.03); border-radius: 4px; display: inline-block; min-width: 40px; text-align: right; }
+        .badge { display: inline-flex; padding: 4px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; margin-right: 4px; margin-bottom: 2px; }
         .badge-danger { background: rgba(220,38,38,0.1); color: var(--danger); }
         .badge-success { background: rgba(5,150,105,0.1); color: var(--success); }
         .badge-info { background: rgba(37,99,235,0.1); color: var(--info); }
         .badge-warning { background: rgba(245,158,11,0.1); color: var(--warning); }
         
-        .analysis-cell { display: flex; align-items: center; gap: 10px; }
+        .analysis-cell { display: flex; flex-direction: column; gap: 4px; min-width: 180px; }
         
         /* Modal */
-        .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px); display: flex; align-items: center;
-            justify-content: center; z-index: 100; padding: 24px;
-        }
-        
-        .modal-content {
-            background: var(--bg-secondary); border-radius: 16px;
-            max-width: 500px; width: 100%; max-height: 90vh;
-            overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-        }
-        
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 24px; }
+        .modal-content { background: var(--bg-secondary); border-radius: 16px; max-width: 600px; width: 100%; max-height: 90vh; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
         .hidden { display: none !important; }
         
-        /* Purchase Page Specific Styles */
-        .purchase-header {
-            background: linear-gradient(135deg, var(--danger), #b91c1c);
-            color: white;
-            padding: 24px;
-            border-radius: 12px;
-            margin-bottom: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        /* Purchase Page */
+        .purchase-header { background: linear-gradient(135deg, var(--danger), #b91c1c); color: white; padding: 24px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+        .mrp-report-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
+        .mrp-report-header { background: #f8fafc; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
         
-        @media print {
-            .no-print { display: none; }
-            body { background: white; }
-        }
+        @media print { .no-print { display: none; } body { background: white; } }
     </style>
 </head>
 <body>
 
-    <!-- DASHBOARD VIEW (Main Application) -->
+    <!-- DASHBOARD VIEW -->
     <div id="dashboardView" class="container">
-        <!-- Header -->
         <header class="card p-6 mb-6">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--accent);">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
-                            <path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h1 class="text-xl font-bold tracking-tight">Subham Grand</h1>
-                        <p class="text-xs" style="color: var(--text-muted)">Supply Intelligence Dashboard</p>
-                    </div>
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--accent);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18"/></svg></div>
+                    <div><h1 class="text-xl font-bold tracking-tight">Subham Grand</h1><p class="text-xs" style="color: var(--text-muted)">Supply Intelligence Dashboard</p></div>
                 </div>
                 <div class="flex flex-wrap gap-2 no-print">
                     <button onclick="toggleTheme()" class="btn btn-secondary">Theme</button>
@@ -234,219 +92,159 @@
             </div>
         </header>
 
-        <!-- Stats Grid -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div class="card p-4"><p class="text-xs font-semibold uppercase mb-1" style="color: var(--text-muted)">Target</p><div id="totalBase" class="text-2xl font-bold mono">0</div></div>
             <div class="card p-4"><p class="text-xs font-semibold uppercase mb-1" style="color: var(--text-muted)">Stock</p><div id="totalPresent" class="text-2xl font-bold mono" style="color: var(--info)">0</div></div>
-            <div class="card p-4" style="border-left: 4px solid var(--danger);"><p class="text-xs font-semibold uppercase mb-1" style="color: var(--danger)">Shortage</p><div id="purchaseSuggestion" class="text-2xl font-bold mono" style="color: var(--danger)">0</div></div>
+            <div class="card p-4" style="border-left: 4px solid var(--danger);"><p class="text-xs font-semibold uppercase mb-1" style="color: var(--danger)">Net Shortage</p><div id="purchaseSuggestion" class="text-2xl font-bold mono" style="color: var(--danger)">0</div></div>
             <div class="card p-4" style="border-left: 4px solid var(--success);"><p class="text-xs font-semibold uppercase mb-1" style="color: var(--text-muted)">Efficiency</p><div id="efficiency" class="text-2xl font-bold mono" style="color: var(--success)">0%</div></div>
         </div>
 
-        <!-- Tab Navigation -->
         <div class="tab-bar no-print">
             <button class="tab-btn active" onclick="switchTab('matrix')">Matrix Table</button>
-            <button class="tab-btn" onclick="switchTab('analytics')">Analytics & Charts</button>
-            <button class="tab-btn" onclick="switchTab('actions')">Quick Actions</button>
+            <button class="tab-btn" onclick="switchTab('analytics')">Analytics</button>
+            <button class="tab-btn" onclick="switchTab('actions')">Actions</button>
         </div>
 
-        <!-- Tab Content: Matrix -->
         <div id="tabMatrix" class="tab-content">
-            <div class="card">
-                <div class="table-container" style="border:none;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Category</th>
-                                <th>MRP</th>
-                                <th>Branch</th>
-                                <th style="text-align:right">Target</th>
-                                <th style="text-align:right">Stock</th>
-                                <th style="min-width:250px; background:var(--accent); color:white">Analysis</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody"></tbody>
-                    </table>
-                </div>
-            </div>
+            <div class="card"><div class="table-container" style="border:none;"><table><thead><tr><th>Category</th><th>MRP</th><th>Branch</th><th style="text-align:right">Target</th><th style="text-align:right">Stock</th><th style="min-width:250px; background:var(--accent); color:white">Smart Actions</th></tr></thead><tbody id="tableBody"></tbody></table></div></div>
         </div>
 
-        <!-- Tab Content: Analytics -->
         <div id="tabAnalytics" class="tab-content hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="card p-6" style="height: 400px;">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold">Performance Overview</h3>
-                        <select id="chartFilter" onchange="refreshCharts()" class="input-field" style="width:auto"></select>
-                    </div>
-                    <div style="position:relative; height:calc(100% - 40px);"><canvas id="mainChart"></canvas></div>
-                </div>
-                <div class="card p-6" style="height: 400px;">
-                    <h3 class="font-bold mb-4">Distribution</h3>
-                    <div style="position:relative; height:calc(100% - 40px);"><canvas id="pieChart"></canvas></div>
-                </div>
+                <div class="card p-6" style="height: 400px;"><div class="flex justify-between items-center mb-4"><h3 class="font-bold">Performance</h3><select id="chartFilter" onchange="refreshCharts()" class="input-field" style="width:auto"></select></div><div style="position:relative; height:calc(100% - 40px);"><canvas id="mainChart"></canvas></div></div>
+                <div class="card p-6" style="height: 400px;"><h3 class="font-bold mb-4">Actions Distribution</h3><div style="position:relative; height:calc(100% - 40px);"><canvas id="pieChart"></canvas></div></div>
             </div>
         </div>
 
-        <!-- Tab Content: Actions -->
         <div id="tabActions" class="tab-content hidden">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="card p-6">
-                    <h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Add Branch</h3>
-                    <div class="flex gap-2">
-                        <input type="text" id="newBr" placeholder="Name" class="input-field">
-                        <button onclick="addBr()" class="btn btn-primary">Add</button>
-                    </div>
-                </div>
-                <div class="card p-6">
-                    <h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Add Category</h3>
-                    <div class="flex gap-2">
-                        <input type="text" id="newCat" placeholder="Name" class="input-field">
-                        <button onclick="addCat()" class="btn btn-primary">Add</button>
-                    </div>
-                </div>
-                <div class="card p-6">
-                    <h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Set Target</h3>
-                    <div class="flex gap-2">
-                        <select id="selCat" class="input-field text-xs"></select>
-                        <select id="selBr" class="input-field text-xs"></select>
-                        <input type="number" id="targetVal" placeholder="Qty" class="input-field w-20">
-                        <button onclick="setTarget()" class="btn btn-secondary">Set</button>
-                    </div>
-                </div>
+                <div class="card p-6"><h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Add Branch</h3><div class="flex gap-2"><input type="text" id="newBr" placeholder="Name" class="input-field"><button onclick="addBr()" class="btn btn-primary">Add</button></div></div>
+                <div class="card p-6"><h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Add Category</h3><div class="flex gap-2"><input type="text" id="newCat" placeholder="Name" class="input-field"><button onclick="addCat()" class="btn btn-primary">Add</button></div></div>
+                <div class="card p-6"><h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Set Target</h3><div class="flex gap-2"><select id="selCat" class="input-field text-xs"></select><select id="selBr" class="input-field text-xs"></select><input type="number" id="targetVal" placeholder="Qty" class="input-field w-20"><button onclick="setTarget()" class="btn btn-secondary">Set</button></div></div>
             </div>
         </div>
     </div>
 
-    <!-- MANUAL ENTRY MODAL -->
+    <!-- MANUAL MODAL -->
     <div id="manualModal" class="modal-overlay hidden">
         <div class="modal-content">
-            <div class="p-6" style="background: var(--accent); color: #fff;">
-                <h2 class="text-lg font-bold">Manual Data Entry</h2>
-            </div>
+            <div class="p-6" style="background: var(--accent); color: #fff;"><h2 class="text-lg font-bold">Manual Data Entry</h2></div>
             <div class="p-6 space-y-4">
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Category</label>
-                        <input type="text" id="manualCatInput" list="catList" class="input-field">
-                        <datalist id="catList"></datalist>
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">MRP Range</label>
-                        <input type="text" id="manualMrp" class="input-field">
-                    </div>
+                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Category</label><input type="text" id="manualCatInput" list="catList" class="input-field"><datalist id="catList"></datalist></div>
+                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">MRP Range</label><input type="text" id="manualMrp" class="input-field"></div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Branch</label>
-                        <select id="manualBranch" class="input-field"></select>
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Target / Stock</label>
-                        <div class="flex gap-2">
-                            <input type="number" id="manualTarget" class="input-field" placeholder="Tgt">
-                            <input type="number" id="manualStock" class="input-field" placeholder="Stk">
-                        </div>
-                    </div>
+                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Branch</label><select id="manualBranch" class="input-field"></select></div>
+                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Target / Stock</label><div class="flex gap-2"><input type="number" id="manualTarget" class="input-field" placeholder="Tgt"><input type="number" id="manualStock" class="input-field" placeholder="Stk"></div></div>
                 </div>
                 <button onclick="saveManualData()" class="btn btn-success w-full py-3 mt-2">Save Entry</button>
             </div>
-            <div class="p-4 text-center" style="border-top: 1px solid var(--border);">
-                <button onclick="closeManualModal()" class="text-xs font-bold uppercase" style="color: var(--text-muted);">Cancel</button>
-            </div>
+            <div class="p-4 text-center" style="border-top: 1px solid var(--border);"><button onclick="closeManualModal()" class="text-xs font-bold uppercase" style="color: var(--text-muted);">Cancel</button></div>
         </div>
     </div>
 
     <!-- BRANCH MODAL -->
     <div id="modal" class="modal-overlay hidden">
-        <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-content" style="max-width: 650px;">
             <div class="p-6 flex justify-between items-center" style="background: var(--accent); color: #fff;">
                 <h2 id="modalStore" class="text-lg font-bold"></h2>
                 <button onclick="closeModal()" class="text-2xl opacity-80 hover:opacity-100">&times;</button>
             </div>
             <div id="modalBody" class="p-6 space-y-3 max-h-96 overflow-y-auto"></div>
-            <div class="p-4" style="border-top: 1px solid var(--border);">
-                <button onclick="closeModal()" class="btn btn-secondary w-full">Close</button>
+            <div class="p-4 flex gap-2" style="border-top: 1px solid var(--border);">
+                <button onclick="exportBranchReport()" class="btn btn-info w-full no-print">Export to Excel</button>
+                <button onclick="closeModal()" class="btn btn-secondary w-full no-print">Close</button>
             </div>
         </div>
     </div>
 
-    <script>
-        // --- DATA STRUCTURE (Preserved) ---
-        let stores = ["SG HYD", "SG", "SGRJY", "SGTNL", "SIRI ELR", "ST", "TUNI", "SIRICPT", "VS"];
+    <!-- PURCHASE REPORT VIEW -->
+    <div id="purchaseReportView" class="container hidden">
+        <div class="purchase-header">
+            <div><h1 class="text-2xl font-bold">Intelligent Supply Report</h1><p class="text-sm opacity-80">Transfer & Purchase Suggestions</p></div>
+            <div class="flex gap-2 no-print">
+                <button onclick="window.print()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Print</button>
+                <button onclick="window.close()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Close</button>
+            </div>
+        </div>
         
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div class="card p-6" style="height: 350px;"><h3 class="font-bold mb-4">Action Split</h3><div style="position:relative; height:calc(100% - 30px);"><canvas id="purchaseChart"></canvas></div></div>
+            <div class="card p-6 lg:col-span-2">
+                 <h3 class="font-bold mb-4">Summary</h3>
+                 <div class="grid grid-cols-3 gap-4">
+                     <div class="p-4 rounded" style="background: #fff5f5;"><p class="text-xs text-gray-500 uppercase">Total Purchase</p><p class="font-bold text-red-600 text-xl" id="sumPurchase">0</p></div>
+                     <div class="p-4 rounded" style="background: #eff6ff;"><p class="text-xs text-gray-500 uppercase">Total Transfer</p><p class="font-bold text-blue-600 text-xl" id="sumTransfer">0</p></div>
+                     <div class="p-4 rounded" style="background: #f0fdf4;"><p class="text-xs text-gray-500 uppercase">Optimized</p><p class="font-bold text-green-600 text-xl">Active</p></div>
+                 </div>
+                 <p class="text-xs text-gray-500 mt-4">Report groups by Category > MRP. Actions are split into 'Transfer from Branch' (Blue) and 'Purchase' (Red).</p>
+            </div>
+        </div>
+        <div id="purchaseReportContent"></div>
+    </div>
+
+    <script>
+        // --- DATA (Preserved) ---
+        let stores = ["SG HYD", "SG", "SGRJY", "SGTNL", "SIRI ELR", "ST", "TUNI", "SIRICPT", "VS"];
         let inventoryData = [
-            { 
-                name: "BNS HANDLOOM HF", 
-                base: [5650, 11000, 4950, 8300, 7350, 7350, 8500, 4000, 8400], 
-                present: [4800, 9200, 4100, 7500, 6800, 7000, 8100, 3800, 7900], 
-                mrpDetails: [
-                    { range: "0-500", base: [250, 500, 250, 500, 400, 400, 500, 400, 400], present: [180, 420, 200, 380, 350, 320, 450, 350, 380] },
-                    { range: "501-1000", base: [450, 1000, 450, 800, 700, 700, 800, 400, 800], present: [380, 850, 400, 720, 650, 680, 750, 380, 720] },
-                    { range: "1001-1500", base: [450, 1000, 450, 800, 700, 700, 800, 400, 800], present: [420, 920, 430, 780, 680, 710, 780, 390, 760] },
-                    { range: "1501-2000", base: [450, 1000, 450, 800, 700, 700, 800, 400, 800], present: [400, 880, 410, 750, 660, 680, 760, 360, 740] },
-                    { range: "2001+", base: [4050, 7600, 3300, 5200, 4550, 4550, 5100, 2400, 5400], present: [3420, 6730, 2680, 4820, 4300, 4280, 4880, 2280, 4980] }
-                ] 
-            },
-            { 
-                name: "SILK WORK SAREES", 
-                base: [1310, 1810, 1110, 1305, 1170, 1310, 1320, 440, 1465], 
-                present: [1200, 1700, 1000, 1200, 1100, 1300, 1400, 400, 1500], 
-                mrpDetails: [
-                    { range: "0-500", base: [87, 175, 87, 125, 125, 150, 175, 0, 150], present: [60, 120, 55, 90, 85, 100, 130, 10, 95] },
-                    { range: "501-1000", base: [185, 370, 185, 295, 245, 295, 345, 50, 295], present: [150, 280, 140, 220, 180, 240, 280, 35, 250] },
-                    { range: "1001+", base: [1038, 1265, 838, 885, 800, 865, 800, 390, 1020], present: [990, 1300, 805, 890, 835, 960, 990, 355, 1155] }
-                ] 
-            },
-            { 
-                name: "PATTU SAREES", 
-                base: [721, 1153, 763, 828, 268, 1063, 1192, 688, 998], 
-                present: [700, 1100, 750, 800, 300, 1000, 1200, 600, 950], 
-                mrpDetails: [] 
-            },
-            { 
-                name: "VENKATAGIRI", 
-                base: [405, 225, 355, 170, 170, 370, 220, 380, 164], 
-                present: [400, 220, 350, 150, 160, 350, 200, 350, 150], 
-                mrpDetails: [] 
-            },
-            { 
-                name: "SURAT PRINTED", 
-                base: [509, 706, 562, 474, 294, 1389, 889, 436, 772], 
-                present: [450, 650, 500, 400, 250, 1300, 900, 400, 700], 
-                mrpDetails: [] 
-            }
+            { name: "BNS HANDLOOM HF", base: [5650, 11000, 4950, 8300, 7350, 7350, 8500, 4000, 8400], present: [4800, 9200, 4100, 7500, 6800, 7000, 8100, 3800, 7900], mrpDetails: [
+                { range: "0-500", base: [250, 500, 250, 500, 400, 400, 500, 400, 400], present: [180, 420, 200, 380, 350, 320, 450, 350, 380] },
+                { range: "501-1000", base: [450, 1000, 450, 800, 700, 700, 800, 400, 800], present: [380, 850, 400, 720, 650, 680, 750, 380, 720] },
+                { range: "1001-1500", base: [450, 1000, 450, 800, 700, 700, 800, 400, 800], present: [420, 920, 430, 780, 680, 710, 780, 390, 760] },
+                { range: "1501-2000", base: [450, 1000, 450, 800, 700, 700, 800, 400, 800], present: [400, 880, 410, 750, 660, 680, 760, 360, 740] },
+                { range: "2001+", base: [4050, 7600, 3300, 5200, 4550, 4550, 5100, 2400, 5400], present: [3420, 6730, 2680, 4820, 4300, 4280, 4880, 2280, 4980] }
+            ] },
+            { name: "SILK WORK SAREES", base: [1310, 1810, 1110, 1305, 1170, 1310, 1320, 440, 1465], present: [1200, 1700, 1000, 1200, 1100, 1300, 1400, 400, 1500], mrpDetails: [
+                { range: "0-500", base: [87, 175, 87, 125, 125, 150, 175, 0, 150], present: [60, 120, 55, 90, 85, 100, 130, 10, 95] },
+                { range: "501-1000", base: [185, 370, 185, 295, 245, 295, 345, 50, 295], present: [150, 280, 140, 220, 180, 240, 280, 35, 250] },
+                { range: "1001+", base: [1038, 1265, 838, 885, 800, 865, 800, 390, 1020], present: [990, 1300, 805, 890, 835, 960, 990, 355, 1155] }
+            ] },
+            { name: "PATTU SAREES", base: [721, 1153, 763, 828, 268, 1063, 1192, 688, 998], present: [700, 1100, 750, 800, 300, 1000, 1200, 600, 950], mrpDetails: [] },
+            { name: "VENKATAGIRI", base: [405, 225, 355, 170, 170, 370, 220, 380, 164], present: [400, 220, 350, 150, 160, 350, 200, 350, 150], mrpDetails: [] },
+            { name: "SURAT PRINTED", base: [509, 706, 562, 474, 294, 1389, 889, 436, 772], present: [450, 650, 500, 400, 250, 1300, 900, 400, 700], mrpDetails: [] }
         ];
 
-        let mainChart = null;
-        let pieChart = null;
+        let mainChart = null; let pieChart = null;
+        let currentModalBranchIndex = null; // For export
 
-        // --- LOGIC (Preserved) ---
+        // --- LOGIC: Accurate Transfer + Purchase Calculation ---
         function getSmartLogic(si, baseArr, presentArr) {
-            if (!baseArr || !presentArr) return { type: 'OK', qty: 0, from: null };
+            if (!baseArr || !presentArr) return { transfer: null, purchase: 0 };
             const gap = (presentArr[si] || 0) - (baseArr[si] || 0);
-            if (gap >= 0) return { type: 'OK', qty: 0, from: null };
+            if (gap >= 0) return { transfer: null, purchase: 0 };
+            
             const shortageQty = Math.abs(gap);
             let bestDonor = null;
             let maxSurplus = 0;
 
+            // Find best donor with max surplus
             for (let i = 0; i < stores.length; i++) {
                 if (i === si) continue;
                 const surplus = (presentArr[i] || 0) - (baseArr[i] || 0);
-                if (surplus > maxSurplus) { maxSurplus = surplus; bestDonor = i; }
+                if (surplus > maxSurplus) {
+                    maxSurplus = surplus;
+                    bestDonor = i;
+                }
             }
+
+            let transferObj = null;
+            let purchaseQty = 0;
 
             if (bestDonor !== null && maxSurplus > 0) {
                 const transferQty = Math.min(shortageQty, maxSurplus);
-                return { type: 'TRANSFER', qty: transferQty, from: stores[bestDonor] };
+                transferObj = { qty: transferQty, from: stores[bestDonor] };
+                purchaseQty = shortageQty - transferQty; // Remaining needs purchase
+            } else {
+                purchaseQty = shortageQty;
             }
-            return { type: 'PURCHASE', qty: shortageQty, from: null };
+
+            return { transfer: transferObj, purchase: purchaseQty };
         }
 
         function recalculateCategoryTotals(ci) {
-            const cat = inventoryData[ci];
-            if (!cat) return;
-            cat.base = Array(stores.length).fill(0);
-            cat.present = Array(stores.length).fill(0);
+            const cat = inventoryData[ci]; if (!cat) return;
+            cat.base = Array(stores.length).fill(0); cat.present = Array(stores.length).fill(0);
             if (cat.mrpDetails && cat.mrpDetails.length > 0) {
                 cat.mrpDetails.forEach(row => {
                     if (row.base && row.present) {
@@ -457,73 +255,48 @@
             }
         }
 
-        // --- RENDER UI ---
+        // --- RENDER ---
         function render() {
             const tbody = document.getElementById('tableBody');
-            const selCat = document.getElementById('selCat');
-            const selBr = document.getElementById('selBr');
-            const chartFilter = document.getElementById('chartFilter');
-            
             let html = '';
             let catOpts = '';
             let brOpts = '';
-            let globalBase = 0;
-            let globalPresent = 0;
+            let globalBase = 0, globalPresent = 0;
 
             inventoryData.forEach((cat, ci) => {
                 catOpts += `<option value="${ci}">${cat.name}</option>`;
-                
-                // Category Header
-                html += `<tr style="background: var(--accent); color: #fff;">
-                    <td colspan="6" style="padding:12px 16px; font-weight:700; font-size:12px;">${cat.name}</td>
-                </tr>`;
+                html += `<tr style="background: var(--accent); color: #fff;"><td colspan="6" style="padding:12px 16px; font-weight:700; font-size:12px;">${cat.name}</td></tr>`;
                 
                 stores.forEach((store, si) => {
-                    // MRP Rows
                     if (cat.mrpDetails && cat.mrpDetails.length > 0) {
                         cat.mrpDetails.forEach(mrp => {
                             const mBase = mrp.base ? (mrp.base[si] || 0) : 0;
                             const mPres = mrp.present ? (mrp.present[si] || 0) : 0;
-                            const mGap = mPres - mBase;
-                            
-                            globalBase += mBase;
-                            globalPresent += mPres;
-                            
+                            globalBase += mBase; globalPresent += mPres;
                             const logic = getSmartLogic(si, mrp.base, mrp.present);
-                            
                             html += `<tr style="background:rgba(0,0,0,0.01);">
                                 <td style="opacity:0.5">${cat.name}</td>
                                 <td><span class="badge badge-info">${mrp.range}</span></td>
                                 <td style="font-weight:600">${store}</td>
                                 <td style="text-align:right"><span class="num-cell">${mBase}</span></td>
                                 <td style="text-align:right"><span class="num-cell">${mPres}</span></td>
-                                <td>${renderAnalysis(mGap, logic)}</td>
+                                <td>${renderActions(logic)}</td>
                             </tr>`;
                         });
-                    } else {
-                        globalBase += cat.base[si] || 0;
-                        globalPresent += cat.present[si] || 0;
-                    }
+                    } else { globalBase += cat.base[si] || 0; globalPresent += cat.present[si] || 0; }
                     
-                    // Total Row
-                    const tBase = cat.base[si] || 0;
-                    const tPres = cat.present[si] || 0;
-                    const tGap = tPres - tBase;
                     const tLogic = getSmartLogic(si, cat.base, cat.present);
-                    
                     html += `<tr style="background:rgba(0,0,0,0.04);">
-                        <td style="font-weight:700">${cat.name}</td>
-                        <td><span class="badge badge-warning">TOTAL</span></td>
+                        <td style="font-weight:700">${cat.name}</td><td><span class="badge badge-warning">TOTAL</span></td>
                         <td onclick="openModal(${si})" style="cursor:pointer; color:var(--accent); text-decoration:underline; font-weight:700">${store}</td>
-                        <td style="text-align:right"><span class="num-cell">${tBase}</span></td>
-                        <td style="text-align:right"><span class="num-cell">${tPres}</span></td>
-                        <td>${renderAnalysis(tGap, tLogic)}</td>
+                        <td style="text-align:right"><span class="num-cell">${cat.base[si] || 0}</span></td>
+                        <td style="text-align:right"><span class="num-cell">${cat.present[si] || 0}</span></td>
+                        <td>${renderActions(tLogic)}</td>
                     </tr>`;
                 });
             });
 
             stores.forEach((s, si) => brOpts += `<option value="${si}">${s}</option>`);
-            
             const netGap = globalBase - globalPresent;
             const efficiency = globalBase > 0 ? Math.round((globalPresent / globalBase) * 100) : 0;
             
@@ -533,89 +306,66 @@
             document.getElementById('efficiency').textContent = efficiency + '%';
             
             tbody.innerHTML = html;
-            selCat.innerHTML = catOpts;
-            selBr.innerHTML = brOpts;
-            chartFilter.innerHTML = catOpts;
-            
+            document.getElementById('selCat').innerHTML = catOpts;
+            document.getElementById('selBr').innerHTML = brOpts;
+            document.getElementById('chartFilter').innerHTML = catOpts;
             document.getElementById('catList').innerHTML = catOpts;
             document.getElementById('manualBranch').innerHTML = brOpts;
             
             if (!document.getElementById('tabAnalytics').classList.contains('hidden')) refreshCharts();
         }
 
-        function renderAnalysis(gap, logic) {
-            const gapBad = gap !== 0 
-                ? `<span class="badge ${gap < 0 ? 'badge-danger' : 'badge-success'}">${gap > 0 ? '+' : ''}${gap}</span>` 
-                : `<span class="badge" style="background:var(--border); color:var(--text-muted)">0</span>`;
-            
-            let logicBad = '';
-            if (logic.type === 'TRANSFER') logicBad = `<span class="badge badge-info">Move ${logic.qty}</span>`;
-            else if (logic.type === 'PURCHASE') logicBad = `<span class="badge badge-danger">Buy ${logic.qty}</span>`;
-            else logicBad = `<span class="badge badge-success">OK</span>`;
-            
-            return `<div class="analysis-cell">${gapBad} ${logicBad}</div>`;
+        function renderActions(logic) {
+            let html = '<div class="analysis-cell">';
+            if (logic.transfer) html += `<span class="badge badge-info">Transfer ${logic.transfer.qty} from ${logic.transfer.from}</span>`;
+            if (logic.purchase > 0) html += `<span class="badge badge-danger">Purchase ${logic.purchase}</span>`;
+            if (!logic.transfer && logic.purchase === 0) html += `<span class="badge badge-success">OK</span>`;
+            return html + '</div>';
         }
 
-        // --- TAB NAVIGATION ---
+        // --- TABS & CHARTS ---
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            
             document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.remove('hidden');
             event.target.classList.add('active');
-            
             if (tabName === 'analytics') refreshCharts();
         }
 
-        // --- CHARTS ---
         function refreshCharts() {
             const ci = parseInt(document.getElementById('chartFilter').value) || 0;
             const cat = inventoryData[ci];
             const isDark = document.body.classList.contains('dark-mode');
-            if (mainChart) mainChart.destroy();
-            if (pieChart) pieChart.destroy();
+            if (mainChart) mainChart.destroy(); if (pieChart) pieChart.destroy();
             if (!cat) return;
-            
             const txtColor = isDark ? '#f1f5f9' : '#0f172a';
             const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
             
             mainChart = new Chart(document.getElementById('mainChart'), {
-                data: {
-                    labels: stores,
-                    datasets: [
-                        { type: 'line', label: 'Target', data: cat.base, borderColor: '#f59e0b', borderWidth: 2, pointRadius: 4, tension: 0.2 },
-                        { type: 'bar', label: 'Stock', data: cat.present, backgroundColor: '#0d9488', borderRadius: 6, barThickness: 20 }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: txtColor } } },
-                    scales: { x: { grid: { color: gridColor }, ticks: { color: txtColor } }, y: { grid: { color: gridColor }, ticks: { color: txtColor } } }
-                }
+                data: { labels: stores, datasets: [ { type: 'line', label: 'Target', data: cat.base, borderColor: '#f59e0b', borderWidth: 2, pointRadius: 4 }, { type: 'bar', label: 'Stock', data: cat.present, backgroundColor: '#0d9488', borderRadius: 6 } ] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: txtColor } } }, scales: { x: { grid: { color: gridColor }, ticks: { color: txtColor } }, y: { grid: { color: gridColor }, ticks: { color: txtColor } } } }
             });
             
             const stats = { transfer: 0, purchase: 0, ok: 0 };
             cat.base.forEach((_, si) => {
                 const logic = getSmartLogic(si, cat.base, cat.present);
-                if (logic.type === 'TRANSFER') stats.transfer++; else if (logic.type === 'PURCHASE') stats.purchase++; else stats.ok++;
+                if (logic.transfer) stats.transfer++;
+                if (logic.purchase > 0) stats.purchase++;
+                if (!logic.transfer && logic.purchase === 0) stats.ok++;
             });
-            
             pieChart = new Chart(document.getElementById('pieChart'), {
                 type: 'doughnut',
-                data: { labels: ['Transfer', 'Purchase', 'OK'], datasets: [{ data: [stats.transfer, stats.purchase, stats.ok], backgroundColor: ['#f59e0b', '#dc2626', '#059669'], borderWidth: 0 }] },
+                data: { labels: ['Transfer', 'Purchase', 'OK'], datasets: [{ data: [stats.transfer, stats.purchase, stats.ok], backgroundColor: ['#2563eb', '#dc2626', '#059669'], borderWidth: 0 }] },
                 options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: txtColor } } } }
             });
         }
 
         // --- PURCHASE REPORT (NEW TAB) ---
         function openPurchaseReportTab() {
-            // Save data to local storage for the new tab to access
             localStorage.setItem('sg_report_data', JSON.stringify({ inventoryData, stores }));
-            // Open the same file with a hash parameter
             window.open(window.location.href.split('#')[0] + '#purchase', '_blank');
         }
 
-        // Function to render the Purchase Report if the URL has #purchase
         function checkPurchaseReportMode() {
             if (window.location.hash === '#purchase') {
                 document.getElementById('dashboardView').classList.add('hidden');
@@ -625,157 +375,114 @@
         }
 
         function renderPurchasePage() {
-            // Load data
             const savedData = JSON.parse(localStorage.getItem('sg_report_data'));
-            if (!savedData) {
-                document.getElementById('purchaseReportContent').innerHTML = '<p>No data found. Please open from dashboard.</p>';
-                return;
-            }
-            
+            if (!savedData) return;
             const data = savedData.inventoryData;
             const str = savedData.stores;
             
-            // Generate Table Content
-            let tableHtml = '';
-            let chartData = { labels: [], shortageData: [] };
+            let html = '';
+            let chartStats = { transfer: 0, purchase: 0 };
             
             data.forEach(cat => {
-                let catShortage = 0;
-                tableHtml += `<tr style="background:rgba(0,0,0,0.04);"><td colspan="6" style="font-weight:700; padding:10px;">${cat.name}</td></tr>`;
-                
-                str.forEach((store, si) => {
-                    if (cat.mrpDetails && cat.mrpDetails.length > 0) {
-                        cat.mrpDetails.forEach(mrp => {
-                            const b = mrp.base[si] || 0;
-                            const p = mrp.present[si] || 0;
-                            const g = p - b;
-                            if (g < 0) {
-                                catShortage += Math.abs(g);
-                                tableHtml += `<tr>
-                                    <td>${cat.name}</td><td><span class="badge badge-info">${mrp.range}</span></td><td>${store}</td>
-                                    <td style="text-align:right">${b}</td><td style="text-align:right">${p}</td>
-                                    <td style="text-align:right"><span class="badge badge-danger">${g}</span></td>
-                                </tr>`;
-                            }
-                        });
-                    } else {
-                        const b = cat.base[si] || 0;
-                        const p = cat.present[si] || 0;
-                        const g = p - b;
-                        if (g < 0) {
-                            catShortage += Math.abs(g);
-                            tableHtml += `<tr>
-                                <td style="font-weight:bold">${cat.name}</td><td><span class="badge badge-warning">TOTAL</span></td><td>${store}</td>
-                                <td style="text-align:right">${b}</td><td style="text-align:right">${p}</td>
-                                <td style="text-align:right"><span class="badge badge-danger">${g}</span></td>
+                const processRange = (rangeName, baseArr, presentArr) => {
+                    let rows = '';
+                    let rangeTransfer = 0, rangePurchase = 0;
+                    
+                    str.forEach((store, si) => {
+                        const b = baseArr[si] || 0;
+                        const p = presentArr[si] || 0;
+                        const logic = getSmartLogic(si, baseArr, presentArr);
+                        
+                        if (logic.transfer || logic.purchase > 0) {
+                            if(logic.transfer) { rangeTransfer += logic.transfer.qty; chartStats.transfer += logic.transfer.qty; }
+                            if(logic.purchase > 0) { rangePurchase += logic.purchase; chartStats.purchase += logic.purchase; }
+                            
+                            rows += `<tr style="background: #fff;">
+                                <td style="width: 20%; border-bottom: 1px solid #f1f5f9;">${store}</td>
+                                <td style="width: 15%; text-align: right; border-bottom: 1px solid #f1f5f9;">${b}</td>
+                                <td style="width: 15%; text-align: right; border-bottom: 1px solid #f1f5f9;">${p}</td>
+                                <td style="width: 25%; border-bottom: 1px solid #f1f5f9;">${logic.transfer ? `<span class="badge badge-info">Trans ${logic.transfer.qty} from ${logic.transfer.from}</span>` : '-'}</td>
+                                <td style="width: 25%; text-align: right; border-bottom: 1px solid #f1f5f9;">${logic.purchase > 0 ? `<span style="color:#dc2626; font-weight:700;">${logic.purchase}</span>` : '-'}</td>
                             </tr>`;
                         }
+                    });
+
+                    if (rows) {
+                        html += `<div class="mrp-report-card">
+                            <div class="mrp-report-header">
+                                <div style="font-weight: 700; color: #0f172a;">${cat.name} <span style="color: #64748b; font-weight: 400;">(${rangeName})</span></div>
+                                <div class="flex gap-4 text-sm">
+                                    <span class="text-blue-600 font-bold">Transfer: ${rangeTransfer}</span>
+                                    <span class="text-red-600 font-bold">Purchase: ${rangePurchase}</span>
+                                </div>
+                            </div>
+                            <table style="width: 100%; min-width: auto;"><thead><tr style="background: #f8fafc;"><th style="padding: 8px; width: 20%;">Branch</th><th style="padding: 8px; width: 15%; text-align: right;">Tgt</th><th style="padding: 8px; width: 15%; text-align: right;">Stk</th><th style="padding: 8px; width: 25%;">Transfer Suggestion</th><th style="padding: 8px; width: 25%; text-align: right;">Purchase</th></tr></thead><tbody>${rows}</tbody></table>
+                        </div>`;
                     }
-                });
+                };
                 
-                if (catShortage > 0) {
-                    chartData.labels.push(cat.name.substring(0, 10));
-                    chartData.shortageData.push(catShortage);
+                if (cat.mrpDetails && cat.mrpDetails.length > 0) {
+                    cat.mrpDetails.forEach(mrp => processRange(mrp.range, mrp.base, mrp.present));
+                } else {
+                    processRange("Total Stock", cat.base, cat.present);
                 }
             });
 
-            document.getElementById('purchaseTableBody').innerHTML = tableHtml;
+            document.getElementById('purchaseReportContent').innerHTML = html;
+            document.getElementById('sumPurchase').innerText = chartStats.purchase.toLocaleString();
+            document.getElementById('sumTransfer').innerText = chartStats.transfer.toLocaleString();
             
-            // Render Purchase Chart
-            const ctx = document.getElementById('purchaseChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: chartData.labels,
-                    datasets: [{
-                        label: 'Total Shortage Qty',
-                        data: chartData.shortageData,
-                        backgroundColor: '#dc2626',
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true } }
-                }
+            new Chart(document.getElementById('purchaseChart'), {
+                type: 'doughnut',
+                data: { labels: ['Transfer Qty', 'Purchase Qty'], datasets: [{ data: [chartStats.transfer, chartStats.purchase], backgroundColor: ['#2563eb', '#dc2626'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'bottom' } } }
             });
         }
 
         // --- EXPORT FUNCTIONS ---
-        async function exportPurchaseExcel() {
+        // 1. Branch Modal Export
+        async function exportBranchReport() {
+            if (currentModalBranchIndex === null) return;
+            const si = currentModalBranchIndex;
             const wb = new ExcelJS.Workbook();
-            const ws = wb.addWorksheet('Purchase');
+            const ws = wb.addWorksheet(stores[si]);
             
-            ws.addRow(["Purchase Requirement List"]);
-            ws.mergeCells('A1:F1');
-            ws.getRow(1).font = { size: 16, bold: true };
-            ws.getRow(1).height = 25;
+            ws.addRow([`Report for Branch: ${stores[si]}`]);
+            ws.mergeCells('A1:D1');
+            ws.getRow(1).font = { size: 14, bold: true };
             
-            const headerRow = ws.getRow(3);
-            headerRow.values = ['Category', 'MRP Range', 'Branch', 'Target', 'Stock', 'Shortage'];
-            headerRow.eachCell((cell) => {
-                cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
-                cell.alignment = { horizontal: 'center' };
-            });
-            
-            ws.columns = [{ width: 20 }, { width: 12 }, { width: 12 }, { width: 10 }, { width: 10 }, { width: 10 }];
+            ws.getRow(3).values = ['Category', 'Target', 'Stock', 'Action'];
+            ws.getRow(3).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            ws.getRow(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
+            ws.columns = [{ width: 25 }, { width: 10 }, { width: 10 }, { width: 30 }];
             
             let rowIdx = 4;
             inventoryData.forEach(cat => {
-                stores.forEach((store, si) => {
-                    if (cat.mrpDetails && cat.mrpDetails.length > 0) {
-                        cat.mrpDetails.forEach(mrp => {
-                            const b = mrp.base[si] || 0;
-                            const p = mrp.present[si] || 0;
-                            const g = p - b;
-                            if (g < 0) {
-                                const row = ws.getRow(rowIdx);
-                                row.values = [cat.name, mrp.range, store, b, p, g];
-                                row.eachCell((cell, colNumber) => {
-                                    cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
-                                    if (colNumber === 6) cell.font = { color: { argb: 'FFFF0000' }, bold: true };
-                                });
-                                rowIdx++;
-                            }
-                        });
-                    } else {
-                        const b = cat.base[si] || 0;
-                        const p = cat.present[si] || 0;
-                        const g = p - b;
-                        if (g < 0) {
-                            const row = ws.getRow(rowIdx);
-                            row.values = [cat.name, 'TOTAL', store, b, p, g];
-                            row.eachCell(cell => { cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} }; cell.font = { bold: true }; });
-                            if (g < 0) row.getCell(6).font = { color: { argb: 'FFFF0000' }, bold: true };
-                            rowIdx++;
-                        }
-                    }
-                });
+                const logic = getSmartLogic(si, cat.base, cat.present);
+                const b = cat.base[si] || 0;
+                const p = cat.present[si] || 0;
+                let action = '';
+                if (logic.transfer) action += `Transfer ${logic.transfer.qty} from ${logic.transfer.from}; `;
+                if (logic.purchase > 0) action += `Purchase ${logic.purchase}`;
+                if (!action) action = 'OK';
+                
+                ws.getRow(rowIdx).values = [cat.name, b, p, action];
+                rowIdx++;
             });
             
             const buffer = await wb.xlsx.writeBuffer();
-            saveAs(new Blob([buffer]), 'Purchase_Report.xlsx');
+            saveAs(new Blob([buffer]), `${stores[si]}_Report.xlsx`);
         }
 
+        // 2. Full Matrix Export (Preserved)
         async function exportMatrixExcel() {
             const wb = new ExcelJS.Workbook();
             const ws = wb.addWorksheet('Matrix');
-            
             ws.addRow(["Full Inventory Report"]);
-            ws.mergeCells('A1:G1');
             ws.getRow(1).font = { size: 16, bold: true };
-
             const headerRow = ws.getRow(3);
-            headerRow.values = ['Category', 'MRP Range', 'Branch', 'Target', 'Stock', 'Gap', 'AI Recommendation'];
-            headerRow.eachCell((cell) => {
-                cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
-                cell.alignment = { horizontal: 'center' };
-            });
-
+            headerRow.values = ['Category', 'MRP Range', 'Branch', 'Target', 'Stock', 'Gap', 'Action'];
+            headerRow.eachCell((cell) => { cell.font = { bold: true, color: { argb: 'FFFFFFFF' } }; cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } }; });
             ws.columns = [{ width: 20 }, { width: 12 }, { width: 12 }, { width: 10 }, { width: 10 }, { width: 10 }, { width: 30 }];
             
             let rowIdx = 4;
@@ -783,97 +490,34 @@
                 stores.forEach((store, si) => {
                     if (cat.mrpDetails && cat.mrpDetails.length > 0) {
                         cat.mrpDetails.forEach(mrp => {
-                            const b = mrp.base[si] || 0;
-                            const p = mrp.present[si] || 0;
-                            const g = p - b;
+                            const b = mrp.base[si] || 0; const p = mrp.present[si] || 0; const g = p - b;
                             const logic = getSmartLogic(si, mrp.base, mrp.present);
-                            const sug = logic.type === 'TRANSFER' ? `Transfer ${logic.qty} from ${logic.from}` : (logic.type === 'PURCHASE' ? `Purchase ${logic.qty}` : 'OK');
-                            const row = ws.getRow(rowIdx);
-                            row.values = [cat.name, mrp.range, store, b, p, g, sug];
-                            row.eachCell((cell, colNumber) => {
-                                cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
-                                if (colNumber === 6 && g < 0) cell.font = { color: { argb: 'FFFF0000' } };
-                            });
+                            let act = ''; if(logic.transfer) act += `Trans ${logic.transfer.qty} from ${logic.transfer.from}; `; if(logic.purchase>0) act+=`Buy ${logic.purchase}`;
+                            ws.getRow(rowIdx).values = [cat.name, mrp.range, store, b, p, g, act];
                             rowIdx++;
                         });
                     }
-                    const b = cat.base[si] || 0;
-                    const p = cat.present[si] || 0;
-                    const g = p - b;
+                    const b = cat.base[si] || 0; const p = cat.present[si] || 0; const g = p - b;
                     const logic = getSmartLogic(si, cat.base, cat.present);
-                    const sug = logic.type === 'TRANSFER' ? `Transfer ${logic.qty} from ${logic.from}` : (logic.type === 'PURCHASE' ? `Purchase ${logic.qty}` : 'OK');
+                    let act = ''; if(logic.transfer) act += `Trans ${logic.transfer.qty} from ${logic.transfer.from}; `; if(logic.purchase>0) act+=`Buy ${logic.purchase}`;
                     const row = ws.getRow(rowIdx);
-                    row.values = [cat.name, 'TOTAL', store, b, p, g, sug];
-                    row.eachCell(cell => { cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} }; cell.font = { bold: true }; });
-                    if (g < 0) row.getCell(6).font = { color: { argb: 'FFFF0000' }, bold: true };
+                    row.values = [cat.name, 'TOTAL', store, b, p, g, act];
+                    row.eachCell(c => c.font = { bold: true });
                     rowIdx++;
                 });
             });
-            
             const buffer = await wb.xlsx.writeBuffer();
-            saveAs(new Blob([buffer]), 'Full_Report.xlsx');
+            saveAs(new Blob([buffer]), 'SubhamGrand_Full_Report.xlsx');
         }
 
-        // --- ACTIONS & MODALS ---
-        function addBr() {
-            const input = document.getElementById('newBr');
-            const name = input.value.toUpperCase().trim();
-            if (name && !stores.includes(name)) {
-                stores.push(name);
-                inventoryData.forEach(c => {
-                    c.base.push(0); c.present.push(0);
-                    if (c.mrpDetails) { c.mrpDetails.forEach(r => { r.base.push(0); r.present.push(0); }); }
-                });
-                render(); input.value = '';
-            }
-        }
-
-        function addCat() {
-            const input = document.getElementById('newCat');
-            const name = input.value.toUpperCase().trim();
-            if (name && !inventoryData.find(c => c.name === name)) {
-                inventoryData.push({ name: name, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] });
-                render(); input.value = '';
-            }
-        }
-
-        function setTarget() {
-            const ci = document.getElementById('selCat').value;
-            const si = document.getElementById('selBr').value;
-            const val = parseInt(document.getElementById('targetVal').value);
-            if (!isNaN(val) && ci !== '' && si !== '') { inventoryData[ci].base[si] = val; render(); }
-        }
-
-        async function handleFileUpload(event) {
-            const file = event.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const data = new Uint8Array(e.target.result);
-                const workbook = new ExcelJS.Workbook();
-                await workbook.xlsx.load(data);
-                const ws = workbook.worksheets[0];
-                inventoryData = [];
-                ws.eachRow((row, rowNumber) => {
-                    if (rowNumber === 1) return;
-                    const vals = row.values;
-                    const catName = (vals[1] || '').toString().toUpperCase();
-                    const mrpRange = (vals[2] || '').toString();
-                    if (!catName) return;
-                    let cat = inventoryData.find(c => c.name === catName);
-                    if (!cat) { cat = { name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }; inventoryData.push(cat); }
-                    const baseRow = Array(stores.length).fill(0); const presRow = Array(stores.length).fill(0);
-                    for (let i = 0; i < stores.length; i++) { baseRow[i] = parseInt(vals[3 + i*2]) || 0; presRow[i] = parseInt(vals[4 + i*2]) || 0; }
-                    cat.mrpDetails.push({ range: mrpRange, base: baseRow, present: presRow });
-                });
-                inventoryData.forEach((c, i) => recalculateCategoryTotals(i));
-                render(); alert('Excel imported successfully!');
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
+        // --- ACTIONS & MODALS (Preserved) ---
+        function addBr() { const input = document.getElementById('newBr'); const name = input.value.toUpperCase().trim(); if (name && !stores.includes(name)) { stores.push(name); inventoryData.forEach(c => { c.base.push(0); c.present.push(0); if (c.mrpDetails) c.mrpDetails.forEach(r => { r.base.push(0); r.present.push(0); }); }); render(); input.value = ''; } }
+        function addCat() { const input = document.getElementById('newCat'); const name = input.value.toUpperCase().trim(); if (name && !inventoryData.find(c => c.name === name)) { inventoryData.push({ name: name, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }); render(); input.value = ''; } }
+        function setTarget() { const ci = document.getElementById('selCat').value; const si = document.getElementById('selBr').value; const val = parseInt(document.getElementById('targetVal').value); if (!isNaN(val) && ci !== '' && si !== '') { inventoryData[ci].base[si] = val; render(); } }
+        async function handleFileUpload(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async (e) => { const data = new Uint8Array(e.target.result); const workbook = new ExcelJS.Workbook(); await workbook.xlsx.load(data); const ws = workbook.worksheets[0]; inventoryData = []; ws.eachRow((row, rowNumber) => { if (rowNumber === 1) return; const vals = row.values; const catName = (vals[1] || '').toString().toUpperCase(); const mrpRange = (vals[2] || '').toString(); if (!catName) return; let cat = inventoryData.find(c => c.name === catName); if (!cat) { cat = { name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }; inventoryData.push(cat); } const baseRow = Array(stores.length).fill(0); const presRow = Array(stores.length).fill(0); for (let i = 0; i < stores.length; i++) { baseRow[i] = parseInt(vals[3 + i*2]) || 0; presRow[i] = parseInt(vals[4 + i*2]) || 0; } cat.mrpDetails.push({ range: mrpRange, base: baseRow, present: presRow }); }); inventoryData.forEach((c, i) => recalculateCategoryTotals(i)); render(); alert('Excel imported successfully!'); }; reader.readAsArrayBuffer(file); }
         function toggleTheme() { document.body.classList.toggle('dark-mode'); render(); }
-
         function openModal(si) {
+            currentModalBranchIndex = si; // Store for export
             document.getElementById('modalStore').textContent = stores[si];
             let html = '';
             inventoryData.forEach(cat => {
@@ -882,92 +526,18 @@
                 const border = gap < 0 ? 'var(--danger)' : 'var(--success)';
                 html += `<div class="card p-4 mb-2" style="border-left: 4px solid ${border};">
                     <div class="flex justify-between text-xs font-semibold uppercase mb-1" style="color: var(--text-muted);"><span>${cat.name}</span><span>Gap: ${gap > 0 ? '+' : ''}${gap}</span></div>
-                    <div class="font-bold">${renderAnalysis(gap, logic)}</div>
+                    <div class="font-bold">${renderActions(logic)}</div>
                 </div>`;
             });
             document.getElementById('modalBody').innerHTML = html;
             document.getElementById('modal').classList.remove('hidden');
         }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-
         function openManualModal() { render(); document.getElementById('manualModal').classList.remove('hidden'); }
         function closeManualModal() { document.getElementById('manualModal').classList.add('hidden'); }
+        function saveManualData() { const catName = document.getElementById('manualCatInput').value.toUpperCase().trim(); const mrp = document.getElementById('manualMrp').value.trim(); const si = parseInt(document.getElementById('manualBranch').value); const target = parseInt(document.getElementById('manualTarget').value) || 0; const stock = parseInt(document.getElementById('manualStock').value) || 0; if (!catName || !mrp || isNaN(si)) { alert('Missing fields'); return; } let catIndex = inventoryData.findIndex(c => c.name === catName); if (catIndex === -1) { inventoryData.push({ name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }); catIndex = inventoryData.length - 1; } const cat = inventoryData[catIndex]; let mrpRow = cat.mrpDetails.find(r => r.range === mrp); if (!mrpRow) { mrpRow = { range: mrp, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); } mrpRow.base[si] = target; mrpRow.present[si] = stock; recalculateCategoryTotals(catIndex); closeManualModal(); render(); alert('Saved'); }
 
-        function saveManualData() {
-            const catName = document.getElementById('manualCatInput').value.toUpperCase().trim();
-            const mrp = document.getElementById('manualMrp').value.trim();
-            const si = parseInt(document.getElementById('manualBranch').value);
-            const target = parseInt(document.getElementById('manualTarget').value) || 0;
-            const stock = parseInt(document.getElementById('manualStock').value) || 0;
-            if (!catName || !mrp || isNaN(si)) { alert('Missing fields'); return; }
-            
-            let catIndex = inventoryData.findIndex(c => c.name === catName);
-            if (catIndex === -1) {
-                inventoryData.push({ name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] });
-                catIndex = inventoryData.length - 1;
-            }
-            const cat = inventoryData[catIndex];
-            let mrpRow = cat.mrpDetails.find(r => r.range === mrp);
-            if (!mrpRow) { mrpRow = { range: mrp, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); }
-            
-            mrpRow.base[si] = target; mrpRow.present[si] = stock;
-            recalculateCategoryTotals(catIndex);
-            closeManualModal(); render(); alert('Saved');
-        }
-
-        // Initialize
-        window.onload = function() {
-            checkPurchaseReportMode(); // Check if we should render the report
-            render(); // Render dashboard
-        };
+        window.onload = function() { checkPurchaseReportMode(); render(); };
     </script>
-
-    <!-- PURCHASE REPORT VIEW (Hidden by default, shown if #purchase) -->
-    <div id="purchaseReportView" class="container hidden">
-        <div class="purchase-header">
-            <div>
-                <h1 class="text-2xl font-bold">Purchase Requirement Report</h1>
-                <p class="text-sm opacity-80">MRP-wise shortage analysis generated on <span id="reportDate"></span></p>
-            </div>
-            <div class="flex gap-2 no-print">
-                <button onclick="window.print()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Print</button>
-                <button onclick="window.close()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Close Tab</button>
-            </div>
-        </div>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            <div class="card p-6" style="height: 350px;">
-                <h3 class="font-bold mb-4">Shortage by Category</h3>
-                <div style="position:relative; height:calc(100% - 30px);"><canvas id="purchaseChart"></canvas></div>
-            </div>
-            <div class="card p-6 lg:col-span-2">
-                <h3 class="font-bold mb-4">Summary Statistics</h3>
-                <div id="purchaseSummary" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div><p class="text-xs uppercase text-gray-500">Total Shortage</p><p class="text-2xl font-bold mono text-red-500" id="pTotalShortage">0</p></div>
-                    <div><p class="text-xs uppercase text-gray-500">Categories Affected</p><p class="text-2xl font-bold mono" id="pCatCount">0</p></div>
-                    <div><p class="text-xs uppercase text-gray-500">Branches Affected</p><p class="text-2xl font-bold mono" id="pBrCount">0</p></div>
-                    <div><p class="text-xs uppercase text-gray-500">Est. Value Impact</p><p class="text-2xl font-bold mono text-green-500" id="pValue">N/A</p></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="table-container" style="border:none;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Category</th>
-                            <th>MRP Range</th>
-                            <th>Branch</th>
-                            <th style="text-align:right">Target</th>
-                            <th style="text-align:right">Stock</th>
-                            <th style="text-align:right">Shortage</th>
-                        </tr>
-                    </thead>
-                    <tbody id="purchaseTableBody"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
 </body>
 </html>
