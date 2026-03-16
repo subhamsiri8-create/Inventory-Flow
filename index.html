@@ -251,6 +251,15 @@
             transition: background 0.2s;
         }
         .btn-export-inline:hover { background: rgba(255,255,255,0.3); }
+        
+        /* Simplified Report Styles */
+        .report-header-simple {
+            background: var(--accent);
+            color: #fff;
+            padding: 16px;
+            font-weight: 700;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -349,8 +358,8 @@
 
         <!-- PURCHASE SECTION -->
         <section id="purchaseSection" class="hidden mb-6">
-            <div class="card p-6">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-4 gap-4" style="border-bottom: 1px solid var(--border);">
+            <div class="card">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center p-6 pb-4 gap-4" style="border-bottom: 1px solid var(--border);">
                     <div>
                         <h3 class="text-lg font-bold">Purchase Requirement Report</h3>
                         <p class="text-xs" style="color: var(--text-muted)">Detailed MRP-wise shortages requiring immediate purchase</p>
@@ -361,7 +370,7 @@
                 </div>
                 
                 <!-- Full Report Table -->
-                <div class="table-container scrollbar-thin">
+                <div class="table-container scrollbar-thin" style="border:none; border-radius:0;">
                     <table>
                         <thead>
                             <tr>
@@ -390,7 +399,6 @@
                             <th style="min-width: 100px;">Branch</th>
                             <th style="min-width: 80px; text-align: right;">Target</th>
                             <th style="min-width: 80px; text-align: right;">Stock</th>
-                            <!-- Combined Header -->
                             <th style="min-width: 300px; background: var(--accent); color: #fff;">Gap & AI Suggestion</th>
                         </tr>
                     </thead>
@@ -760,34 +768,34 @@
             tbody.innerHTML = html;
         }
 
-        // UPDATED: Export Purchase List Only with Styling
+        // UPDATED: Export Purchase List Only with SIMPLIFIED Styling
         async function exportPurchaseExcel() {
             const wb = new ExcelJS.Workbook();
-            const ws = wb.addWorksheet('Purchase_Requirements');
+            const ws = wb.addWorksheet('Purchase_List');
             
-            // Add Title
+            // Add Title Row
+            ws.addRow(["Purchase Requirement List"]);
             ws.mergeCells('A1:F1');
-            const titleRow = ws.getRow(1);
-            titleRow.height = 30;
-            titleRow.getCell(1).value = "Purchase Requirement Report";
-            titleRow.getCell(1).font = { size: 16, bold: true, color: { argb: 'FFFFFFFF' } };
-            titleRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDC2626' } }; // Red
-            titleRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+            const titleCell = ws.getRow(1).getCell(1);
+            titleCell.font = { size: 16, bold: true, color: { argb: 'FF000000' } };
+            titleCell.alignment = { horizontal: 'left', vertical: 'middle' };
+            ws.getRow(1).height = 25;
             
+            // Empty Row
+            ws.addRow([]);
+
             // Add Headers
             const headerRow = ws.getRow(3);
             headerRow.values = ['Category', 'MRP Range', 'Branch', 'Target', 'Stock', 'Shortage'];
-            headerRow.height = 20;
             
-            // Style Headers
-            headerRow.eachCell((cell, colNumber) => {
-                cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } }; // Dark
-                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            // Simplified Header Style: White bold text on Dark background
+            headerRow.eachCell((cell) => {
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
+                cell.alignment = { horizontal: 'center', vertical: 'center' };
                 cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
             });
             
-            // Set Column Widths
             ws.columns = [
                 { key: 'cat', width: 25 }, { key: 'mrp', width: 12 }, { key: 'br', width: 12 },
                 { key: 'tgt', width: 10 }, { key: 'stk', width: 10 }, { key: 'shrt', width: 10 }
@@ -805,7 +813,7 @@
                             if (g < 0) {
                                 const row = ws.getRow(rowIdx);
                                 row.values = [cat.name, mrp.range, store, b, p, g];
-                                styleDataRow(row, 6, g < 0);
+                                styleSimpleDataRow(row, 6, g < 0);
                                 rowIdx++;
                             }
                         });
@@ -817,7 +825,7 @@
                         if (g < 0) {
                             const row = ws.getRow(rowIdx);
                             row.values = [cat.name, 'TOTAL', store, b, p, g];
-                            styleDataRow(row, 6, g < 0);
+                            styleSimpleDataRow(row, 6, g < 0);
                             rowIdx++;
                         }
                     }
@@ -825,18 +833,19 @@
             });
             
             const buffer = await wb.xlsx.writeBuffer();
-            saveAs(new Blob([buffer]), 'SubhamGrand_Purchase_Report.xlsx');
+            saveAs(new Blob([buffer]), 'Purchase_Report_Simple.xlsx');
         }
 
-        // Helper for Excel Data Row Styling
-        function styleDataRow(row, gapColIndex, isShortage) {
+        // Helper: Simple Data Row Styling (White background, borders, red text for negatives)
+        function styleSimpleDataRow(row, gapColIndex, isShortage) {
             row.eachCell((cell, colNumber) => {
                 cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
                 cell.alignment = { vertical: 'middle', horizontal: (colNumber > 3 ? 'right' : 'left') };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } }; // White background for clean look
                 
-                // Highlight shortage column
+                // Color code negative numbers in red
                 if (colNumber === gapColIndex && isShortage) {
-                    cell.font = { color: { argb: 'FFDC2626' }, bold: true };
+                    cell.font = { color: { argb: 'FFFF0000' }, bold: true }; // Red text
                 }
             });
         }
@@ -862,7 +871,7 @@
                             type: 'line', 
                             label: 'Target', 
                             data: cat.base, 
-                            borderColor: '#f59e0b', // Amber
+                            borderColor: '#f59e0b', 
                             backgroundColor: 'rgba(245, 158, 11, 0.2)',
                             borderWidth: 2, 
                             pointRadius: 5,
@@ -873,7 +882,7 @@
                             type: 'bar', 
                             label: 'Stock', 
                             data: cat.present, 
-                            backgroundColor: '#0d9488', // Teal
+                            backgroundColor: '#0d9488', 
                             borderRadius: 6, 
                             barThickness: 24 
                         }
@@ -903,7 +912,7 @@
                     labels: ['Transfer', 'Purchase', 'OK'],
                     datasets: [{ 
                         data: [stats.transfer, stats.purchase, stats.ok], 
-                        backgroundColor: ['#f59e0b', '#dc2626', '#059669'], // Amber, Red, Green
+                        backgroundColor: ['#f59e0b', '#dc2626', '#059669'],
                         borderWidth: 2,
                         borderColor: isDark ? '#1e293b' : '#ffffff'
                     }]
@@ -970,27 +979,26 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // UPDATED: Exports with Styling
+        // UPDATED: Exports with SIMPLIFIED Styling
         async function exportCategoryExcel(ci) {
             const cat = inventoryData[ci]; if (!cat) return;
             const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet(cat.name.substring(0, 28));
             
             // Title
+            ws.addRow([`${cat.name} - Report`]);
             ws.mergeCells('A1:G1');
-            const titleRow = ws.getRow(1);
-            titleRow.height = 30;
-            titleRow.getCell(1).value = `${cat.name} - Stock Report`;
-            titleRow.getCell(1).font = { size: 16, bold: true, color: { argb: 'FFFFFFFF' } };
-            titleRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0D9488' } }; // Teal
-            titleRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+            const titleCell = ws.getRow(1).getCell(1);
+            titleCell.font = { size: 14, bold: true };
+            ws.getRow(1).height = 20;
 
             // Headers
             const headerRow = ws.getRow(3);
             headerRow.values = ['Category', 'MRP Range', 'Branch', 'Target', 'Stock', 'Gap', 'AI Recommendation'];
-            headerRow.height = 20;
+            
+            // Header Style
             headerRow.eachCell((cell) => {
-                cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } }; // Dark
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } }; // Dark header
                 cell.alignment = { vertical: 'middle', horizontal: 'center' };
                 cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
             });
@@ -1009,7 +1017,7 @@
                         const sug = logic.type === 'TRANSFER' ? `Transfer ${logic.qty} from ${logic.from}` : (logic.type === 'PURCHASE' ? `Purchase ${logic.qty}` : 'OK');
                         const row = ws.getRow(rowIdx);
                         row.values = [cat.name, mrp.range, store, b, p, g, sug];
-                        styleDataRow(row, 6, g < 0);
+                        styleSimpleDataRow(row, 6, g < 0);
                         rowIdx++;
                     });
                 }
@@ -1018,7 +1026,7 @@
                 const sug = logic.type === 'TRANSFER' ? `Transfer ${logic.qty} from ${logic.from}` : (logic.type === 'PURCHASE' ? `Purchase ${logic.qty}` : 'OK');
                 const row = ws.getRow(rowIdx);
                 row.values = [cat.name, 'TOTAL', store, b, p, g, sug];
-                styleDataRow(row, 6, g < 0);
+                styleSimpleDataRow(row, 6, g < 0);
                 // Make total row bold
                 row.eachCell(cell => cell.font = { ...cell.font, bold: true });
                 rowIdx++;
@@ -1029,24 +1037,23 @@
         }
 
         async function exportMatrixExcel() {
-            const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('MRP_Matrix');
+            const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Full_Report');
             
             // Title
+            ws.addRow(["Subham Grand - Full Inventory Report"]);
             ws.mergeCells('A1:G1');
-            const titleRow = ws.getRow(1);
-            titleRow.height = 30;
-            titleRow.getCell(1).value = "Subham Grand - Full Inventory Report";
-            titleRow.getCell(1).font = { size: 16, bold: true, color: { argb: 'FFFFFFFF' } };
-            titleRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0D9488' } }; // Teal
-            titleRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'center' };
+            const titleCell = ws.getRow(1).getCell(1);
+            titleCell.font = { size: 14, bold: true };
+            ws.getRow(1).height = 20;
 
             // Headers
             const headerRow = ws.getRow(3);
             headerRow.values = ['Category', 'MRP Range', 'Branch', 'Target', 'Stock', 'Gap', 'AI Recommendation'];
-            headerRow.height = 20;
+            
+            // Header Style
             headerRow.eachCell((cell) => {
-                cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } }; // Dark
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } }; // Dark header
                 cell.alignment = { vertical: 'middle', horizontal: 'center' };
                 cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
             });
@@ -1066,7 +1073,7 @@
                             const sug = logic.type === 'TRANSFER' ? `Transfer ${logic.qty} from ${logic.from}` : (logic.type === 'PURCHASE' ? `Purchase ${logic.qty}` : 'OK');
                             const row = ws.getRow(rowIdx);
                             row.values = [cat.name, mrp.range, store, b, p, g, sug];
-                            styleDataRow(row, 6, g < 0);
+                            styleSimpleDataRow(row, 6, g < 0);
                             rowIdx++;
                         });
                     }
@@ -1075,7 +1082,7 @@
                     const sug = logic.type === 'TRANSFER' ? `Transfer ${logic.qty} from ${logic.from}` : (logic.type === 'PURCHASE' ? `Purchase ${logic.qty}` : 'OK');
                     const row = ws.getRow(rowIdx);
                     row.values = [cat.name, 'TOTAL', store, b, p, g, sug];
-                    styleDataRow(row, 6, g < 0);
+                    styleSimpleDataRow(row, 6, g < 0);
                     row.eachCell(cell => cell.font = { ...cell.font, bold: true });
                     rowIdx++;
                 });
