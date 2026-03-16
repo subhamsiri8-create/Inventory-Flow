@@ -112,7 +112,7 @@
         <div id="tabAnalytics" class="tab-content hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="card p-6" style="height: 400px;"><div class="flex justify-between items-center mb-4"><h3 class="font-bold">Performance</h3><select id="chartFilter" onchange="refreshCharts()" class="input-field" style="width:auto"></select></div><div style="position:relative; height:calc(100% - 40px);"><canvas id="mainChart"></canvas></div></div>
-                <div class="card p-6" style="height: 400px;"><h3 class="font-bold mb-4">Actions Distribution</h3><div style="position:relative; height:calc(100% - 40px);"><canvas id="pieChart"></canvas></div></div>
+                <div class="card p-6" style="height: 400px;"><h3 class="font-bold mb-4">Distribution</h3><div style="position:relative; height:calc(100% - 40px);"><canvas id="pieChart"></canvas></div></div>
             </div>
         </div>
 
@@ -164,8 +164,9 @@
         <div class="purchase-header">
             <div><h1 class="text-2xl font-bold">Intelligent Supply Report</h1><p class="text-sm opacity-80">Transfer & Purchase Suggestions</p></div>
             <div class="flex gap-2 no-print">
-                <button onclick="window.print()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Print</button>
-                <button onclick="window.close()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Close</button>
+                <!-- CHANGED: Print button replaced with Export Excel -->
+                <button onclick="exportPurchaseReportExcel()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Export Excel</button>
+                <button onclick="window.close()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Close Tab</button>
             </div>
         </div>
         
@@ -187,28 +188,54 @@
     <script>
         // --- DATA (Preserved) ---
         let stores = ["SG HYD", "SG", "SGRJY", "SGTNL", "SIRI ELR", "ST", "TUNI", "SIRICPT", "VS"];
+        
         let inventoryData = [
-            { name: "BNS HANDLOOM HF", base: [5650, 11000, 4950, 8300, 7350, 7350, 8500, 4000, 8400], present: [4800, 9200, 4100, 7500, 6800, 7000, 8100, 3800, 7900], mrpDetails: [
-                { range: "0-500", base: [250, 500, 250, 500, 400, 400, 500, 400, 400], present: [180, 420, 200, 380, 350, 320, 450, 350, 380] },
-                { range: "501-1000", base: [450, 1000, 450, 800, 700, 700, 800, 400, 800], present: [380, 850, 400, 720, 650, 680, 750, 380, 720] },
-                { range: "1001-1500", base: [450, 1000, 450, 800, 700, 700, 800, 400, 800], present: [420, 920, 430, 780, 680, 710, 780, 390, 760] },
-                { range: "1501-2000", base: [450, 1000, 450, 800, 700, 700, 800, 400, 800], present: [400, 880, 410, 750, 660, 680, 760, 360, 740] },
-                { range: "2001+", base: [4050, 7600, 3300, 5200, 4550, 4550, 5100, 2400, 5400], present: [3420, 6730, 2680, 4820, 4300, 4280, 4880, 2280, 4980] }
-            ] },
-            { name: "SILK WORK SAREES", base: [1310, 1810, 1110, 1305, 1170, 1310, 1320, 440, 1465], present: [1200, 1700, 1000, 1200, 1100, 1300, 1400, 400, 1500], mrpDetails: [
-                { range: "0-500", base: [87, 175, 87, 125, 125, 150, 175, 0, 150], present: [60, 120, 55, 90, 85, 100, 130, 10, 95] },
-                { range: "501-1000", base: [185, 370, 185, 295, 245, 295, 345, 50, 295], present: [150, 280, 140, 220, 180, 240, 280, 35, 250] },
-                { range: "1001+", base: [1038, 1265, 838, 885, 800, 865, 800, 390, 1020], present: [990, 1300, 805, 890, 835, 960, 990, 355, 1155] }
-            ] },
-            { name: "PATTU SAREES", base: [721, 1153, 763, 828, 268, 1063, 1192, 688, 998], present: [700, 1100, 750, 800, 300, 1000, 1200, 600, 950], mrpDetails: [] },
-            { name: "VENKATAGIRI", base: [405, 225, 355, 170, 170, 370, 220, 380, 164], present: [400, 220, 350, 150, 160, 350, 200, 350, 150], mrpDetails: [] },
-            { name: "SURAT PRINTED", base: [509, 706, 562, 474, 294, 1389, 889, 436, 772], present: [450, 650, 500, 400, 250, 1300, 900, 400, 700], mrpDetails: [] }
+            { 
+                name: "BNS HANDLOOM HF", 
+                base: [5650, 11000, 4950, 8300, 7350, 7350, 8500, 4000, 8400], 
+                present: [4800, 9200, 4100, 7500, 6800, 7000, 8100, 3800, 7900], 
+                mrpDetails: [
+                    { range: "0-500", base: [250, 500, 250, 500, 400, 400, 500, 400, 400], present: [180, 420, 200, 380, 350, 320, 450, 350, 380] },
+                    { range: "501-1000", base: [450, 1000, 450, 800, 700, 700, 800, 400, 800], present: [380, 850, 400, 720, 650, 680, 750, 380, 720] },
+                    { range: "1001-1500", base: [450, 1000, 450, 800, 700, 700, 800, 400, 800], present: [420, 920, 430, 780, 680, 710, 780, 390, 760] },
+                    { range: "1501-2000", base: [450, 1000, 450, 800, 700, 700, 800, 400, 800], present: [400, 880, 410, 750, 660, 680, 760, 360, 740] },
+                    { range: "2001+", base: [4050, 7600, 3300, 5200, 4550, 4550, 5100, 2400, 5400], present: [3420, 6730, 2680, 4820, 4300, 4280, 4880, 2280, 4980] }
+                ] 
+            },
+            { 
+                name: "SILK WORK SAREES", 
+                base: [1310, 1810, 1110, 1305, 1170, 1310, 1320, 440, 1465], 
+                present: [1200, 1700, 1000, 1200, 1100, 1300, 1400, 400, 1500], 
+                mrpDetails: [
+                    { range: "0-500", base: [87, 175, 87, 125, 125, 150, 175, 0, 150], present: [60, 120, 55, 90, 85, 100, 130, 10, 95] },
+                    { range: "501-1000", base: [185, 370, 185, 295, 245, 295, 345, 50, 295], present: [150, 280, 140, 220, 180, 240, 280, 35, 250] },
+                    { range: "1001+", base: [1038, 1265, 838, 885, 800, 865, 800, 390, 1020], present: [990, 1300, 805, 890, 835, 960, 990, 355, 1155] }
+                ] 
+            },
+            { 
+                name: "PATTU SAREES", 
+                base: [721, 1153, 763, 828, 268, 1063, 1192, 688, 998], 
+                present: [700, 1100, 750, 800, 300, 1000, 1200, 600, 950], 
+                mrpDetails: [] 
+            },
+            { 
+                name: "VENKATAGIRI", 
+                base: [405, 225, 355, 170, 170, 370, 220, 380, 164], 
+                present: [400, 220, 350, 150, 160, 350, 200, 350, 150], 
+                mrpDetails: [] 
+            },
+            { 
+                name: "SURAT PRINTED", 
+                base: [509, 706, 562, 474, 294, 1389, 889, 436, 772], 
+                present: [450, 650, 500, 400, 250, 1300, 900, 400, 700], 
+                mrpDetails: [] 
+            }
         ];
 
         let mainChart = null; let pieChart = null;
-        let currentModalBranchIndex = null; // For export
+        let currentModalBranchIndex = null;
 
-        // --- LOGIC: Accurate Transfer + Purchase Calculation ---
+        // --- LOGIC (Preserved) ---
         function getSmartLogic(si, baseArr, presentArr) {
             if (!baseArr || !presentArr) return { transfer: null, purchase: 0 };
             const gap = (presentArr[si] || 0) - (baseArr[si] || 0);
@@ -218,14 +245,10 @@
             let bestDonor = null;
             let maxSurplus = 0;
 
-            // Find best donor with max surplus
             for (let i = 0; i < stores.length; i++) {
                 if (i === si) continue;
                 const surplus = (presentArr[i] || 0) - (baseArr[i] || 0);
-                if (surplus > maxSurplus) {
-                    maxSurplus = surplus;
-                    bestDonor = i;
-                }
+                if (surplus > maxSurplus) { maxSurplus = surplus; bestDonor = i; }
             }
 
             let transferObj = null;
@@ -234,7 +257,7 @@
             if (bestDonor !== null && maxSurplus > 0) {
                 const transferQty = Math.min(shortageQty, maxSurplus);
                 transferObj = { qty: transferQty, from: stores[bestDonor] };
-                purchaseQty = shortageQty - transferQty; // Remaining needs purchase
+                purchaseQty = shortageQty - transferQty;
             } else {
                 purchaseQty = shortageQty;
             }
@@ -258,6 +281,10 @@
         // --- RENDER ---
         function render() {
             const tbody = document.getElementById('tableBody');
+            const selCat = document.getElementById('selCat');
+            const selBr = document.getElementById('selBr');
+            const chartFilter = document.getElementById('chartFilter');
+            
             let html = '';
             let catOpts = '';
             let brOpts = '';
@@ -297,6 +324,7 @@
             });
 
             stores.forEach((s, si) => brOpts += `<option value="${si}">${s}</option>`);
+            
             const netGap = globalBase - globalPresent;
             const efficiency = globalBase > 0 ? Math.round((globalPresent / globalBase) * 100) : 0;
             
@@ -306,9 +334,9 @@
             document.getElementById('efficiency').textContent = efficiency + '%';
             
             tbody.innerHTML = html;
-            document.getElementById('selCat').innerHTML = catOpts;
-            document.getElementById('selBr').innerHTML = brOpts;
-            document.getElementById('chartFilter').innerHTML = catOpts;
+            selCat.innerHTML = catOpts;
+            selBr.innerHTML = brOpts;
+            chartFilter.innerHTML = catOpts;
             document.getElementById('catList').innerHTML = catOpts;
             document.getElementById('manualBranch').innerHTML = brOpts;
             
@@ -349,9 +377,7 @@
             const stats = { transfer: 0, purchase: 0, ok: 0 };
             cat.base.forEach((_, si) => {
                 const logic = getSmartLogic(si, cat.base, cat.present);
-                if (logic.transfer) stats.transfer++;
-                if (logic.purchase > 0) stats.purchase++;
-                if (!logic.transfer && logic.purchase === 0) stats.ok++;
+                if (logic.transfer) stats.transfer++; if (logic.purchase > 0) stats.purchase++; if (!logic.transfer && logic.purchase === 0) stats.ok++;
             });
             pieChart = new Chart(document.getElementById('pieChart'), {
                 type: 'doughnut',
@@ -360,7 +386,7 @@
             });
         }
 
-        // --- PURCHASE REPORT (NEW TAB) ---
+        // --- PURCHASE REPORT TAB ---
         function openPurchaseReportTab() {
             localStorage.setItem('sg_report_data', JSON.stringify({ inventoryData, stores }));
             window.open(window.location.href.split('#')[0] + '#purchase', '_blank');
@@ -474,7 +500,7 @@
             saveAs(new Blob([buffer]), `${stores[si]}_Report.xlsx`);
         }
 
-        // 2. Full Matrix Export (Preserved)
+        // 2. Full Matrix Export
         async function exportMatrixExcel() {
             const wb = new ExcelJS.Workbook();
             const ws = wb.addWorksheet('Matrix');
@@ -510,6 +536,81 @@
             saveAs(new Blob([buffer]), 'SubhamGrand_Full_Report.xlsx');
         }
 
+        // 3. NEW: Purchase Report Excel Export
+        async function exportPurchaseReportExcel() {
+            const savedData = JSON.parse(localStorage.getItem('sg_report_data'));
+            if(!savedData) return alert('No data found');
+            
+            const data = savedData.inventoryData;
+            const str = savedData.stores;
+            
+            const wb = new ExcelJS.Workbook();
+            const ws = wb.addWorksheet('Purchase Report');
+            
+            // Title
+            ws.addRow(['Purchase Requirement Report (Transfer & Purchase Optimized)']);
+            ws.mergeCells('A1:G1');
+            ws.getRow(1).font = { size: 16, bold: true };
+            
+            // Headers
+            const headerRow = ws.getRow(3);
+            headerRow.values = ['Category', 'MRP Range', 'Branch', 'Target', 'Stock', 'Transfer Suggestion', 'Purchase Qty'];
+            headerRow.eachCell((cell) => {
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDC2626' } }; // Red header for purchase
+                cell.alignment = { horizontal: 'center' };
+            });
+            
+            ws.columns = [
+                { width: 25 }, { width: 12 }, { width: 12 }, 
+                { width: 10 }, { width: 10 }, { width: 25 }, { width: 12 }
+            ];
+            
+            let rowIdx = 4;
+            
+            data.forEach(cat => {
+                const processRange = (rangeName, baseArr, presentArr) => {
+                    str.forEach((store, si) => {
+                        const b = baseArr[si] || 0;
+                        const p = presentArr[si] || 0;
+                        const logic = getSmartLogic(si, baseArr, presentArr);
+                        
+                        // Only add rows if action is needed
+                        if (logic.transfer || logic.purchase > 0) {
+                            const row = ws.getRow(rowIdx);
+                            row.values = [
+                                cat.name,
+                                rangeName,
+                                store,
+                                b,
+                                p,
+                                logic.transfer ? `Transfer ${logic.transfer.qty} from ${logic.transfer.from}` : '-',
+                                logic.purchase > 0 ? logic.purchase : '-'
+                            ];
+                            
+                            // Styling
+                            row.eachCell((cell, colNumber) => {
+                                cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+                                if (colNumber === 6 && logic.transfer) cell.font = { color: { argb: 'FF2563EB' }, bold: true }; // Blue
+                                if (colNumber === 7 && logic.purchase > 0) cell.font = { color: { argb: 'FFDC2626' }, bold: true }; // Red
+                            });
+                            
+                            rowIdx++;
+                        }
+                    });
+                };
+                
+                if (cat.mrpDetails && cat.mrpDetails.length > 0) {
+                    cat.mrpDetails.forEach(mrp => processRange(mrp.range, mrp.base, mrp.present));
+                } else {
+                    processRange("TOTAL", cat.base, cat.present);
+                }
+            });
+            
+            const buffer = await wb.xlsx.writeBuffer();
+            saveAs(new Blob([buffer]), 'SubhamGrand_Purchase_Report.xlsx');
+        }
+
         // --- ACTIONS & MODALS (Preserved) ---
         function addBr() { const input = document.getElementById('newBr'); const name = input.value.toUpperCase().trim(); if (name && !stores.includes(name)) { stores.push(name); inventoryData.forEach(c => { c.base.push(0); c.present.push(0); if (c.mrpDetails) c.mrpDetails.forEach(r => { r.base.push(0); r.present.push(0); }); }); render(); input.value = ''; } }
         function addCat() { const input = document.getElementById('newCat'); const name = input.value.toUpperCase().trim(); if (name && !inventoryData.find(c => c.name === name)) { inventoryData.push({ name: name, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }); render(); input.value = ''; } }
@@ -517,7 +618,7 @@
         async function handleFileUpload(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async (e) => { const data = new Uint8Array(e.target.result); const workbook = new ExcelJS.Workbook(); await workbook.xlsx.load(data); const ws = workbook.worksheets[0]; inventoryData = []; ws.eachRow((row, rowNumber) => { if (rowNumber === 1) return; const vals = row.values; const catName = (vals[1] || '').toString().toUpperCase(); const mrpRange = (vals[2] || '').toString(); if (!catName) return; let cat = inventoryData.find(c => c.name === catName); if (!cat) { cat = { name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }; inventoryData.push(cat); } const baseRow = Array(stores.length).fill(0); const presRow = Array(stores.length).fill(0); for (let i = 0; i < stores.length; i++) { baseRow[i] = parseInt(vals[3 + i*2]) || 0; presRow[i] = parseInt(vals[4 + i*2]) || 0; } cat.mrpDetails.push({ range: mrpRange, base: baseRow, present: presRow }); }); inventoryData.forEach((c, i) => recalculateCategoryTotals(i)); render(); alert('Excel imported successfully!'); }; reader.readAsArrayBuffer(file); }
         function toggleTheme() { document.body.classList.toggle('dark-mode'); render(); }
         function openModal(si) {
-            currentModalBranchIndex = si; // Store for export
+            currentModalBranchIndex = si;
             document.getElementById('modalStore').textContent = stores[si];
             let html = '';
             inventoryData.forEach(cat => {
@@ -537,6 +638,7 @@
         function closeManualModal() { document.getElementById('manualModal').classList.add('hidden'); }
         function saveManualData() { const catName = document.getElementById('manualCatInput').value.toUpperCase().trim(); const mrp = document.getElementById('manualMrp').value.trim(); const si = parseInt(document.getElementById('manualBranch').value); const target = parseInt(document.getElementById('manualTarget').value) || 0; const stock = parseInt(document.getElementById('manualStock').value) || 0; if (!catName || !mrp || isNaN(si)) { alert('Missing fields'); return; } let catIndex = inventoryData.findIndex(c => c.name === catName); if (catIndex === -1) { inventoryData.push({ name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }); catIndex = inventoryData.length - 1; } const cat = inventoryData[catIndex]; let mrpRow = cat.mrpDetails.find(r => r.range === mrp); if (!mrpRow) { mrpRow = { range: mrp, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); } mrpRow.base[si] = target; mrpRow.present[si] = stock; recalculateCategoryTotals(catIndex); closeManualModal(); render(); alert('Saved'); }
 
+        // Initialize
         window.onload = function() { checkPurchaseReportMode(); render(); };
     </script>
 </body>
