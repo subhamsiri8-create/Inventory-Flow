@@ -103,13 +103,13 @@
         </div>
 
         <div class="tab-bar no-print">
-            <button class="tab-btn active" onclick="switchTab('matrix')">Matrix Table</button>
+            <button class="tab-btn active" onclick="switchTab('matrix')">Transfer Matrix</button>
             <button class="tab-btn" onclick="switchTab('analytics')">Analytics</button>
             <button class="tab-btn" onclick="switchTab('actions')">Actions</button>
         </div>
 
         <div id="tabMatrix" class="tab-content">
-            <div class="card"><div class="table-container" style="border:none;"><table><thead><tr><th>Category</th><th>MRP</th><th>Branch</th><th style="text-align:right">Target</th><th style="text-align:right">Stock</th><th style="min-width:250px; background:var(--accent); color:white">Smart Actions</th></tr></thead><tbody id="tableBody"></tbody></table></div></div>
+            <div class="card"><div class="table-container" style="border:none;"><table><thead><tr><th>Category</th><th>MRP</th><th>Branch</th><th style="text-align:right">Target</th><th style="text-align:right">Stock</th><th style="min-width:250px; background:var(--info); color:white">Transfer Action</th></tr></thead><tbody id="tableBody"></tbody></table></div></div>
         </div>
 
         <!-- UPDATED: Analytics Tab with Side Summary -->
@@ -189,7 +189,7 @@
     <!-- PURCHASE REPORT VIEW -->
     <div id="purchaseReportView" class="container hidden">
         <div class="purchase-header">
-            <div><h1 class="text-2xl font-bold">Intelligent Supply Report</h1><p class="text-sm opacity-80">Transfer & Purchase Suggestions</p></div>
+            <div><h1 class="text-2xl font-bold">Purchase Requirement Report</h1><p class="text-sm opacity-80">Items requiring new stock procurement</p></div>
             <div class="flex gap-2 no-print">
                 <button onclick="exportPurchaseReportExcel()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Export Excel</button>
                 <button onclick="window.close()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Close Tab</button>
@@ -197,15 +197,14 @@
         </div>
         
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            <div class="card p-6" style="height: 350px;"><h3 class="font-bold mb-4">Action Split</h3><div style="position:relative; height:calc(100% - 30px);"><canvas id="purchaseChart"></canvas></div></div>
+            <div class="card p-6" style="height: 350px;"><h3 class="font-bold mb-4">Purchase Volume</h3><div style="position:relative; height:calc(100% - 30px);"><canvas id="purchaseChart"></canvas></div></div>
             <div class="card p-6 lg:col-span-2">
                  <h3 class="font-bold mb-4">Summary</h3>
-                 <div class="grid grid-cols-3 gap-4">
-                     <div class="p-4 rounded" style="background: #fff5f5;"><p class="text-xs text-gray-500 uppercase">Total Purchase</p><p class="font-bold text-red-600 text-xl" id="sumPurchase">0</p></div>
-                     <div class="p-4 rounded" style="background: #eff6ff;"><p class="text-xs text-gray-500 uppercase">Total Transfer</p><p class="font-bold text-blue-600 text-xl" id="sumTransfer">0</p></div>
-                     <div class="p-4 rounded" style="background: #f0fdf4;"><p class="text-xs text-gray-500 uppercase">Optimized</p><p class="font-bold text-green-600 text-xl">Active</p></div>
+                 <div class="grid grid-cols-2 gap-4">
+                     <div class="p-4 rounded" style="background: #fff5f5;"><p class="text-xs text-gray-500 uppercase">Total Purchase Qty</p><p class="font-bold text-red-600 text-xl" id="sumPurchase">0</p></div>
+                     <div class="p-4 rounded" style="background: #f0fdf4;"><p class="text-xs text-gray-500 uppercase">Categories Affected</p><p class="font-bold text-green-600 text-xl" id="sumCats">0</p></div>
                  </div>
-                 <p class="text-xs text-gray-500 mt-4">Report groups by Category > MRP. Actions are split into 'Transfer from Branch' (Blue) and 'Purchase' (Red).</p>
+                 <p class="text-xs text-gray-500 mt-4">This report exclusively lists items where stock needs to be purchased after checking for transfer possibilities.</p>
             </div>
         </div>
         <div id="purchaseReportContent"></div>
@@ -304,10 +303,10 @@
             }
         }
 
-        // --- RENDER ---
+        // --- RENDER: UPDATED TO SHOW ONLY TRANSFERS ---
         function render() {
             const tbody = document.getElementById('tableBody');
-            const summaryTbody = document.getElementById('summaryTableBody'); // New
+            const summaryTbody = document.getElementById('summaryTableBody');
             const selCat = document.getElementById('selCat');
             const selBr = document.getElementById('selBr');
             const chartFilter = document.getElementById('chartFilter');
@@ -320,43 +319,23 @@
 
             inventoryData.forEach((cat, ci) => {
                 catOpts += `<option value="${ci}">${cat.name}</option>`;
-                html += `<tr style="background: var(--accent); color: #fff;"><td colspan="6" style="padding:12px 16px; font-weight:700; font-size:12px;">${cat.name}</td></tr>`;
                 
                 // Calculate Total for Summary Table
                 let catTotalT = 0, catTotalS = 0;
                 stores.forEach((store, si) => {
                     catTotalT += cat.base[si] || 0;
                     catTotalS += cat.present[si] || 0;
-                    
-                    if (cat.mrpDetails && cat.mrpDetails.length > 0) {
+                    globalBase += cat.base[si] || 0;
+                    globalPresent += cat.present[si] || 0;
+                    if(cat.mrpDetails) {
                         cat.mrpDetails.forEach(mrp => {
-                            const mBase = mrp.base ? (mrp.base[si] || 0) : 0;
-                            const mPres = mrp.present ? (mrp.present[si] || 0) : 0;
-                            globalBase += mBase; globalPresent += mPres;
-                            const logic = getSmartLogic(si, mrp.base, mrp.present);
-                            html += `<tr style="background:rgba(0,0,0,0.01);">
-                                <td style="opacity:0.5">${cat.name}</td>
-                                <td><span class="badge badge-info">${mrp.range}</span></td>
-                                <td style="font-weight:600">${store}</td>
-                                <td style="text-align:right"><span class="num-cell">${mBase}</span></td>
-                                <td style="text-align:right"><span class="num-cell">${mPres}</span></td>
-                                <td>${renderActions(logic)}</td>
-                            </tr>`;
+                            globalBase += mrp.base[si] || 0;
+                            globalPresent += mrp.present[si] || 0;
                         });
-                    } else { globalBase += cat.base[si] || 0; globalPresent += cat.present[si] || 0; }
-                    
-                    const tLogic = getSmartLogic(si, cat.base, cat.present);
-                    html += `<tr style="background:rgba(0,0,0,0.04);">
-                        <td style="font-weight:700">${cat.name}</td><td><span class="badge badge-warning">TOTAL</span></td>
-                        <td onclick="openModal(${si})" style="cursor:pointer; color:var(--accent); text-decoration:underline; font-weight:700">${store}</td>
-                        <td style="text-align:right"><span class="num-cell">${cat.base[si] || 0}</span></td>
-                        <td style="text-align:right"><span class="num-cell">${cat.present[si] || 0}</span></td>
-                        <td>${renderActions(tLogic)}</td>
-                    </tr>`;
+                    }
                 });
 
                 // Add to Summary Table
-                const catLogic = getSmartLogic(0, cat.base.map((_, i) => cat.base[i]), cat.present.map((_, i) => cat.present[i])); // Logic based on totals
                 const catGap = catTotalS - catTotalT;
                 let actionBadge = '';
                 if(catGap < 0) actionBadge = `<span class="badge badge-danger">Buy ${Math.abs(catGap)}</span>`;
@@ -368,6 +347,55 @@
                     <td class="mono">${catTotalS}</td>
                     <td>${actionBadge}</td>
                 </tr>`;
+                
+                // --- FILTERED MATRIX RENDERING (Transfers Only) ---
+                let categoryHasTransfers = false;
+                let categoryRowsHtml = '';
+
+                stores.forEach((store, si) => {
+                    // Process MRP Details
+                    if (cat.mrpDetails && cat.mrpDetails.length > 0) {
+                        cat.mrpDetails.forEach(mrp => {
+                            const mBase = mrp.base[si] || 0;
+                            const mPres = mrp.present[si] || 0;
+                            const logic = getSmartLogic(si, mrp.base, mrp.present);
+                            
+                            // ONLY SHOW IF TRANSFER EXISTS
+                            if (logic.transfer) {
+                                categoryHasTransfers = true;
+                                categoryRowsHtml += `<tr style="background:rgba(0,0,0,0.01);">
+                                    <td style="opacity:0.5">${cat.name}</td>
+                                    <td><span class="badge badge-info">${mrp.range}</span></td>
+                                    <td style="font-weight:600">${store}</td>
+                                    <td style="text-align:right"><span class="num-cell">${mBase}</span></td>
+                                    <td style="text-align:right"><span class="num-cell">${mPres}</span></td>
+                                    <td>${renderTransferAction(logic)}</td>
+                                </tr>`;
+                            }
+                        });
+                    }
+
+                    // Process Total Row
+                    const tLogic = getSmartLogic(si, cat.base, cat.present);
+                    
+                    // ONLY SHOW TOTAL ROW IF TRANSFER EXISTS
+                    if (tLogic.transfer) {
+                        categoryHasTransfers = true;
+                        categoryRowsHtml += `<tr style="background:rgba(0,0,0,0.04);">
+                            <td style="font-weight:700">${cat.name}</td><td><span class="badge badge-warning">TOTAL</span></td>
+                            <td onclick="openModal(${si})" style="cursor:pointer; color:var(--accent); text-decoration:underline; font-weight:700">${store}</td>
+                            <td style="text-align:right"><span class="num-cell">${cat.base[si] || 0}</span></td>
+                            <td style="text-align:right"><span class="num-cell">${cat.present[si] || 0}</span></td>
+                            <td>${renderTransferAction(tLogic)}</td>
+                        </tr>`;
+                    }
+                });
+
+                // Only render Category Header if there are transfers
+                if (categoryHasTransfers) {
+                    html += `<tr style="background: var(--info); color: #fff;"><td colspan="6" style="padding:12px 16px; font-weight:700; font-size:12px;">${cat.name}</td></tr>`;
+                    html += categoryRowsHtml;
+                }
             });
 
             stores.forEach((s, si) => brOpts += `<option value="${si}">${s}</option>`);
@@ -392,12 +420,11 @@
             if (!document.getElementById('tabAnalytics').classList.contains('hidden')) refreshCharts();
         }
 
-        function renderActions(logic) {
-            let html = '<div class="analysis-cell">';
-            if (logic.transfer) html += `<span class="badge badge-info">Transfer ${logic.transfer.qty} from ${logic.transfer.from}</span>`;
-            if (logic.purchase > 0) html += `<span class="badge badge-danger">Purchase ${logic.purchase}</span>`;
-            if (!logic.transfer && logic.purchase === 0) html += `<span class="badge badge-success">OK</span>`;
-            return html + '</div>';
+        function renderTransferAction(logic) {
+            if (logic.transfer) {
+                return `<div class="analysis-cell"><span class="badge badge-info">Transfer ${logic.transfer.qty} from ${logic.transfer.from}</span></div>`;
+            }
+            return ''; // Should not happen based on filter
         }
 
         // --- TABS & CHARTS ---
@@ -435,7 +462,7 @@
             });
         }
 
-        // --- PURCHASE REPORT TAB ---
+        // --- PURCHASE REPORT TAB: UPDATED TO SHOW ONLY PURCHASES ---
         function openPurchaseReportTab() {
             localStorage.setItem('sg_report_data', JSON.stringify({ inventoryData, stores }));
             window.open(window.location.href.split('#')[0] + '#purchase', '_blank');
@@ -456,28 +483,30 @@
             const str = savedData.stores;
             
             let html = '';
-            let chartStats = { transfer: 0, purchase: 0 };
+            let chartStats = { purchase: 0, categories: new Set() };
             
             data.forEach(cat => {
                 const processRange = (rangeName, baseArr, presentArr) => {
                     let rows = '';
-                    let rangeTransfer = 0, rangePurchase = 0;
+                    let rangePurchase = 0;
                     
                     str.forEach((store, si) => {
                         const b = baseArr[si] || 0;
                         const p = presentArr[si] || 0;
                         const logic = getSmartLogic(si, baseArr, presentArr);
                         
-                        if (logic.transfer || logic.purchase > 0) {
-                            if(logic.transfer) { rangeTransfer += logic.transfer.qty; chartStats.transfer += logic.transfer.qty; }
-                            if(logic.purchase > 0) { rangePurchase += logic.purchase; chartStats.purchase += logic.purchase; }
+                        // ONLY SHOW IF PURCHASE QTY > 0
+                        if (logic.purchase > 0) {
+                            rangePurchase += logic.purchase;
+                            chartStats.purchase += logic.purchase;
+                            chartStats.categories.add(cat.name);
                             
+                            // Removed Transfer Column
                             rows += `<tr style="background: #fff;">
-                                <td style="width: 20%; border-bottom: 1px solid #f1f5f9;">${store}</td>
-                                <td style="width: 15%; text-align: right; border-bottom: 1px solid #f1f5f9;">${b}</td>
-                                <td style="width: 15%; text-align: right; border-bottom: 1px solid #f1f5f9;">${p}</td>
-                                <td style="width: 25%; border-bottom: 1px solid #f1f5f9;">${logic.transfer ? `<span class="badge badge-info">Trans ${logic.transfer.qty} from ${logic.transfer.from}</span>` : '-'}</td>
-                                <td style="width: 25%; text-align: right; border-bottom: 1px solid #f1f5f9;">${logic.purchase > 0 ? `<span style="color:#dc2626; font-weight:700;">${logic.purchase}</span>` : '-'}</td>
+                                <td style="width: 25%; border-bottom: 1px solid #f1f5f9;">${store}</td>
+                                <td style="width: 20%; text-align: right; border-bottom: 1px solid #f1f5f9;">${b}</td>
+                                <td style="width: 20%; text-align: right; border-bottom: 1px solid #f1f5f9;">${p}</td>
+                                <td style="width: 35%; text-align: right; border-bottom: 1px solid #f1f5f9; color: #dc2626; font-weight:700;">${logic.purchase}</td>
                             </tr>`;
                         }
                     });
@@ -487,11 +516,10 @@
                             <div class="mrp-report-header">
                                 <div style="font-weight: 700; color: #0f172a;">${cat.name} <span style="color: #64748b; font-weight: 400;">(${rangeName})</span></div>
                                 <div class="flex gap-4 text-sm">
-                                    <span class="text-blue-600 font-bold">Transfer: ${rangeTransfer}</span>
-                                    <span class="text-red-600 font-bold">Purchase: ${rangePurchase}</span>
+                                    <span class="text-red-600 font-bold">Total Purchase: ${rangePurchase}</span>
                                 </div>
                             </div>
-                            <table style="width: 100%; min-width: auto;"><thead><tr style="background: #f8fafc;"><th style="padding: 8px; width: 20%;">Branch</th><th style="padding: 8px; width: 15%; text-align: right;">Tgt</th><th style="padding: 8px; width: 15%; text-align: right;">Stk</th><th style="padding: 8px; width: 25%;">Transfer Suggestion</th><th style="padding: 8px; width: 25%; text-align: right;">Purchase</th></tr></thead><tbody>${rows}</tbody></table>
+                            <table style="width: 100%; min-width: auto;"><thead><tr style="background: #f8fafc;"><th style="padding: 8px; width: 25%;">Branch</th><th style="padding: 8px; width: 20%; text-align: right;">Tgt</th><th style="padding: 8px; width: 20%; text-align: right;">Stk</th><th style="padding: 8px; width: 35%; text-align: right;">Purchase Qty</th></tr></thead><tbody>${rows}</tbody></table>
                         </div>`;
                     }
                 };
@@ -505,12 +533,12 @@
 
             document.getElementById('purchaseReportContent').innerHTML = html;
             document.getElementById('sumPurchase').innerText = chartStats.purchase.toLocaleString();
-            document.getElementById('sumTransfer').innerText = chartStats.transfer.toLocaleString();
+            document.getElementById('sumCats').innerText = chartStats.categories.size;
             
             new Chart(document.getElementById('purchaseChart'), {
-                type: 'doughnut',
-                data: { labels: ['Transfer Qty', 'Purchase Qty'], datasets: [{ data: [chartStats.transfer, chartStats.purchase], backgroundColor: ['#2563eb', '#dc2626'], borderWidth: 0 }] },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'bottom' } } }
+                type: 'bar', // Changed to bar for better quantity visualization
+                data: { labels: ['Purchase Required'], datasets: [{ label: 'Qty', data: [chartStats.purchase], backgroundColor: '#dc2626', borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
             });
         }
 
@@ -549,11 +577,11 @@
             saveAs(new Blob([buffer]), `${stores[si]}_Report.xlsx`);
         }
 
-        // 2. Enhanced Export All (Total Report)
+        // 2. Export All (Total Report)
         async function exportMatrixExcel() {
             const wb = new ExcelJS.Workbook();
             
-            // --- Sheet 1: Executive Summary ---
+            // Sheet 1: Executive Summary
             const wsSummary = wb.addWorksheet('Dashboard Summary');
             wsSummary.addRow(['Subham Grand - Total Network Report']);
             wsSummary.getRow(1).font = { size: 18, bold: true };
@@ -572,7 +600,7 @@
             wsSummary.addRow(['Efficiency', (gBase > 0 ? Math.round((gPres/gBase)*100) : 0) + '%']);
             wsSummary.columns = [{ width: 25 }, { width: 15 }];
 
-            // --- Sheet 2: Branch-wise Actions (Popup Style) ---
+            // Sheet 2: Branch-wise Actions
             const wsBranch = wb.addWorksheet('Branch Actions');
             wsBranch.addRow(['Branch', 'Category', 'Target', 'Stock', 'Action']);
             wsBranch.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -593,15 +621,14 @@
                     const row = wsBranch.getRow(rowIdxB);
                     row.values = [store, cat.name, b, p, act];
                     row.getCell(1).font = { bold: true };
-                    if (act.includes('Buy')) row.getCell(5).font = { color: { argb: 'FFDC2626' } }; // Red for Buy
-                    if (act.includes('Trans')) row.getCell(5).font = { color: { argb: 'FF2563EB' } }; // Blue for Trans
+                    if (act.includes('Buy')) row.getCell(5).font = { color: { argb: 'FFDC2626' } };
+                    if (act.includes('Trans')) row.getCell(5).font = { color: { argb: 'FF2563EB' } };
                     rowIdxB++;
                 });
-                // Add blank row between branches
                 rowIdxB++;
             });
 
-            // --- Sheet 3: Detailed Matrix ---
+            // Sheet 3: Detailed Matrix
             const wsMatrix = wb.addWorksheet('MRP Matrix');
             wsMatrix.addRow(['Category', 'MRP Range', 'Branch', 'Target', 'Stock', 'Gap', 'Action']);
             wsMatrix.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -645,12 +672,12 @@
             const wb = new ExcelJS.Workbook();
             const ws = wb.addWorksheet('Purchase Report');
             
-            ws.addRow(['Purchase Requirement Report (Transfer & Purchase Optimized)']);
-            ws.mergeCells('A1:G1');
+            ws.addRow(['Purchase Requirement Report']);
+            ws.mergeCells('A1:E1');
             ws.getRow(1).font = { size: 16, bold: true };
             
             const headerRow = ws.getRow(3);
-            headerRow.values = ['Category', 'MRP Range', 'Branch', 'Target', 'Stock', 'Transfer Suggestion', 'Purchase Qty'];
+            headerRow.values = ['Category', 'MRP Range', 'Branch', 'Target', 'Purchase Qty']; // Removed Transfer column
             headerRow.eachCell((cell) => {
                 cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
                 cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDC2626' } };
@@ -659,7 +686,7 @@
             
             ws.columns = [
                 { width: 25 }, { width: 12 }, { width: 12 }, 
-                { width: 10 }, { width: 10 }, { width: 25 }, { width: 12 }
+                { width: 10 }, { width: 12 }
             ];
             
             let rowIdx = 4;
@@ -671,22 +698,20 @@
                         const p = presentArr[si] || 0;
                         const logic = getSmartLogic(si, baseArr, presentArr);
                         
-                        if (logic.transfer || logic.purchase > 0) {
+                        // ONLY EXPORT IF PURCHASE > 0
+                        if (logic.purchase > 0) {
                             const row = ws.getRow(rowIdx);
                             row.values = [
                                 cat.name,
                                 rangeName,
                                 store,
                                 b,
-                                p,
-                                logic.transfer ? `Transfer ${logic.transfer.qty} from ${logic.transfer.from}` : '-',
-                                logic.purchase > 0 ? logic.purchase : '-'
+                                logic.purchase
                             ];
                             
                             row.eachCell((cell, colNumber) => {
                                 cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
-                                if (colNumber === 6 && logic.transfer) cell.font = { color: { argb: 'FF2563EB' }, bold: true };
-                                if (colNumber === 7 && logic.purchase > 0) cell.font = { color: { argb: 'FFDC2626' }, bold: true };
+                                if (colNumber === 5) cell.font = { color: { argb: 'FFDC2626' }, bold: true };
                             });
                             
                             rowIdx++;
@@ -711,7 +736,7 @@
         function setTarget() { const ci = document.getElementById('selCat').value; const si = document.getElementById('selBr').value; const val = parseInt(document.getElementById('targetVal').value); if (!isNaN(val) && ci !== '' && si !== '') { inventoryData[ci].base[si] = val; render(); } }
         async function handleFileUpload(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async (e) => { const data = new Uint8Array(e.target.result); const workbook = new ExcelJS.Workbook(); await workbook.xlsx.load(data); const ws = workbook.worksheets[0]; inventoryData = []; ws.eachRow((row, rowNumber) => { if (rowNumber === 1) return; const vals = row.values; const catName = (vals[1] || '').toString().toUpperCase(); const mrpRange = (vals[2] || '').toString(); if (!catName) return; let cat = inventoryData.find(c => c.name === catName); if (!cat) { cat = { name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }; inventoryData.push(cat); } const baseRow = Array(stores.length).fill(0); const presRow = Array(stores.length).fill(0); for (let i = 0; i < stores.length; i++) { baseRow[i] = parseInt(vals[3 + i*2]) || 0; presRow[i] = parseInt(vals[4 + i*2]) || 0; } cat.mrpDetails.push({ range: mrpRange, base: baseRow, present: presRow }); }); inventoryData.forEach((c, i) => recalculateCategoryTotals(i)); render(); alert('Excel imported successfully!'); }; reader.readAsArrayBuffer(file); }
         function toggleTheme() { document.body.classList.toggle('dark-mode'); render(); }
-        function openModal(si) { currentModalBranchIndex = si; document.getElementById('modalStore').textContent = stores[si]; let html = ''; inventoryData.forEach(cat => { const logic = getSmartLogic(si, cat.base, cat.present); const gap = (cat.present[si] || 0) - (cat.base[si] || 0); const border = gap < 0 ? 'var(--danger)' : 'var(--success)'; html += `<div class="card p-4 mb-2" style="border-left: 4px solid ${border};"><div class="flex justify-between text-xs font-semibold uppercase mb-1" style="color: var(--text-muted);"><span>${cat.name}</span><span>Gap: ${gap > 0 ? '+' : ''}${gap}</span></div><div class="font-bold">${renderActions(logic)}</div></div>`; }); document.getElementById('modalBody').innerHTML = html; document.getElementById('modal').classList.remove('hidden'); }
+        function openModal(si) { currentModalBranchIndex = si; document.getElementById('modalStore').textContent = stores[si]; let html = ''; inventoryData.forEach(cat => { const logic = getSmartLogic(si, cat.base, cat.present); const gap = (cat.present[si] || 0) - (cat.base[si] || 0); const border = gap < 0 ? 'var(--danger)' : 'var(--success)'; html += `<div class="card p-4 mb-2" style="border-left: 4px solid ${border};"><div class="flex justify-between text-xs font-semibold uppercase mb-1" style="color: var(--text-muted);"><span>${cat.name}</span><span>Gap: ${gap > 0 ? '+' : ''}${gap}</span></div><div class="font-bold"><div class="analysis-cell">${logic.transfer ? `<span class="badge badge-info">Trans ${logic.transfer.qty} from ${logic.transfer.from}</span>` : ''}${logic.purchase > 0 ? `<span class="badge badge-danger">Buy ${logic.purchase}</span>` : ''}${!logic.transfer && logic.purchase === 0 ? `<span class="badge badge-success">OK</span>` : ''}</div></div>`; }); document.getElementById('modalBody').innerHTML = html; document.getElementById('modal').classList.remove('hidden'); }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
         function openManualModal() { render(); document.getElementById('manualModal').classList.remove('hidden'); }
         function closeManualModal() { document.getElementById('manualModal').classList.add('hidden'); }
