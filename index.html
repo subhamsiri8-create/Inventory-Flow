@@ -46,7 +46,6 @@
         .table-container { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; }
         
-        /* Header Styling */
         th { background: var(--bg); padding: 10px 4px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 2px solid var(--border); border-left: 1px solid var(--border); white-space: nowrap; }
         th:first-child { border-left: none; text-align: left; padding-left: 16px; }
         th.group-header { background: var(--accent); color: white; font-size: 12px; border-bottom: none; }
@@ -80,13 +79,13 @@
         }
         
         /* Color Logic: Red=Surplus, Blue=Shortage, Green=Equal */
-        .stock-surplus { background-color: #fca5a5; color: #000000; } /* Red */
-        .stock-short { background-color: #93c5fd; color: #000000; }    /* Blue */
-        .stock-equal { background-color: #86efac; color: #000000; }    /* Green */
+        .stock-surplus { background-color: #fca5a5; color: #000000; }
+        .stock-short { background-color: #93c5fd; color: #000000; }
+        .stock-equal { background-color: #86efac; color: #000000; }
         
         /* Purchase Matrix Specific */
         .purchase-matrix-val {
-            background-color: #93c5fd; /* Blue for shortage/purchase */
+            background-color: #93c5fd;
             color: #000000;
             font-family: 'Space Mono', monospace;
             font-weight: 700;
@@ -94,6 +93,12 @@
             padding: 4px;
             border-radius: 4px;
         }
+        
+        /* Suggestion Badges */
+        .suggestion-transfer { background-color: #dbeafe; color: #1e3a8a; } /* Blue for Transfer */
+        .suggestion-purchase { background-color: #fef3c7; color: #92400e; } /* Orange for Purchase */
+        .suggestion-shortage { background-color: #e5e7eb; color: #374151; } /* Grey for Shortage (No stock) */
+        .suggestion-surplus { background-color: #fee2e2; color: #991b1b; } /* Red for Surplus */
         
         /* Modal */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 24px; }
@@ -195,7 +200,7 @@
         </div>
     </div>
 
-    <!-- MANUAL MODAL (Updated with MRP Options) -->
+    <!-- MANUAL MODAL (Preserved) -->
     <div id="manualModal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="p-6" style="background: var(--accent); color: #fff;"><h2 class="text-lg font-bold">Manual Data Entry</h2></div>
@@ -203,7 +208,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Category</label>
-                        <input type="text" id="manualCatInput" list="catList" class="input-field" placeholder="Select or type category">
+                        <input type="text" id="manualCatInput" list="catList" class="input-field" placeholder="Select or type category" oninput="updateMrpOptions()">
                         <datalist id="catList"></datalist>
                     </div>
                     <div>
@@ -243,10 +248,10 @@
         </div>
     </div>
 
-    <!-- PURCHASE REPORT VIEW (Horizontal Matrix Style) -->
+    <!-- PURCHASE REPORT VIEW -->
     <div id="purchaseReportView" class="container hidden">
         <div class="purchase-header">
-            <div><h1 class="text-2xl font-bold">Purchase Requirement Report</h1><p class="text-sm opacity-80">Horizontal Matrix View - Items requiring procurement</p></div>
+            <div><h1 class="text-2xl font-bold">Purchase Requirement Report</h1><p class="text-sm opacity-80">Net requirements after transfer adjustments</p></div>
             <div class="flex gap-2 no-print">
                 <button onclick="exportPurchaseReportExcel()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Export Excel</button>
                 <button onclick="window.close()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Close Tab</button>
@@ -261,7 +266,7 @@
                      <div class="p-4 rounded" style="background: #fff5f5;"><p class="text-xs text-gray-500 uppercase">Total Purchase Qty</p><p class="font-bold text-red-600 text-xl" id="sumPurchase">0</p></div>
                      <div class="p-4 rounded" style="background: #f0fdf4;"><p class="text-xs text-gray-500 uppercase">Categories Affected</p><p class="font-bold text-green-600 text-xl" id="sumCats">0</p></div>
                  </div>
-                 <p class="text-xs text-gray-500 mt-4">This report exclusively lists items where stock needs to be purchased after checking for transfer possibilities.</p>
+                 <p class="text-xs text-gray-500 mt-4">This report lists items where internal transfer is not possible.</p>
             </div>
         </div>
         
@@ -369,7 +374,7 @@
             }
         }
 
-        // --- RENDER: HORIZONTAL MATRIX (Main) ---
+        // --- RENDER: HORIZONTAL MATRIX ---
         function render() {
             renderHorizontalMatrix('matrixHead', 'tableBody', false);
             
@@ -440,7 +445,7 @@
                 headerHtml1 += `<th colspan="2" class="group-header" style="border-left: 1px solid rgba(255,255,255,0.2); text-align: center;">${store}</th>`;
                 headerHtml2 += `<th class="sub-header" style="width: 60px; text-align: center;">Tgt</th><th class="sub-header" style="width: 60px; text-align: center; border-right: 1px solid var(--border);">Stk</th>`;
             });
-            headerHtml1 += '<th rowspan="2" style="min-width: 80px; border-bottom: none;">Status</th></tr>';
+            headerHtml1 += '<th rowspan="2" style="min-width: 160px; border-bottom: none;">AI Suggestion</th></tr>';
             headerHtml2 += '</tr>';
             
             thead.innerHTML = headerHtml1 + headerHtml2;
@@ -455,7 +460,6 @@
                             <td style="color: var(--text-muted); font-weight: 400; font-size: 11px;">${cat.name}</td>
                             <td><span class="badge badge-info">${mrp.range}</span></td>`;
                         
-                        let rowStatus = 'OK';
                         let hasAction = false;
                         
                         stores.forEach((store, si) => {
@@ -464,12 +468,10 @@
                             const gap = s - t;
                             const logic = getSmartLogic(si, mrp.base, mrp.present);
                             
-                            // In Purchase Mode, hide rows with no purchase needed
                             if(isPurchaseMode && logic.purchase === 0) {
                                 rowHtml += `<td></td><td></td>`;
                             } else {
-                                if (gap < 0) rowStatus = 'SHORT';
-                                if(logic.purchase > 0) hasAction = true;
+                                if(logic.purchase > 0 || logic.transfer) hasAction = true;
                                 
                                 // Target Cell
                                 rowHtml += `<td><span class="num-target">${t}</span></td>`;
@@ -481,19 +483,46 @@
                                 else stockClass = 'num-stock stock-equal';
                                 
                                 if(isPurchaseMode) {
-                                    // In purchase mode, show Purchase Qty in Blue
                                     rowHtml += `<td><span class="purchase-matrix-val">${logic.purchase}</span></td>`;
-                                    rowStatus = 'BUY';
                                 } else {
                                     rowHtml += `<td><span class="${stockClass}">${s}</span></td>`;
                                 }
                             }
                         });
                         
-                        // Filter: If Purchase Mode and no action, skip row
                         if(isPurchaseMode && !hasAction) return;
                         
-                        rowHtml += `<td><span class="badge ${rowStatus === 'SHORT' || rowStatus === 'BUY' ? 'badge-danger' : 'badge-success'}">${rowStatus}</span></td></tr>`;
+                        // Suggestion Logic
+                        if(isPurchaseMode) {
+                            suggestionHtml = `<span class="badge suggestion-purchase">Purchase</span>`;
+                        } else {
+                            // --- TRANSFER ONLY LOGIC FOR MATRIX ---
+                            // Find Surplus and Shortage in this row
+                            let surplusStore = null, maxSurplus = 0;
+                            let shortageStore = null, maxShortage = 0;
+                            
+                            stores.forEach((store, si) => {
+                                const g = (mrp.present[si] || 0) - (mrp.base[si] || 0);
+                                if(g > 0 && g > maxSurplus) { maxSurplus = g; surplusStore = store; }
+                                if(g < 0 && Math.abs(g) > maxShortage) { maxShortage = Math.abs(g); shortageStore = store; }
+                            });
+
+                            if (surplusStore && shortageStore) {
+                                // Can Transfer
+                                const qty = Math.min(maxSurplus, maxShortage);
+                                suggestionHtml = `<span class="badge suggestion-transfer">${surplusStore} → ${shortageStore} (${qty})</span>`;
+                            } else if (shortageStore) {
+                                // Shortage but NO surplus to transfer
+                                suggestionHtml = `<span class="badge suggestion-shortage">Shortage (No Stock)</span>`;
+                            } else if (surplusStore) {
+                                // Surplus but no shortage
+                                suggestionHtml = `<span class="badge suggestion-surplus">Surplus</span>`;
+                            } else {
+                                suggestionHtml = `<span class="badge badge-success">OK</span>`;
+                            }
+                        }
+                        
+                        rowHtml += `<td>${suggestionHtml}</td></tr>`;
                         bodyHtml += rowHtml;
                     });
                 }
@@ -514,7 +543,7 @@
                     if(isPurchaseMode && logic.purchase === 0) {
                          totalHtml += `<td></td><td></td>`;
                     } else {
-                        if(logic.purchase > 0) totalHasAction = true;
+                        if(logic.purchase > 0 || logic.transfer) totalHasAction = true;
                         
                         totalHtml += `<td><span class="num-target">${t}</span></td>`;
                         
@@ -531,13 +560,38 @@
                     }
                 });
 
+                // Total Row Suggestion
+                if(isPurchaseMode) {
+                     if(totalHasAction) totalHtml += `<td><span class="badge suggestion-purchase">Purchase</span></td>`;
+                     else totalHtml += `<td></td>`;
+                } else {
+                    // --- TRANSFER ONLY LOGIC FOR TOTAL ROW ---
+                    let surplusStore = null, maxSurplus = 0;
+                    let shortageStore = null, maxShortage = 0;
+                    
+                    stores.forEach((store, si) => {
+                        const g = (cat.present[si] || 0) - (cat.base[si] || 0);
+                        if(g > 0 && g > maxSurplus) { maxSurplus = g; surplusStore = store; }
+                        if(g < 0 && Math.abs(g) > maxShortage) { maxShortage = Math.abs(g); shortageStore = store; }
+                    });
+
+                    if (surplusStore && shortageStore) {
+                        const qty = Math.min(maxSurplus, maxShortage);
+                        totalHtml += `<td><span class="badge suggestion-transfer">${surplusStore} → ${shortageStore} (${qty})</span></td>`;
+                    } else if (shortageStore) {
+                        totalHtml += `<td><span class="badge suggestion-shortage">Shortage (No Stock)</span></td>`;
+                    } else if (surplusStore) {
+                        totalHtml += `<td><span class="badge suggestion-surplus">Surplus</span></td>`;
+                    } else {
+                        totalHtml += `<td><span class="badge badge-success">OK</span></td>`;
+                    }
+                }
+
                 if(isPurchaseMode && !totalHasAction) return;
                 
-                totalHtml += `<td></td></tr>`; 
                 bodyHtml += totalHtml;
             });
             
-            // If purchase mode and empty
             if(isPurchaseMode && bodyHtml === '') {
                 bodyHtml = `<tr><td colspan="${stores.length * 2 + 3}" style="text-align:center; padding: 20px; color:var(--success);">No Purchase Requirements Found</td></tr>`;
             }
@@ -580,7 +634,7 @@
             });
         }
 
-        // --- PURCHASE REPORT TAB (Horizontal Matrix) ---
+        // --- PURCHASE REPORT TAB ---
         function openPurchaseReportTab() {
             localStorage.setItem('sg_report_data', JSON.stringify({ inventoryData, stores }));
             window.open(window.location.href.split('#')[0] + '#purchase', '_blank');
@@ -597,13 +651,11 @@
         function renderPurchasePage() {
             const savedData = JSON.parse(localStorage.getItem('sg_report_data'));
             if (!savedData) return;
-            // Overwrite local data with saved data
             inventoryData = savedData.inventoryData;
             stores = savedData.stores;
 
             let chartStats = { purchase: 0, categories: new Set() };
             
-            // Calculate Stats for Chart
              inventoryData.forEach(cat => {
                 const processStats = (baseArr, presentArr) => {
                     stores.forEach((store, si) => {
@@ -630,7 +682,6 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
             });
 
-            // Render Horizontal Matrix
             renderHorizontalMatrix('purchaseMatrixHead', 'purchaseMatrixBody', true);
         }
 
@@ -674,7 +725,7 @@
             
             const header1 = ['Category', 'MRP'];
             stores.forEach(s => header1.push(s, '')); 
-            header1.push('Status');
+            header1.push('Suggestion');
             wsMatrix.addRow(header1);
             
             const header2 = ['', ''];
@@ -694,18 +745,33 @@
                 if (cat.mrpDetails && cat.mrpDetails.length > 0) {
                     cat.mrpDetails.forEach(mrp => {
                         const rowData = [cat.name, mrp.range];
+                        let rowSurplus = 0, rowShortage = 0;
+                        let surplusStore=null, shortageStore=null;
+                        
                         stores.forEach((_, si) => {
-                            rowData.push(mrp.base[si] || 0);
-                            rowData.push(mrp.present[si] || 0);
+                            const t = mrp.base[si] || 0;
+                            const s = mrp.present[si] || 0;
+                            const g = s - t;
+                            rowData.push(t);
+                            rowData.push(s);
+                            if(g > 0) { rowSurplus += g; surplusStore = stores[si]; }
+                            if(g < 0) { rowShortage += Math.abs(g); shortageStore = stores[si]; }
                         });
-                        rowData.push('');
+                        
+                        let sugg = '';
+                        if(rowSurplus > 0 && rowShortage > 0) sugg = `Transfer ${Math.min(rowSurplus, rowShortage)} from ${surplusStore} to ${shortageStore}`;
+                        else if(rowShortage > 0) sugg = `Shortage (No Stock)`;
+                        else if(rowSurplus > 0) sugg = `Surplus`;
+                        else sugg = 'OK';
+                        
+                        rowData.push(sugg);
                         wsMatrix.getRow(rowIdx).values = rowData;
                         rowIdx++;
                     });
                 }
 
                 const totalData = [cat.name, 'TOTAL'];
-                stores.forEach((_, si) => {
+                 stores.forEach((_, si) => {
                     totalData.push(cat.base[si] || 0);
                     totalData.push(cat.present[si] || 0);
                 });
@@ -804,26 +870,22 @@
         function setTarget() { const ci = document.getElementById('selCat').value; const si = document.getElementById('selBr').value; const val = parseInt(document.getElementById('targetVal').value); if (!isNaN(val) && ci !== '' && si !== '') { inventoryData[ci].base[si] = val; render(); } }
         async function handleFileUpload(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async (e) => { const data = new Uint8Array(e.target.result); const workbook = new ExcelJS.Workbook(); await workbook.xlsx.load(data); const ws = workbook.worksheets[0]; inventoryData = []; ws.eachRow((row, rowNumber) => { if (rowNumber === 1) return; const vals = row.values; const catName = (vals[1] || '').toString().toUpperCase(); const mrpRange = (vals[2] || '').toString(); if (!catName) return; let cat = inventoryData.find(c => c.name === catName); if (!cat) { cat = { name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }; inventoryData.push(cat); } const baseRow = Array(stores.length).fill(0); const presRow = Array(stores.length).fill(0); for (let i = 0; i < stores.length; i++) { baseRow[i] = parseInt(vals[3 + i*2]) || 0; presRow[i] = parseInt(vals[4 + i*2]) || 0; } cat.mrpDetails.push({ range: mrpRange, base: baseRow, present: presRow }); }); inventoryData.forEach((c, i) => recalculateCategoryTotals(i)); render(); alert('Excel imported successfully!'); }; reader.readAsArrayBuffer(file); }
         function toggleTheme() { document.body.classList.toggle('dark-mode'); render(); }
-        function openModal(si) { currentModalBranchIndex = si; document.getElementById('modalStore').textContent = stores[si]; let html = ''; inventoryData.forEach(cat => { const logic = getSmartLogic(si, cat.base, cat.present); const gap = (cat.present[si] || 0) - (cat.base[si] || 0); const border = gap < 0 ? 'var(--danger)' : 'var(--success)'; html += `<div class="card p-4 mb-2" style="border-left: 4px solid ${border};"><div class="flex justify-between text-xs font-semibold uppercase mb-1" style="color: var(--text-muted);"><span>${cat.name}</span><span>Gap: ${gap > 0 ? '+' : ''}${gap}</span></div><div class="font-bold"><div class="analysis-cell">${logic.transfer ? `<span class="badge badge-info">Trans ${logic.transfer.qty} from ${logic.transfer.from}</span>` : ''}${logic.purchase > 0 ? `<span class="badge badge-danger">Buy ${logic.purchase}</span>` : ''}${!logic.transfer && logic.purchase === 0 ? `<span class="badge badge-success">OK</span>` : ''}</div></div>`; }); document.getElementById('modalBody').innerHTML = html; document.getElementById('modal').classList.remove('hidden'); }
+        function openModal(si) { currentModalBranchIndex = si; document.getElementById('modalStore').textContent = stores[si]; let html = ''; inventoryData.forEach(cat => { const logic = getSmartLogic(si, cat.base, cat.present); const gap = (cat.present[si] || 0) - (cat.base[si] || 0); const border = gap < 0 ? 'var(--danger)' : 'var(--success)'; html += `<div class="card p-4 mb-2" style="border-left: 4px solid ${border};"><div class="flex justify-between text-xs font-semibold uppercase mb-1" style="color: var(--text-muted);"><span>${cat.name}</span><span>Gap: ${gap > 0 ? '+' : ''}${gap}</span></div><div class="font-bold"><div class="analysis-cell">${logic.transfer ? `<span class="badge badge-info">Trans ${logic.transfer.qty} fr. ${logic.transfer.from}</span>` : ''}${logic.purchase > 0 ? `<span class="badge badge-danger">Buy ${logic.purchase}</span>` : ''}${!logic.transfer && logic.purchase === 0 ? `<span class="badge badge-success">OK</span>` : ''}</div></div>`; }); document.getElementById('modalBody').innerHTML = html; document.getElementById('modal').classList.remove('hidden'); }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
         
-        // Updated Manual Modal Logic
         function openManualModal() { 
-            render(); // Ensure lists are populated
-            updateMrpOptions(); 
+            render(); 
             document.getElementById('manualModal').classList.remove('hidden'); 
         }
         
         function closeManualModal() { document.getElementById('manualModal').classList.add('hidden'); }
         
-        // New: Dynamic MRP Options
+        // Dynamic MRP Options Logic
         function updateMrpOptions() {
             const catName = document.getElementById('manualCatInput').value.toUpperCase().trim();
             const mrpList = document.getElementById('mrpList');
-            mrpList.innerHTML = '<option value="TOTAL">TOTAL</option>'; // Always add Total option
-            
+            mrpList.innerHTML = '<option value="TOTAL">TOTAL</option>';
             if(!catName) return;
-            
             const cat = inventoryData.find(c => c.name === catName);
             if(cat && cat.mrpDetails) {
                 cat.mrpDetails.forEach(mrp => {
@@ -833,14 +895,12 @@
                 });
             }
         }
-        
-        // Attach event listener for category input
+        // Attach listener
         document.getElementById('manualCatInput').addEventListener('change', updateMrpOptions);
         document.getElementById('manualCatInput').addEventListener('input', updateMrpOptions);
 
         function saveManualData() { const catName = document.getElementById('manualCatInput').value.toUpperCase().trim(); const mrp = document.getElementById('manualMrp').value.trim(); const si = parseInt(document.getElementById('manualBranch').value); const target = parseInt(document.getElementById('manualTarget').value) || 0; const stock = parseInt(document.getElementById('manualStock').value) || 0; if (!catName || !mrp || isNaN(si)) { alert('Missing fields'); return; } let catIndex = inventoryData.findIndex(c => c.name === catName); if (catIndex === -1) { inventoryData.push({ name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }); catIndex = inventoryData.length - 1; } const cat = inventoryData[catIndex]; let mrpRow = cat.mrpDetails.find(r => r.range === mrp); if (!mrpRow) { mrpRow = { range: mrp, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); } mrpRow.base[si] = target; mrpRow.present[si] = stock; recalculateCategoryTotals(catIndex); closeManualModal(); render(); alert('Saved'); }
 
-        // Initialize
         window.onload = function() { checkPurchaseReportMode(); render(); };
     </script>
 </body>
