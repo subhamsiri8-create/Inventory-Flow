@@ -79,9 +79,9 @@
         }
         
         /* Color Logic: Red=Surplus, Blue=Shortage, Green=Equal */
-        .stock-surplus { background-color: #fca5a5; color: #000000; } /* Red */
-        .stock-short { background-color: #93c5fd; color: #000000; }    /* Blue */
-        .stock-equal { background-color: #86efac; color: #000000; }    /* Green */
+        .stock-surplus { background-color: #fca5a5; color: #000000; }
+        .stock-short { background-color: #93c5fd; color: #000000; }
+        .stock-equal { background-color: #86efac; color: #000000; }
         
         /* Purchase Matrix Specific */
         .purchase-matrix-val {
@@ -95,17 +95,10 @@
         }
         
         /* Suggestion Badges */
-        .suggestion-transfer { background-color: #dbeafe; color: #1e3a8a; } /* Blue for Transfer */
-        .suggestion-purchase { 
-            background-color: #fef3c7; 
-            color: #92400e; 
-            font-size: 12px; 
-            padding: 6px 10px; 
-            font-weight: 700;
-            border: 1px solid #fde68a;
-        } /* Orange for Purchase */
-        .suggestion-shortage { background-color: #e5e7eb; color: #374151; } /* Grey for Shortage (No stock) */
-        .suggestion-surplus { background-color: #fee2e2; color: #991b1b; } /* Red for Surplus */
+        .suggestion-transfer { background-color: #dbeafe; color: #1e3a8a; }
+        .suggestion-purchase { background-color: #fef3c7; color: #92400e; font-size: 12px; padding: 6px 10px; font-weight: 700; border: 1px solid #fde68a; }
+        .suggestion-shortage { background-color: #e5e7eb; color: #374151; }
+        .suggestion-surplus { background-color: #fee2e2; color: #991b1b; }
         
         /* Modal */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 24px; }
@@ -289,51 +282,400 @@
     </div>
 
     <script>
-        // --- DATA (Preserved) ---
-        let stores = ["SG HYD", "SG", "SGRJY", "SGTNL", "SIRI ELR", "ST", "TUNI", "SIRICPT", "VS"];
+        // --- UPDATED STORE LIST (12 Stores) ---
+        let stores = ["SG HYD", "SG", "SGRJY", "SGTNL", "SIRI ELR", "ST", "TUNI", "SIRICPT", "SIRI VJY", "SIRIKKD", "SIRI TPT", "VS"];
         
+        // --- UPDATED DATA (Accurate Targets) ---
         let inventoryData = [
             { 
                 name: "BNS HANDLOOM HF", 
-                base: [5650, 11000, 4950, 8300, 7350, 7350, 8500, 4000, 8400], 
-                present: [4800, 9200, 4100, 7500, 6800, 7000, 8100, 3800, 7900], 
+                base: Array(12).fill(0), 
+                present: [], // Will be calculated
                 mrpDetails: [
-                    { range: "0-500", base: [250, 500, 250, 500, 400, 400, 500, 400, 400], present: [180, 420, 200, 380, 350, 320, 450, 350, 380] },
-                    { range: "501-1000", base: [450, 1000, 450, 800, 700, 700, 800, 400, 800], present: [380, 850, 400, 720, 650, 680, 750, 380, 720] },
-                    { range: "1001-1500", base: [450, 1000, 450, 800, 700, 700, 800, 400, 800], present: [420, 920, 430, 780, 680, 710, 780, 390, 760] },
-                    { range: "1501-2000", base: [450, 1000, 450, 800, 700, 700, 800, 400, 800], present: [400, 880, 410, 750, 660, 680, 760, 360, 740] },
-                    { range: "2001+", base: [4050, 7600, 3300, 5200, 4550, 4550, 5100, 2400, 5400], present: [3420, 6730, 2680, 4820, 4300, 4280, 4880, 2280, 4980] }
+                    { range: "0-500", base: [250, 500, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] },
+                    { range: "501-1000", base: [450, 1000, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] },
+                    { range: "1001-1500", base: [500, 1200, 500, 1000, 750, 750, 750, 400, 1200, 750, 750, 750], present: [] },
+                    { range: "1501-2000", base: [250, 500, 250, 400, 300, 350, 350, 250, 500, 350, 350, 300], present: [] },
+                    { range: "2001-3000", base: [250, 500, 250, 350, 300, 350, 300, 250, 500, 350, 350, 300], present: [] },
+                    { range: "3001-4000", base: [150, 300, 150, 200, 200, 200, 200, 150, 300, 200, 200, 150], present: [] },
+                    { range: "4001-6000", base: [100, 200, 100, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] },
+                    { range: "6001-7500", base: [50, 100, 50, 100, 50, 100, 50, 50, 100, 100, 100, 100], present: [] },
+                    { range: ">7500", base: [10, 20, 10, 0, 0, 10, 0, 20, 20, 10, 10, 20], present: [] },
+                    { range: "501-1000(1+1)", base: [500, 800, 500, 500, 500, 400, 1000, 400, 800, 400, 400, 400], present: [] },
+                    { range: "1001-2000(1+1)", base: [250, 500, 250, 400, 300, 300, 500, 300, 500, 300, 300, 400], present: [] }
                 ] 
             },
             { 
                 name: "SILK WORK SAREES", 
-                base: [1310, 1810, 1110, 1305, 1170, 1310, 1320, 440, 1465], 
-                present: [1200, 1700, 1000, 1200, 1100, 1300, 1400, 400, 1500], 
+                base: Array(12).fill(0), 
+                present: [],
                 mrpDetails: [
-                    { range: "0-500", base: [87, 175, 87, 125, 125, 150, 175, 0, 150], present: [60, 120, 55, 90, 85, 100, 130, 10, 95] },
-                    { range: "501-1000", base: [185, 370, 185, 295, 245, 295, 345, 50, 295], present: [150, 280, 140, 220, 180, 240, 280, 35, 250] },
-                    { range: "1001+", base: [1038, 1265, 838, 885, 800, 865, 800, 390, 1020], present: [990, 1300, 805, 890, 835, 960, 990, 355, 1155] }
+                    { range: "0-500", base: [87, 175, 87, 125, 125, 150, 175, 0, 175, 150, 150, 150], present: [] },
+                    { range: "501-1000", base: [185, 370, 185, 295, 245, 295, 345, 50, 370, 295, 295, 295], present: [] },
+                    { range: "1001-1500", base: [175, 400, 175, 350, 280, 350, 490, 200, 400, 350, 350, 350], present: [] },
+                    { range: "1501-2000", base: [200, 400, 200, 300, 150, 300, 200, 100, 400, 300, 300, 250], present: [] },
+                    { range: "2001-3000", base: [175, 350, 175, 300, 150, 350, 400, 150, 350, 350, 350, 250], present: [] },
+                    { range: "3001-4000", base: [63, 125, 63, 100, 100, 100, 100, 100, 125, 100, 100, 50], present: [] },
+                    { range: "4001-6000", base: [25, 50, 25, 25, 25, 50, 50, 25, 50, 50, 50, 25], present: [] },
+                    { range: ">6000", base: [10, 20, 10, 0, 0, 0, 0, 0, 20, 0, 0, 0], present: [] },
+                    { range: "501-1000(1+1)", base: [87, 175, 87, 125, 125, 150, 175, 50, 175, 150, 150, 150], present: [] },
+                    { range: "1001-2000(1+1)", base: [58, 115, 58, 90, 75, 90, 105, 50, 115, 90, 90, 90], present: [] }
+                ] 
+            },
+            { 
+                name: "PRINT WORK SAREES", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "0-500", base: [100, 200, 100, 175, 150, 150, 175, 150, 200, 150, 150, 150], present: [] },
+                    { range: "501-1000", base: [133, 265, 133, 210, 210, 210, 210, 100, 265, 210, 210, 210], present: [] },
+                    { range: "1001-1500", base: [75, 150, 75, 120, 120, 120, 175, 100, 150, 120, 120, 120], present: [] },
+                    { range: "1501-2000", base: [50, 100, 50, 70, 70, 70, 70, 50, 100, 70, 70, 70], present: [] },
+                    { range: "2001-3000", base: Array(12).fill(0), present: [] },
+                    { range: "3001-4000", base: Array(12).fill(0), present: [] },
+                    { range: "501-1000(1+1)", base: [75, 150, 75, 115, 115, 115, 150, 120, 150, 115, 115, 115], present: [] },
+                    { range: "1001-2000(1+1)", base: [50, 100, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] }
+                ] 
+            },
+            { 
+                name: "HANDLOOM COTTON", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "0-500", base: [60, 200, 60, 100, 120, 75, 150, 50, 200, 75, 75, 100], present: [] },
+                    { range: "501-1000", base: [150, 300, 150, 300, 175, 100, 100, 150, 300, 100, 100, 300], present: [] },
+                    { range: "1001-1500", base: [50, 100, 50, 120, 75, 50, 25, 75, 100, 50, 50, 120], present: [] },
+                    { range: "1501-2000", base: [25, 50, 25, 60, 40, 20, 0, 50, 50, 20, 20, 60], present: [] },
+                    { range: "2001-3000", base: [15, 30, 15, 20, 0, 20, 0, 0, 30, 20, 20, 20], present: [] }
+                ] 
+            },
+            { 
+                name: "VENKATAGIRI", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "0-1000", base: [100, 200, 100, 150, 100, 100, 200, 100, 200, 100, 100, 175], present: [] },
+                    { range: "1001-1500", base: [60, 100, 60, 100, 50, 30, 100, 50, 100, 30, 30, 100], present: [] },
+                    { range: "1501-2000", base: [50, 75, 50, 75, 20, 30, 50, 50, 75, 30, 30, 75], present: [] },
+                    { range: "2001-3000", base: [15, 30, 15, 30, 0, 10, 20, 20, 30, 10, 10, 30], present: [] },
+                    { range: ">3000", base: Array(12).fill(0), present: [] }
+                ] 
+            },
+            { 
+                name: "UPPADA (MANGALAGIRI)", 
+                base: [50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50], 
+                present: [],
+                mrpDetails: []
+            },
+            { 
+                name: "UPPADA (CHIRALA)", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "1001-2000", base: [15, 30, 15, 30, 20, 20, 30, 20, 30, 20, 20, 30], present: [] },
+                    { range: "2001-3000", base: [10, 20, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] },
+                    { range: "3001-4000", base: [20, 40, 20, 40, 25, 30, 30, 20, 40, 30, 30, 40], present: [] },
+                    { range: "4001-5000", base: [20, 40, 20, 30, 20, 20, 20, 20, 40, 20, 20, 30], present: [] },
+                    { range: "5001-7000", base: [20, 30, 20, 30, 20, 25, 20, 20, 30, 25, 25, 30], present: [] },
+                    { range: "7001-10000", base: [5, 10, 5, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] }
+                ] 
+            },
+            { 
+                name: "UPPADA (COIMBATORE)", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "4001-5000", base: [10, 20, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] },
+                    { range: "5001-7000", base: [15, 30, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] },
+                    { range: "7001-10000", base: [15, 30, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] },
+                    { range: "10001-15000", base: [5, 10, 5, 0, 0, 0, 0, 10, 10, 0, 0, 10], present: [] }
+                ] 
+            },
+            { 
+                name: "UPPADA (SALEM)", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "7001-10000", base: [0, 30, 30, 30, 30, 30, 30, 20, 30, 30, 30, 30], present: [] },
+                    { range: ">10000", base: [0, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] }
+                ] 
+            },
+            { 
+                name: "UPPADA (NELLORE)", 
+                base: [0, 100, 100, 100, 40, 70, 70, 0, 100, 70, 70, 100], 
+                present: [],
+                mrpDetails: []
+            },
+            { 
+                name: "UPPADA (PRODDATUR)", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "1001-3000", base: [25, 50, 25, 50, 40, 30, 50, 40, 50, 30, 30, 50], present: [] },
+                    { range: "3001-5000", base: [20, 30, 20, 30, 30, 25, 40, 30, 30, 25, 25, 30], present: [] },
+                    { range: "5001-7000", base: [25, 50, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] },
+                    { range: "7001-10000", base: [25, 50, 25, 50, 30, 50, 30, 50, 50, 50, 50, 50], present: [] },
+                    { range: ">10000", base: [5, 10, 5, 10, 0, 0, 10, 15, 10, 0, 0, 15], present: [] }
                 ] 
             },
             { 
                 name: "PATTU SAREES", 
-                base: [721, 1153, 763, 828, 268, 1063, 1192, 688, 998], 
-                present: [700, 1100, 750, 800, 300, 1000, 1200, 600, 950], 
-                mrpDetails: [] 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "0-1000", base: [30, 40, 30, 50, 25, 40, 60, 25, 40, 40, 40, 60], present: [] },
+                    { range: "1001-2000", base: [125, 150, 125, 200, 100, 175, 250, 100, 150, 175, 175, 250], present: [] },
+                    { range: "2001-3000", base: [100, 200, 100, 200, 100, 200, 250, 100, 200, 200, 200, 300], present: [] },
+                    { range: "3001-4000", base: [75, 150, 75, 150, 100, 175, 150, 100, 150, 175, 175, 150], present: [] },
+                    { range: "4001-5000", base: [50, 100, 50, 100, 75, 75, 100, 50, 100, 75, 75, 120], present: [] },
+                    { range: "5001-7000", base: [63, 120, 63, 120, 100, 75, 75, 50, 120, 75, 75, 120], present: [] },
+                    { range: "7001-10000", base: [50, 100, 50, 100, 50, 75, 100, 50, 100, 75, 75, 100], present: [] },
+                    { range: "10001-15000", base: [50, 100, 50, 100, 50, 90, 100, 50, 100, 90, 90, 100], present: [] },
+                    { range: "15001-20000", base: [25, 50, 25, 50, 20, 50, 50, 30, 50, 50, 50, 20], present: [] },
+                    { range: "20001-30000", base: [15, 25, 15, 20, 5, 10, 10, 10, 25, 10, 10, 20], present: [] },
+                    { range: ">30000", base: [5, 10, 5, 10, 0, 0, 0, 0, 10, 0, 0, 10], present: [] }
+                ] 
             },
             { 
-                name: "VENKATAGIRI", 
-                base: [405, 225, 355, 170, 170, 370, 220, 380, 164], 
-                present: [400, 220, 350, 150, 160, 350, 200, 350, 150], 
-                mrpDetails: [] 
+                name: "HP EMBOSE", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "2001-3000", base: [20, 30, 20, 30, 20, 20, 30, 0, 30, 20, 20, 30], present: [] },
+                    { range: "3001-4000", base: [10, 20, 10, 20, 10, 20, 25, 10, 20, 20, 20, 20], present: [] },
+                    { range: "4001-5000", base: [10, 20, 10, 25, 10, 15, 30, 15, 20, 15, 15, 20], present: [] },
+                    { range: "5001-7000", base: [15, 40, 15, 30, 20, 30, 40, 15, 40, 30, 30, 30], present: [] },
+                    { range: "7001-10000", base: [10, 20, 10, 20, 5, 15, 40, 10, 20, 15, 15, 20], present: [] },
+                    { range: "10001-15000", base: [5, 10, 5, 10, 5, 10, 15, 10, 10, 10, 10, 15], present: [] },
+                    { range: ">15000", base: Array(12).fill(0), present: [] }
+                ] 
+            },
+            { 
+                name: "COIMBATORE SECO", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "0-1100", base: [75, 200, 75, 150, 100, 120, 200, 50, 200, 120, 120, 150], present: [] },
+                    { range: "1101-2000", base: [100, 200, 100, 200, 150, 200, 200, 100, 200, 200, 200, 200], present: [] },
+                    { range: ">2000", base: [25, 50, 25, 50, 30, 30, 75, 50, 50, 30, 30, 50], present: [] }
+                ] 
+            },
+            { 
+                name: "HL PATTU PAWADAS JUST BORN", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "0-1000", base: [0, 30, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
+                    { range: "1001-2000", base: [0, 30, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
+                    { range: "2001-3000", base: [0, 30, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
+                    { range: "3001-4000", base: [0, 30, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
+                    { range: "4001-6000", base: [0, 30, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] },
+                    { range: ">6000", base: [0, 30, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] }
+                ] 
+            },
+            { 
+                name: "HL PATTU PAWADAS 27", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "0-1000", base: [0, 15, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] },
+                    { range: "1001-2000", base: [0, 15, 15, 15, 15, 15, 15, 20, 15, 15, 15, 15], present: [] },
+                    { range: "2001-3000", base: [0, 15, 15, 15, 15, 15, 15, 10, 15, 15, 15, 15], present: [] },
+                    { range: ">3000", base: [0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] }
+                ] 
+            },
+            { 
+                name: "HL PATTU PAWADAS 32", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "0-2000", base: [0, 30, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] },
+                    { range: "2001-3000", base: [0, 15, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] },
+                    { range: ">3000", base: [0, 10, 10, 10, 10, 10, 10, 0, 10, 10, 10, 10], present: [] }
+                ] 
+            },
+            { 
+                name: "HL PATTU PAWADAS 36", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "1001-2000", base: [0, 30, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] },
+                    { range: "2001-3000", base: [0, 10, 10, 10, 10, 10, 10, 20, 10, 10, 10, 10], present: [] },
+                    { range: "3001-4000", base: [0, 10, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] },
+                    { range: "4001-6000", base: [0, 10, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] },
+                    { range: ">6000", base: [0, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5], present: [] }
+                ] 
+            },
+            { 
+                name: "HL PATTU PAWADAS 45", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "1001-3000", base: [0, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30], present: [] },
+                    { range: "3001-5000", base: [0, 20, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] },
+                    { range: "5001-7000", base: [0, 20, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] },
+                    { range: "7001-10000", base: [0, 10, 10, 10, 10, 10, 10, 15, 10, 10, 10, 10], present: [] },
+                    { range: ">10000", base: [0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] }
+                ] 
+            },
+            { 
+                name: "IKKAT PAWADAS 24 INCHES", 
+                base: [0, 10, 10, 5, 5, 5, 5, 5, 10, 5, 5, 10], 
+                present: [],
+                mrpDetails: []
+            },
+            { 
+                name: "IKKAT PAWADAS 36 INCHES", 
+                base: [0, 10, 10, 5, 5, 5, 5, 5, 10, 5, 5, 10], 
+                present: [],
+                mrpDetails: []
+            },
+            { 
+                name: "IKKAT PAWADAS 45 INCHES", 
+                base: [0, 15, 15, 10, 10, 10, 10, 10, 10, 10, 10, 15], 
+                present: [],
+                mrpDetails: []
+            },
+            { 
+                name: "GADWAL PURE JARI", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "2001-4000", base: [8, 30, 8, 15, 15, 15, 15, 0, 30, 15, 15, 30], present: [] },
+                    { range: "4001-6000", base: [5, 20, 5, 10, 10, 10, 10, 0, 20, 10, 10, 25], present: [] },
+                    { range: "6001-10000", base: [8, 15, 8, 10, 0, 10, 0, 10, 15, 10, 10, 20], present: [] },
+                    { range: ">10000", base: Array(12).fill(0), present: [] }
+                ] 
+            },
+            { 
+                name: "GADWAL HF JARI", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "0-2000", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] },
+                    { range: ">2001", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] }
+                ] 
             },
             { 
                 name: "SURAT PRINTED", 
-                base: [509, 706, 562, 474, 294, 1389, 889, 436, 772], 
-                present: [450, 650, 500, 400, 250, 1300, 900, 400, 700], 
-                mrpDetails: [] 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "0-250", base: [150, 500, 150, 300, 300, 300, 300, 200, 500, 300, 300, 300], present: [] },
+                    { range: "251-500", base: [200, 500, 200, 400, 400, 400, 400, 200, 500, 400, 400, 400], present: [] },
+                    { range: "501-750", base: [50, 200, 50, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] },
+                    { range: "751-1000", base: [25, 50, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] },
+                    { range: ">1000", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] }
+                ] 
+            },
+            { 
+                name: "SURAT PRINTED (1+1)", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "251-500", base: Array(12).fill(0), present: [] },
+                    { range: "501-750", base: Array(12).fill(0), present: [] },
+                    { range: "751-1000", base: Array(12).fill(0), present: [] },
+                    { range: ">1000", base: Array(12).fill(0), present: [] }
+                ] 
+            },
+            { 
+                name: "IKKAT", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "<12000", base: [0, 15, 15, 15, 10, 10, 15, 10, 15, 10, 10, 15], present: [] },
+                    { range: ">12000", base: [0, 15, 10, 15, 10, 10, 10, 15, 10, 10, 10, 15], present: [] }
+                ] 
+            },
+            { 
+                name: "COTTON SAREES-BRAND WISE", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "B.K COTTON", base: [75, 150, 75, 150, 100, 100, 150, 100, 150, 100, 100, 100], present: [] },
+                    { range: "KARISHMA COTTON", base: [50, 100, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] },
+                    { range: "MEENA COTTON", base: [150, 300, 150, 300, 200, 200, 300, 100, 300, 200, 200, 200], present: [] },
+                    { range: "MP COTTON", base: [50, 100, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] },
+                    { range: "SARVODAYA COTTON", base: [100, 200, 100, 200, 100, 100, 200, 100, 200, 100, 100, 100], present: [] }
+                ] 
+            },
+            { 
+                name: "COTTON SAREES PROMO", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "450 (1+1)", base: Array(12).fill(0), present: [] },
+                    { range: "499 (1+1)", base: Array(12).fill(0), present: [] },
+                    { range: "599 (1+1)", base: Array(12).fill(0), present: [] },
+                    { range: "699 (1+1)", base: Array(12).fill(0), present: [] },
+                    { range: "799 (1+1)", base: Array(12).fill(0), present: [] },
+                    { range: "999 (1+1)", base: Array(12).fill(0), present: [] },
+                    { range: "BUY 3 @ 999", base: Array(12).fill(0), present: [] }
+                ] 
+            },
+            { 
+                name: "COTTON SAREES-OTHERS", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "0-400", base: [200, 400, 200, 400, 200, 200, 400, 0, 400, 200, 200, 200], present: [] },
+                    { range: "401-600", base: [100, 200, 100, 200, 100, 100, 200, 0, 200, 100, 100, 100], present: [] },
+                    { range: ">600", base: [50, 100, 50, 100, 50, 50, 100, 0, 100, 50, 50, 50], present: [] },
+                    { range: "601-1999 (1+1)", base: [200, 400, 200, 400, 200, 200, 400, 200, 400, 200, 200, 200], present: [] }
+                ] 
+            },
+            { 
+                name: "FANCY BLOUSES", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: [
+                    { range: "0-599", base: [0, 80, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] },
+                    { range: "600-1000", base: [0, 80, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] },
+                    { range: ">1000", base: [0, 40, 20, 40, 25, 20, 40, 20, 20, 20, 20, 10], present: [] }
+                ] 
+            },
+            { 
+                name: "HI FANCY CRAPES & GEOS", 
+                base: [75, 250, 75, 150, 150, 150, 200, 100, 250, 150, 150, 100], 
+                present: [],
+                mrpDetails: []
+            },
+            { 
+                name: "SUPERNET PRINTED", 
+                base: [75, 200, 75, 150, 100, 100, 100, 100, 200, 100, 100, 100], 
+                present: [],
+                mrpDetails: []
+            },
+            { 
+                name: "MUNGA KOTA PRINTED", 
+                base: [0, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50], 
+                present: [],
+                mrpDetails: []
+            },
+            { 
+                name: "PATTU BLOUSE WORK", 
+                base: [10, 25, 10, 25, 15, 20, 20, 20, 25, 20, 20, 20], 
+                present: [],
+                mrpDetails: []
+            },
+            { 
+                name: "NARAYANPET PATTU", 
+                base: Array(12).fill(0), 
+                present: [],
+                mrpDetails: []
             }
         ];
+
+        // Initialize 'present' arrays equal to 'base' for clean start
+        inventoryData.forEach(cat => {
+            cat.present = [...cat.base];
+            if(cat.mrpDetails && cat.mrpDetails.length > 0) {
+                cat.mrpDetails.forEach(mrp => {
+                    mrp.present = [...mrp.base];
+                });
+            }
+        });
 
         let mainChart = null; let pieChart = null;
         let currentModalBranchIndex = null;
@@ -381,11 +723,10 @@
             }
         }
 
-        // --- RENDER: HORIZONTAL MATRIX ---
+        // --- RENDER ---
         function render() {
             renderHorizontalMatrix('matrixHead', 'tableBody', false);
             
-            // Update stats and dropdowns
             const summaryTbody = document.getElementById('summaryTableBody');
             const selCat = document.getElementById('selCat');
             const selBr = document.getElementById('selBr');
@@ -439,12 +780,10 @@
             if (!document.getElementById('tabAnalytics').classList.contains('hidden')) refreshCharts();
         }
 
-        // Generic Horizontal Matrix Renderer
         function renderHorizontalMatrix(headId, bodyId, isPurchaseMode) {
             const thead = document.getElementById(headId);
             const tbody = document.getElementById(bodyId);
             
-            // 1. Header
             let headerHtml1 = '<tr><th rowspan="2" style="min-width: 150px; border-bottom: none;">Category</th><th rowspan="2" style="min-width: 80px; border-bottom: none;">MRP</th>';
             let headerHtml2 = '<tr>';
             
@@ -460,7 +799,6 @@
             let bodyHtml = '';
             
             inventoryData.forEach((cat) => {
-                // Render MRP Rows
                 if (cat.mrpDetails && cat.mrpDetails.length > 0) {
                     cat.mrpDetails.forEach(mrp => {
                         let rowHtml = `<tr>
@@ -468,7 +806,7 @@
                             <td><span class="badge badge-info">${mrp.range}</span></td>`;
                         
                         let hasAction = false;
-                        let totalRowPurchase = 0; // Track total for row suggestion
+                        let totalRowPurchase = 0;
                         
                         stores.forEach((store, si) => {
                             const t = mrp.base[si] || 0;
@@ -499,12 +837,9 @@
                         
                         if(isPurchaseMode && !hasAction) return;
                         
-                        // --- SUGGESTION LOGIC ---
                         if(isPurchaseMode) {
-                            // UPDATED: Show clear numbers "Buy [Qty]"
                             suggestionHtml = `<span class="badge suggestion-purchase">Buy ${totalRowPurchase}</span>`;
                         } else {
-                            // TRANSFER LOGIC FOR MATRIX
                             let surplusStore = null, maxSurplus = 0;
                             let shortageStore = null, maxShortage = 0;
                             
@@ -531,13 +866,13 @@
                     });
                 }
 
-                // Render Total Row
+                // Total Row
                 let totalHtml = `<tr style="background: rgba(13,148,136,0.05); font-weight: 700;">
                     <td>${cat.name}</td>
                     <td><span class="badge badge-warning">TOTAL</span></td>`;
                 
                 let totalHasAction = false;
-                let totalRowPurchase = 0; // Track total for total row
+                let totalRowPurchase = 0;
                 
                 stores.forEach((store, si) => {
                     const t = cat.base[si] || 0;
@@ -566,7 +901,6 @@
                     }
                 });
 
-                // Total Row Suggestion
                 if(isPurchaseMode) {
                      if(totalHasAction) totalHtml += `<td><span class="badge suggestion-purchase">Buy ${totalRowPurchase}</span></td>`;
                      else totalHtml += `<td></td>`;
