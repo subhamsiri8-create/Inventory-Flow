@@ -78,7 +78,7 @@
             border: 1px solid rgba(0,0,0,0.1);
         }
         
-        /* Color Logic: Red=Surplus, Blue=Shortage, Green=Equal */
+        /* Color Logic */
         .stock-surplus { background-color: #fca5a5; color: #000000; }
         .stock-short { background-color: #93c5fd; color: #000000; }
         .stock-equal { background-color: #86efac; color: #000000; }
@@ -1203,20 +1203,119 @@
             saveAs(new Blob([buffer]), 'SubhamGrand_Purchase_Matrix.xlsx');
         }
 
-        // --- ACTIONS & MODALS (Preserved) ---
-        function addBr() { const input = document.getElementById('newBr'); const name = input.value.toUpperCase().trim(); if (name && !stores.includes(name)) { stores.push(name); inventoryData.forEach(c => { c.base.push(0); c.present.push(0); if (c.mrpDetails) c.mrpDetails.forEach(r => { r.base.push(0); r.present.push(0); }); }); render(); input.value = ''; } }
-        function addCat() { const input = document.getElementById('newCat'); const name = input.value.toUpperCase().trim(); if (name && !inventoryData.find(c => c.name === name)) { inventoryData.push({ name: name, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }); render(); input.value = ''; } }
-        function setTarget() { const ci = document.getElementById('selCat').value; const si = document.getElementById('selBr').value; const val = parseInt(document.getElementById('targetVal').value); if (!isNaN(val) && ci !== '' && si !== '') { inventoryData[ci].base[si] = val; render(); } }
-        async function handleFileUpload(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async (e) => { const data = new Uint8Array(e.target.result); const workbook = new ExcelJS.Workbook(); await workbook.xlsx.load(data); const ws = workbook.worksheets[0]; inventoryData = []; ws.eachRow((row, rowNumber) => { if (rowNumber === 1) return; const vals = row.values; const catName = (vals[1] || '').toString().toUpperCase(); const mrpRange = (vals[2] || '').toString(); if (!catName) return; let cat = inventoryData.find(c => c.name === catName); if (!cat) { cat = { name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }; inventoryData.push(cat); } const baseRow = Array(stores.length).fill(0); const presRow = Array(stores.length).fill(0); for (let i = 0; i < stores.length; i++) { baseRow[i] = parseInt(vals[3 + i*2]) || 0; presRow[i] = parseInt(vals[4 + i*2]) || 0; } cat.mrpDetails.push({ range: mrpRange, base: baseRow, present: presRow }); }); inventoryData.forEach((c, i) => recalculateCategoryTotals(i)); render(); alert('Excel imported successfully!'); }; reader.readAsArrayBuffer(file); }
+        // --- SMART UPLOAD LOGIC (Updated) ---
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = new ExcelJS.Workbook();
+                await workbook.xlsx.load(data);
+                const ws = workbook.worksheets[0];
+                
+                // 1. Analyze Headers (Smart Mapping)
+                const headerRow = ws.getRow(1);
+                const headers = [];
+                headerRow.eachCell((cell, colNumber) => {
+                    headers[colNumber] = cell.value ? cell.value.toString().toLowerCase() : '';
+                });
+
+                // Map columns indices
+                const map = { cat: -1, mrp: -1, store: -1, target: -1, stock: -1 };
+
+                headers.forEach((h, i) => {
+                    if (!h) return;
+                    if (h.includes('cat') || h.includes('item') || h.includes('product')) map.cat = i;
+                    if (h.includes('mrp') || h.includes('range') || h.includes('price')) map.mrp = i;
+                    if (h.includes('store') || h.includes('branch') || h.includes('shop') || h.includes('location')) map.store = i;
+                    if (h.includes('target') || h.includes('base') || h.includes('tgt') || h.includes('req')) map.target = i;
+                    if (h.includes('stock') || h.includes('present') || h.includes('stk') || h.includes('avl')) map.stock = i;
+                });
+
+                // Validation
+                if (map.cat === -1) { alert('Column "Category" not found in Excel. Please ensure a header contains "Category".'); return; }
+                if (map.store === -1) { alert('Column "Store" not found. The Smart Upload requires a column named "Store" or "Branch".'); return; }
+                if (map.target === -1 && map.stock === -1) { alert('At least one of "Target" or "Stock" columns is required.'); return; }
+
+                // 2. Process Data
+                let newStoresAdded = false;
+                
+                ws.eachRow((row, rowNumber) => {
+                    if (rowNumber === 1) return; // Skip header
+
+                    const getVal = (idx) => idx !== -1 ? (row.getCell(idx).value || 0) : 0;
+                    const getStr = (idx) => idx !== -1 ? (row.getCell(idx).value || '').toString().toUpperCase().trim() : '';
+
+                    const catName = getStr(map.cat);
+                    const mrpName = map.mrp !== -1 ? getStr(map.mrp) : 'TOTAL'; // Default to TOTAL if MRP col missing
+                    const storeName = getStr(map.store);
+                    
+                    if (!catName || !storeName) return;
+
+                    const targetVal = parseInt(getVal(map.target)) || 0;
+                    const stockVal = parseInt(getVal(map.stock)) || 0;
+
+                    // Find or Create Category
+                    let catIdx = inventoryData.findIndex(c => c.name === catName);
+                    if (catIdx === -1) {
+                        inventoryData.push({ name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] });
+                        catIdx = inventoryData.length - 1;
+                    }
+                    const cat = inventoryData[catIdx];
+
+                    // Find or Create Store
+                    let storeIdx = stores.indexOf(storeName);
+                    if (storeIdx === -1) {
+                        stores.push(storeName);
+                        newStoresAdded = true;
+                        // Resize all arrays
+                        cat.base.push(0); cat.present.push(0);
+                        if (cat.mrpDetails) cat.mrpDetails.forEach(r => { r.base.push(0); r.present.push(0); });
+                        storeIdx = stores.length - 1;
+                    }
+
+                    // Ensure arrays are large enough
+                    while (cat.base.length <= storeIdx) { cat.base.push(0); cat.present.push(0); }
+
+                    // Update Data
+                    // If MRP is 'TOTAL' or missing column, update main array
+                    if (mrpName === 'TOTAL' || map.mrp === -1) {
+                        cat.base[storeIdx] = targetVal;
+                        cat.present[storeIdx] = stockVal;
+                    } else {
+                        // Update MRP Detail
+                        let mrpRow = cat.mrpDetails.find(r => r.range === mrpName);
+                        if (!mrpRow) {
+                            mrpRow = { range: mrpName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) };
+                            cat.mrpDetails.push(mrpRow);
+                        }
+                        // Ensure MRP array is large enough
+                        while (mrpRow.base.length <= storeIdx) { mrpRow.base.push(0); mrpRow.present.push(0); }
+                        
+                        mrpRow.base[storeIdx] = targetVal;
+                        mrpRow.present[storeIdx] = stockVal;
+                    }
+                });
+
+                // 3. Recalculate and Render
+                inventoryData.forEach((c, i) => recalculateCategoryTotals(i));
+                render();
+                
+                let msg = 'Excel imported successfully!';
+                if (newStoresAdded) msg += ' New stores were detected and added.';
+                alert(msg);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
         function toggleTheme() { document.body.classList.toggle('dark-mode'); render(); }
+        
         function openModal(si) { currentModalBranchIndex = si; document.getElementById('modalStore').textContent = stores[si]; let html = ''; inventoryData.forEach(cat => { const logic = getSmartLogic(si, cat.base, cat.present); const gap = (cat.present[si] || 0) - (cat.base[si] || 0); const border = gap < 0 ? 'var(--danger)' : 'var(--success)'; html += `<div class="card p-4 mb-2" style="border-left: 4px solid ${border};"><div class="flex justify-between text-xs font-semibold uppercase mb-1" style="color: var(--text-muted);"><span>${cat.name}</span><span>Gap: ${gap > 0 ? '+' : ''}${gap}</span></div><div class="font-bold"><div class="analysis-cell">${logic.transfer ? `<span class="badge badge-info">Trans ${logic.transfer.qty} fr. ${logic.transfer.from}</span>` : ''}${logic.purchase > 0 ? `<span class="badge badge-danger">Buy ${logic.purchase}</span>` : ''}${!logic.transfer && logic.purchase === 0 ? `<span class="badge badge-success">OK</span>` : ''}</div></div>`; }); document.getElementById('modalBody').innerHTML = html; document.getElementById('modal').classList.remove('hidden'); }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
         
-        function openManualModal() { 
-            render(); 
-            document.getElementById('manualModal').classList.remove('hidden'); 
-        }
-        
+        function openManualModal() { render(); document.getElementById('manualModal').classList.remove('hidden'); }
         function closeManualModal() { document.getElementById('manualModal').classList.add('hidden'); }
         
         // Dynamic MRP Options Logic
@@ -1234,7 +1333,6 @@
                 });
             }
         }
-        // Attach listener
         document.getElementById('manualCatInput').addEventListener('change', updateMrpOptions);
         document.getElementById('manualCatInput').addEventListener('input', updateMrpOptions);
 
