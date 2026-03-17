@@ -1203,7 +1203,7 @@
             saveAs(new Blob([buffer]), 'SubhamGrand_Purchase_Matrix.xlsx');
         }
 
-        // --- SMART UPLOAD LOGIC (Updated) ---
+        // --- SMART UPLOAD LOGIC (Strict Horizontal) ---
         async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1215,97 +1215,119 @@
                 await workbook.xlsx.load(data);
                 const ws = workbook.worksheets[0];
                 
-                // 1. Analyze Headers (Smart Mapping)
+                // 1. --- PARSE HEADERS (Row 1) ---
+                // Expected: Col 1 = Category, Col 2 = MRP, Col 3+ = Store Names
                 const headerRow = ws.getRow(1);
-                const headers = [];
+                const headerValues = [];
                 headerRow.eachCell((cell, colNumber) => {
-                    headers[colNumber] = cell.value ? cell.value.toString().toLowerCase() : '';
+                    headerValues[colNumber] = cell.value ? cell.value.toString().trim() : '';
                 });
 
-                // Map columns indices
-                const map = { cat: -1, mrp: -1, store: -1, target: -1, stock: -1 };
+                // Remove empty headers at end
+                while (headerValues.length && headerValues[headerValues.length-1] === '') headerValues.pop();
 
-                headers.forEach((h, i) => {
-                    if (!h) return;
-                    if (h.includes('cat') || h.includes('item') || h.includes('product')) map.cat = i;
-                    if (h.includes('mrp') || h.includes('range') || h.includes('price')) map.mrp = i;
-                    if (h.includes('store') || h.includes('branch') || h.includes('shop') || h.includes('location')) map.store = i;
-                    if (h.includes('target') || h.includes('base') || h.includes('tgt') || h.includes('req')) map.target = i;
-                    if (h.includes('stock') || h.includes('present') || h.includes('stk') || h.includes('avl')) map.stock = i;
-                });
+                if (headerValues.length < 3) {
+                    alert('Excel format invalid. Expected columns: Category, MRP, [Store Names...]'); return;
+                }
 
-                // Validation
-                if (map.cat === -1) { alert('Column "Category" not found in Excel. Please ensure a header contains "Category".'); return; }
-                if (map.store === -1) { alert('Column "Store" not found. The Smart Upload requires a column named "Store" or "Branch".'); return; }
-                if (map.target === -1 && map.stock === -1) { alert('At least one of "Target" or "Stock" columns is required.'); return; }
-
-                // 2. Process Data
-                let newStoresAdded = false;
+                // Extract Store Names from header (index 2 onwards -> 0-based)
+                // Indices 0 & 1 are Category & MRP. Indices 2+ are Stores.
+                const uploadedStoreNames = headerValues.slice(2).map(h => h.toUpperCase());
                 
+                // 2. --- UPDATE GLOBAL STORE LIST ---
+                // We update the global 'stores' array to match the Excel sequence exactly.
+                const oldStores = [...stores]; // Backup
+                stores = uploadedStoreNames; // Update Global
+
+                // 3. --- RESIZE DATA STRUCTURES ---
+                // We must align inventoryData with the new store count/order
+                inventoryData.forEach(cat => {
+                    // Resize base/present arrays
+                    cat.base = Array(stores.length).fill(0);
+                    cat.present = Array(stores.length).fill(0);
+                    
+                    // Resize MRP Details
+                    if (cat.mrpDetails) {
+                        cat.mrpDetails.forEach(mrp => {
+                            mrp.base = Array(stores.length).fill(0);
+                            mrp.present = Array(stores.length).fill(0);
+                        });
+                    }
+                });
+
+                // 4. --- DETERMINE DATA TYPE (Target vs Stock) ---
+                // Check filename or sheet name for "target" or "base"
+                let updateTarget = false;
+                const fname = file.name.toLowerCase();
+                const sname = ws.name ? ws.name.toLowerCase() : '';
+                if (fname.includes('target') || fname.includes('base') || sname.includes('target')) {
+                    updateTarget = true;
+                }
+
+                // 5. --- PARSE DATA ROWS ---
                 ws.eachRow((row, rowNumber) => {
                     if (rowNumber === 1) return; // Skip header
 
-                    const getVal = (idx) => idx !== -1 ? (row.getCell(idx).value || 0) : 0;
-                    const getStr = (idx) => idx !== -1 ? (row.getCell(idx).value || '').toString().toUpperCase().trim() : '';
+                    const getVal = (idx) => {
+                        const cell = row.getCell(idx);
+                        if (!cell.value) return 0;
+                        // Handle formulas
+                        if (cell.result !== undefined) return parseFloat(cell.result) || 0;
+                        return parseFloat(cell.value) || 0;
+                    };
+                    const getStr = (idx) => {
+                         const cell = row.getCell(idx);
+                         return cell.value ? cell.value.toString().trim().toUpperCase() : '';
+                    };
 
-                    const catName = getStr(map.cat);
-                    const mrpName = map.mrp !== -1 ? getStr(map.mrp) : 'TOTAL'; // Default to TOTAL if MRP col missing
-                    const storeName = getStr(map.store);
+                    const catName = getStr(1); // Column 1
+                    const mrpName = getStr(2); // Column 2
                     
-                    if (!catName || !storeName) return;
+                    if (!catName) return; // Skip empty rows
 
-                    const targetVal = parseInt(getVal(map.target)) || 0;
-                    const stockVal = parseInt(getVal(map.stock)) || 0;
-
-                    // Find or Create Category
+                    // Find Category
                     let catIdx = inventoryData.findIndex(c => c.name === catName);
                     if (catIdx === -1) {
-                        inventoryData.push({ name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] });
+                        // Create if not exists
+                        inventoryData.push({ 
+                            name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] 
+                        });
                         catIdx = inventoryData.length - 1;
                     }
                     const cat = inventoryData[catIdx];
 
-                    // Find or Create Store
-                    let storeIdx = stores.indexOf(storeName);
-                    if (storeIdx === -1) {
-                        stores.push(storeName);
-                        newStoresAdded = true;
-                        // Resize all arrays
-                        cat.base.push(0); cat.present.push(0);
-                        if (cat.mrpDetails) cat.mrpDetails.forEach(r => { r.base.push(0); r.present.push(0); });
-                        storeIdx = stores.length - 1;
-                    }
-
-                    // Ensure arrays are large enough
-                    while (cat.base.length <= storeIdx) { cat.base.push(0); cat.present.push(0); }
-
-                    // Update Data
-                    // If MRP is 'TOTAL' or missing column, update main array
-                    if (mrpName === 'TOTAL' || map.mrp === -1) {
-                        cat.base[storeIdx] = targetVal;
-                        cat.present[storeIdx] = stockVal;
-                    } else {
-                        // Update MRP Detail
-                        let mrpRow = cat.mrpDetails.find(r => r.range === mrpName);
-                        if (!mrpRow) {
-                            mrpRow = { range: mrpName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) };
-                            cat.mrpDetails.push(mrpRow);
-                        }
-                        // Ensure MRP array is large enough
-                        while (mrpRow.base.length <= storeIdx) { mrpRow.base.push(0); mrpRow.present.push(0); }
+                    // Determine if this is a Total Row or MRP Row
+                    const isTotal = (mrpName === 'TOTAL' || mrpName === '');
+                    
+                    // Loop through Store Columns (Start at index 3 in Excel -> array index 0 in stores)
+                    // Note: ExcelJS is 1-based. Col 1=Cat, Col 2=MRP. Col 3 = Store 0.
+                    
+                    stores.forEach((storeName, storeIndex) => {
+                        const excelColIndex = storeIndex + 3; // Excel Column number
+                        const val = getVal(excelColIndex);
                         
-                        mrpRow.base[storeIdx] = targetVal;
-                        mrpRow.present[storeIdx] = stockVal;
-                    }
+                        if (isTotal) {
+                            if (updateTarget) cat.base[storeIndex] = val;
+                            else cat.present[storeIndex] = val;
+                        } else {
+                            // Find or Create MRP Row
+                            let mrpRow = cat.mrpDetails.find(r => r.range === mrpName);
+                            if (!mrpRow) {
+                                mrpRow = { range: mrpName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) };
+                                cat.mrpDetails.push(mrpRow);
+                            }
+                            if (updateTarget) mrpRow.base[storeIndex] = val;
+                            else mrpRow.present[storeIndex] = val;
+                        }
+                    });
                 });
 
-                // 3. Recalculate and Render
+                // 6. --- FINALIZE ---
                 inventoryData.forEach((c, i) => recalculateCategoryTotals(i));
                 render();
                 
-                let msg = 'Excel imported successfully!';
-                if (newStoresAdded) msg += ' New stores were detected and added.';
-                alert(msg);
+                const msg = updateTarget ? 'Target Data Imported Successfully!' : 'Stock Data Imported Successfully!';
+                alert(msg + '\nStores updated to match Excel sheet.');
             };
             reader.readAsArrayBuffer(file);
         }
@@ -1318,7 +1340,6 @@
         function openManualModal() { render(); document.getElementById('manualModal').classList.remove('hidden'); }
         function closeManualModal() { document.getElementById('manualModal').classList.add('hidden'); }
         
-        // Dynamic MRP Options Logic
         function updateMrpOptions() {
             const catName = document.getElementById('manualCatInput').value.toUpperCase().trim();
             const mrpList = document.getElementById('mrpList');
