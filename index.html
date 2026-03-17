@@ -134,7 +134,7 @@
                 <div class="flex flex-wrap gap-2 no-print">
                     <button onclick="toggleTheme()" class="btn btn-secondary">Theme</button>
                     <button onclick="openPurchaseReportTab()" class="btn btn-danger">Purchase Report</button>
-                    <button onclick="document.getElementById('uploadInput').click()" class="btn btn-primary">Upload</button>
+                    <button onclick="document.getElementById('uploadInput').click()" class="btn btn-primary">Upload Stock</button>
                     <input type="file" id="uploadInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleFileUpload(event)">
                     <button onclick="exportMatrixExcel()" class="btn btn-success">Export All</button>
                     <button onclick="openManualModal()" class="btn btn-secondary">Manual</button>
@@ -282,15 +282,15 @@
     </div>
 
     <script>
-        // --- UPDATED STORE LIST (12 Stores) ---
+        // --- FIXED STORE LIST (Hardcoded) ---
         let stores = ["SG HYD", "SG", "SGRJY", "SGTNL", "SIRI ELR", "ST", "TUNI", "SIRICPT", "SIRI VJY", "SIRIKKD", "SIRI TPT", "VS"];
         
-        // --- UPDATED DATA (Accurate Targets) ---
+        // --- DATA (Preserved) ---
         let inventoryData = [
             { 
                 name: "BNS HANDLOOM HF", 
                 base: Array(12).fill(0), 
-                present: [], // Will be calculated
+                present: [], 
                 mrpDetails: [
                     { range: "0-500", base: [250, 500, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] },
                     { range: "501-1000", base: [450, 1000, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] },
@@ -667,12 +667,12 @@
             }
         ];
 
-        // Initialize 'present' arrays equal to 'base' for clean start
+        // Initialize 'present' arrays with ZERO (Default)
         inventoryData.forEach(cat => {
-            cat.present = [...cat.base];
+            cat.present = Array(stores.length).fill(0);
             if(cat.mrpDetails && cat.mrpDetails.length > 0) {
                 cat.mrpDetails.forEach(mrp => {
-                    mrp.present = [...mrp.base];
+                    mrp.present = Array(stores.length).fill(0);
                 });
             }
         });
@@ -1203,7 +1203,7 @@
             saveAs(new Blob([buffer]), 'SubhamGrand_Purchase_Matrix.xlsx');
         }
 
-        // --- SMART UPLOAD LOGIC (Strict Horizontal) ---
+        // --- SMART UPLOAD LOGIC (Range Normalization) ---
         async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1216,7 +1216,6 @@
                 const ws = workbook.worksheets[0];
                 
                 // 1. --- PARSE HEADERS (Row 1) ---
-                // Expected: Col 1 = Category, Col 2 = MRP, Col 3+ = Store Names
                 const headerRow = ws.getRow(1);
                 const headerValues = [];
                 headerRow.eachCell((cell, colNumber) => {
@@ -1230,65 +1229,57 @@
                     alert('Excel format invalid. Expected columns: Category, MRP, [Store Names...]'); return;
                 }
 
-                // Extract Store Names from header (index 2 onwards -> 0-based)
-                // Indices 0 & 1 are Category & MRP. Indices 2+ are Stores.
-                const uploadedStoreNames = headerValues.slice(2).map(h => h.toUpperCase());
+                // 2. --- MAP EXCEL COLUMNS TO FIXED STORES ---
+                // Excel columns start at index 2 (0-based from header slice).
+                const excelStoreNames = headerValues.slice(2).map(h => h.toUpperCase());
                 
-                // 2. --- UPDATE GLOBAL STORE LIST ---
-                // We update the global 'stores' array to match the Excel sequence exactly.
-                const oldStores = [...stores]; // Backup
-                stores = uploadedStoreNames; // Update Global
-
-                // 3. --- RESIZE DATA STRUCTURES ---
-                // We must align inventoryData with the new store count/order
-                inventoryData.forEach(cat => {
-                    // Resize base/present arrays
-                    cat.base = Array(stores.length).fill(0);
-                    cat.present = Array(stores.length).fill(0);
-                    
-                    // Resize MRP Details
-                    if (cat.mrpDetails) {
-                        cat.mrpDetails.forEach(mrp => {
-                            mrp.base = Array(stores.length).fill(0);
-                            mrp.present = Array(stores.length).fill(0);
-                        });
+                // Create a map: { excelColumnIndex -> storeIndex }
+                const storeMap = {};
+                excelStoreNames.forEach((name, excelColIdx) => {
+                    const storeIndex = stores.indexOf(name);
+                    if (storeIndex !== -1) {
+                        storeMap[excelColIdx] = storeIndex;
                     }
                 });
 
-                // 4. --- DETERMINE DATA TYPE (Target vs Stock) ---
-                // Check filename or sheet name for "target" or "base"
-                let updateTarget = false;
-                const fname = file.name.toLowerCase();
-                const sname = ws.name ? ws.name.toLowerCase() : '';
-                if (fname.includes('target') || fname.includes('base') || sname.includes('target')) {
-                    updateTarget = true;
-                }
+                // 3. --- NORMALIZATION HELPER ---
+                // Converts "0<500" -> "0-500" and "0 - 500" -> "0-500"
+                const normalizeRange = (str) => {
+                    if (!str) return '';
+                    // Replace '<' with '-', then remove all spaces
+                    return str.toString().replace(/</g, '-').replace(/\s+/g, '').trim();
+                };
 
-                // 5. --- PARSE DATA ROWS ---
+                // 4. --- PARSE DATA ROWS ---
                 ws.eachRow((row, rowNumber) => {
                     if (rowNumber === 1) return; // Skip header
 
                     const getVal = (idx) => {
                         const cell = row.getCell(idx);
                         if (!cell.value) return 0;
-                        // Handle formulas
                         if (cell.result !== undefined) return parseFloat(cell.result) || 0;
                         return parseFloat(cell.value) || 0;
                     };
+                    
+                    // Helper to get clean string for matching
                     const getStr = (idx) => {
                          const cell = row.getCell(idx);
+                         if (cell.type === ExcelJS.ValueType.Number) return cell.value.toString();
                          return cell.value ? cell.value.toString().trim().toUpperCase() : '';
                     };
 
-                    const catName = getStr(1); // Column 1
-                    const mrpName = getStr(2); // Column 2
+                    // Column 1 = Category Name
+                    const catName = getStr(1); 
+                    // Column 2 = MRP Range (Raw input e.g., "0<500")
+                    const rawMrpName = getStr(2);
+                    // Normalize: "0<500" becomes "0-500"
+                    const mrpName = normalizeRange(rawMrpName);
                     
-                    if (!catName) return; // Skip empty rows
+                    if (!catName) return;
 
                     // Find Category
                     let catIdx = inventoryData.findIndex(c => c.name === catName);
                     if (catIdx === -1) {
-                        // Create if not exists
                         inventoryData.push({ 
                             name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] 
                         });
@@ -1296,38 +1287,35 @@
                     }
                     const cat = inventoryData[catIdx];
 
-                    // Determine if this is a Total Row or MRP Row
+                    // If MRP column is blank or TOTAL, treat as total row
                     const isTotal = (mrpName === 'TOTAL' || mrpName === '');
                     
-                    // Loop through Store Columns (Start at index 3 in Excel -> array index 0 in stores)
-                    // Note: ExcelJS is 1-based. Col 1=Cat, Col 2=MRP. Col 3 = Store 0.
-                    
-                    stores.forEach((storeName, storeIndex) => {
-                        const excelColIndex = storeIndex + 3; // Excel Column number
-                        const val = getVal(excelColIndex);
+                    // Loop through mapped stores
+                    Object.keys(storeMap).forEach(excelColIdx => {
+                        const storeIndex = storeMap[excelColIdx];
+                        const excelColNumber = parseInt(excelColIdx) + 3;
                         
+                        const val = getVal(excelColNumber);
+                        
+                        // STRICT: Update ONLY 'present'. Ignore 'base'.
                         if (isTotal) {
-                            if (updateTarget) cat.base[storeIndex] = val;
-                            else cat.present[storeIndex] = val;
+                            cat.present[storeIndex] = val;
                         } else {
-                            // Find or Create MRP Row
+                            // Find existing MRP row using NORMALIZED name
                             let mrpRow = cat.mrpDetails.find(r => r.range === mrpName);
                             if (!mrpRow) {
                                 mrpRow = { range: mrpName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) };
                                 cat.mrpDetails.push(mrpRow);
                             }
-                            if (updateTarget) mrpRow.base[storeIndex] = val;
-                            else mrpRow.present[storeIndex] = val;
+                            mrpRow.present[storeIndex] = val;
                         }
                     });
                 });
 
-                // 6. --- FINALIZE ---
+                // 5. --- FINALIZE ---
                 inventoryData.forEach((c, i) => recalculateCategoryTotals(i));
                 render();
-                
-                const msg = updateTarget ? 'Target Data Imported Successfully!' : 'Stock Data Imported Successfully!';
-                alert(msg + '\nStores updated to match Excel sheet.');
+                alert('Stock updated successfully! Logic: Converted ranges like "0<500" to "0-500".');
             };
             reader.readAsArrayBuffer(file);
         }
