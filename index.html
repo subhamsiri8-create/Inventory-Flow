@@ -23,7 +23,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; min-height: 100vh; }
         .mono { font-family: 'Space Mono', monospace; }
-        .container { max-width: 100%; margin: 0 auto; padding: 24px; } /* Full width for horizontal table */
+        .container { max-width: 100%; margin: 0 auto; padding: 24px; }
         .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         
         /* Tabs */
@@ -45,21 +45,55 @@
         /* Tables */
         .table-container { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; }
-        th { background: var(--bg); padding: 12px 8px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 2px solid var(--border); border-left: 1px solid var(--border); white-space: nowrap; }
+        
+        /* Header Styling */
+        th { background: var(--bg); padding: 10px 4px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 2px solid var(--border); border-left: 1px solid var(--border); white-space: nowrap; }
         th:first-child { border-left: none; text-align: left; padding-left: 16px; }
-        td { padding: 10px 8px; font-size: 12px; border-bottom: 1px solid var(--border); border-left: 1px solid var(--border); text-align: center; vertical-align: middle; }
+        th.group-header { background: var(--accent); color: white; font-size: 12px; border-bottom: none; }
+        th.sub-header { font-size: 10px; background: rgba(13, 148, 136, 0.1); color: var(--accent); border-bottom: 2px solid var(--accent); }
+        
+        td { padding: 8px 4px; font-size: 12px; border-bottom: 1px solid var(--border); border-left: 1px solid var(--border); text-align: center; vertical-align: middle; }
         td:first-child { border-left: none; text-align: left; padding-left: 16px; font-weight: 600; }
         
-        /* Horizontal Matrix Specific Styles */
-        .matrix-cat-header { background: var(--accent); color: white; font-weight: 700; }
-        .matrix-cat-header td { border-bottom: none; font-size: 13px; }
+        /* Matrix Styles */
+        .matrix-cat-header { background: var(--accent); color: white; }
+        .matrix-cat-header td { border-bottom: none; font-size: 13px; text-align: left; }
         
-        .matrix-cell { display: flex; flex-direction: column; gap: 2px; align-items: center; justify-content: center; }
-        .matrix-val { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px; }
-        .matrix-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
+        /* Number Styles */
+        .num-target {
+            background-color: #f3f4f6;
+            color: #374151;
+            font-family: 'Space Mono', monospace;
+            font-weight: 600;
+            display: block;
+            padding: 4px;
+            border-radius: 4px;
+        }
         
-        .status-ok { color: var(--success); }
-        .status-short { color: var(--danger); font-weight: 700; background: rgba(220,38,38,0.05); padding: 4px; border-radius: 4px; width: 100%; }
+        .num-stock {
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            display: block;
+            padding: 4px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        /* Color Logic: Red=Surplus, Blue=Shortage, Green=Equal */
+        .stock-surplus { background-color: #fca5a5; color: #000000; } /* Red */
+        .stock-short { background-color: #93c5fd; color: #000000; }    /* Blue */
+        .stock-equal { background-color: #86efac; color: #000000; }    /* Green */
+        
+        /* Purchase Matrix Specific */
+        .purchase-matrix-val {
+            background-color: #93c5fd; /* Blue for shortage/purchase */
+            color: #000000;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            display: block;
+            padding: 4px;
+            border-radius: 4px;
+        }
         
         /* Modal */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 24px; }
@@ -68,16 +102,14 @@
         
         /* Purchase Page */
         .purchase-header { background: linear-gradient(135deg, var(--danger), #b91c1c); color: white; padding: 24px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
-        .mrp-report-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
-        .mrp-report-header { background: #f8fafc; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
         
-        /* Summary Table in Analytics */
+        /* Summary Table */
         .mini-table { width: 100%; min-width: auto; font-size: 12px; }
         .mini-table th { font-size: 10px; padding: 8px; text-align: left; }
         .mini-table td { font-size: 12px; padding: 8px; text-align: left; border: none; }
         .mini-table tr { border-bottom: 1px solid var(--border); }
         
-        .badge { display: inline-flex; padding: 4px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; margin-right: 4px; margin-bottom: 2px; }
+        .badge { display: inline-flex; padding: 4px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; margin-right: 4px; }
         .badge-danger { background: rgba(220,38,38,0.1); color: var(--danger); }
         .badge-success { background: rgba(5,150,105,0.1); color: var(--success); }
         .badge-info { background: rgba(37,99,235,0.1); color: var(--info); }
@@ -113,7 +145,7 @@
         </div>
 
         <div class="tab-bar no-print" style="max-width: 1600px; margin: 0 auto 20px auto;">
-            <button class="tab-btn active" onclick="switchTab('matrix')">Horizontal Matrix</button>
+            <button class="tab-btn active" onclick="switchTab('matrix')">Stock Matrix</button>
             <button class="tab-btn" onclick="switchTab('analytics')">Analytics</button>
             <button class="tab-btn" onclick="switchTab('actions')">Actions</button>
         </div>
@@ -163,18 +195,32 @@
         </div>
     </div>
 
-    <!-- MANUAL MODAL -->
+    <!-- MANUAL MODAL (Updated with MRP Options) -->
     <div id="manualModal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="p-6" style="background: var(--accent); color: #fff;"><h2 class="text-lg font-bold">Manual Data Entry</h2></div>
             <div class="p-6 space-y-4">
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Category</label><input type="text" id="manualCatInput" list="catList" class="input-field"><datalist id="catList"></datalist></div>
-                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">MRP Range</label><input type="text" id="manualMrp" class="input-field"></div>
+                    <div>
+                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Category</label>
+                        <input type="text" id="manualCatInput" list="catList" class="input-field" placeholder="Select or type category">
+                        <datalist id="catList"></datalist>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">MRP Range</label>
+                        <input type="text" id="manualMrp" list="mrpList" class="input-field" placeholder="Select MRP range">
+                        <datalist id="mrpList"></datalist>
+                    </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Branch</label><select id="manualBranch" class="input-field"></select></div>
-                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Target / Stock</label><div class="flex gap-2"><input type="number" id="manualTarget" class="input-field" placeholder="Tgt"><input type="number" id="manualStock" class="input-field" placeholder="Stk"></div></div>
+                    <div>
+                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Target / Stock</label>
+                        <div class="flex gap-2">
+                            <input type="number" id="manualTarget" class="input-field" placeholder="Tgt">
+                            <input type="number" id="manualStock" class="input-field" placeholder="Stk">
+                        </div>
+                    </div>
                 </div>
                 <button onclick="saveManualData()" class="btn btn-success w-full py-3 mt-2">Save Entry</button>
             </div>
@@ -197,10 +243,10 @@
         </div>
     </div>
 
-    <!-- PURCHASE REPORT VIEW -->
+    <!-- PURCHASE REPORT VIEW (Horizontal Matrix Style) -->
     <div id="purchaseReportView" class="container hidden">
         <div class="purchase-header">
-            <div><h1 class="text-2xl font-bold">Purchase Requirement Report</h1><p class="text-sm opacity-80">Items requiring new stock procurement</p></div>
+            <div><h1 class="text-2xl font-bold">Purchase Requirement Report</h1><p class="text-sm opacity-80">Horizontal Matrix View - Items requiring procurement</p></div>
             <div class="flex gap-2 no-print">
                 <button onclick="exportPurchaseReportExcel()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Export Excel</button>
                 <button onclick="window.close()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Close Tab</button>
@@ -218,7 +264,16 @@
                  <p class="text-xs text-gray-500 mt-4">This report exclusively lists items where stock needs to be purchased after checking for transfer possibilities.</p>
             </div>
         </div>
-        <div id="purchaseReportContent"></div>
+        
+        <!-- Horizontal Purchase Matrix Table -->
+        <div class="card">
+            <div class="table-container" style="border:none;">
+                <table id="purchaseHorizontalTable">
+                    <thead id="purchaseMatrixHead"></thead>
+                    <tbody id="purchaseMatrixBody"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -314,24 +369,16 @@
             }
         }
 
-        // --- RENDER: HORIZONTAL MATRIX ---
+        // --- RENDER: HORIZONTAL MATRIX (Main) ---
         function render() {
-            const thead = document.getElementById('matrixHead');
-            const tbody = document.getElementById('tableBody');
+            renderHorizontalMatrix('matrixHead', 'tableBody', false);
+            
+            // Update stats and dropdowns
             const summaryTbody = document.getElementById('summaryTableBody');
             const selCat = document.getElementById('selCat');
             const selBr = document.getElementById('selBr');
             const chartFilter = document.getElementById('chartFilter');
             
-            // 1. Generate Dynamic Header
-            let headerHtml = '<tr><th style="min-width: 150px;">Category</th><th style="min-width: 80px;">MRP</th>';
-            stores.forEach(store => {
-                headerHtml += `<th style="min-width: 90px;">${store}<br><span style="font-weight:400; font-size:9px;">Tgt / Stk</span></th>`;
-            });
-            headerHtml += '<th style="min-width: 80px;">Status</th></tr>';
-            thead.innerHTML = headerHtml;
-
-            let bodyHtml = '';
             let summaryHtml = '';
             let catOpts = '';
             let brOpts = '';
@@ -340,7 +387,6 @@
             inventoryData.forEach((cat, ci) => {
                 catOpts += `<option value="${ci}">${cat.name}</option>`;
                 
-                // Calculate Totals for Summary
                 let catTotalT = 0, catTotalS = 0;
                 stores.forEach((store, si) => {
                     catTotalT += cat.base[si] || 0;
@@ -358,64 +404,6 @@
                 const catGap = catTotalS - catTotalT;
                 let actionBadge = catGap < 0 ? `<span class="badge badge-danger">Buy ${Math.abs(catGap)}</span>` : `<span class="badge badge-success">OK</span>`;
                 summaryHtml += `<tr><td style="font-weight:600">${cat.name}</td><td class="mono">${catTotalT}</td><td class="mono">${catTotalS}</td><td>${actionBadge}</td></tr>`;
-                
-                // --- HORIZONTAL MATRIX RENDERING ---
-                
-                // 1. Render MRP Rows
-                if (cat.mrpDetails && cat.mrpDetails.length > 0) {
-                    cat.mrpDetails.forEach(mrp => {
-                        let rowHtml = `<tr>
-                            <td style="color: var(--text-muted); font-weight: 400;">${cat.name}</td>
-                            <td><span class="badge badge-info">${mrp.range}</span></td>`;
-                        
-                        let rowStatus = 'OK';
-                        stores.forEach((store, si) => {
-                            const t = mrp.base[si] || 0;
-                            const s = mrp.present[si] || 0;
-                            const gap = s - t;
-                            const logic = getSmartLogic(si, mrp.base, mrp.present);
-                            
-                            let cellClass = '';
-                            if (gap < 0) { cellClass = 'status-short'; rowStatus = 'SHORT'; }
-                            else if (gap > 0) cellClass = 'status-ok';
-                            
-                            rowHtml += `<td>
-                                <div class="matrix-cell ${cellClass}">
-                                    <span class="matrix-val">${t} / ${s}</span>
-                                    <span class="matrix-label">${gap !== 0 ? (gap > 0 ? '+' : '') + gap : '0'}</span>
-                                </div>
-                            </td>`;
-                        });
-                        
-                        rowHtml += `<td><span class="badge ${rowStatus === 'SHORT' ? 'badge-danger' : 'badge-success'}">${rowStatus}</span></td></tr>`;
-                        bodyHtml += rowHtml;
-                    });
-                }
-
-                // 2. Render Total Row
-                let totalHtml = `<tr style="background: rgba(13,148,136,0.05); font-weight: 700;">
-                    <td>${cat.name}</td>
-                    <td><span class="badge badge-warning">TOTAL</span></td>`;
-                
-                stores.forEach((store, si) => {
-                    const t = cat.base[si] || 0;
-                    const s = cat.present[si] || 0;
-                    const gap = s - t;
-                    
-                    let cellClass = '';
-                    if (gap < 0) cellClass = 'status-short';
-                    else if (gap > 0) cellClass = 'status-ok';
-
-                    totalHtml += `<td onclick="openModal(${si})" style="cursor: pointer;">
-                        <div class="matrix-cell ${cellClass}">
-                            <span class="matrix-val">${t} / ${s}</span>
-                            <span class="matrix-label">${gap !== 0 ? (gap > 0 ? '+' : '') + gap : '0'}</span>
-                        </div>
-                    </td>`;
-                });
-
-                totalHtml += `<td></td></tr>`; // Empty status for total row
-                bodyHtml += totalHtml;
             });
 
             stores.forEach((s, si) => brOpts += `<option value="${si}">${s}</option>`);
@@ -428,7 +416,6 @@
             document.getElementById('purchaseSuggestion').textContent = Math.max(0, netGap).toLocaleString();
             document.getElementById('efficiency').textContent = efficiency + '%';
             
-            tbody.innerHTML = bodyHtml;
             if(summaryTbody) summaryTbody.innerHTML = summaryHtml;
             
             selCat.innerHTML = catOpts;
@@ -438,6 +425,124 @@
             document.getElementById('manualBranch').innerHTML = brOpts;
             
             if (!document.getElementById('tabAnalytics').classList.contains('hidden')) refreshCharts();
+        }
+
+        // Generic Horizontal Matrix Renderer
+        function renderHorizontalMatrix(headId, bodyId, isPurchaseMode) {
+            const thead = document.getElementById(headId);
+            const tbody = document.getElementById(bodyId);
+            
+            // 1. Header
+            let headerHtml1 = '<tr><th rowspan="2" style="min-width: 150px; border-bottom: none;">Category</th><th rowspan="2" style="min-width: 80px; border-bottom: none;">MRP</th>';
+            let headerHtml2 = '<tr>';
+            
+            stores.forEach(store => {
+                headerHtml1 += `<th colspan="2" class="group-header" style="border-left: 1px solid rgba(255,255,255,0.2); text-align: center;">${store}</th>`;
+                headerHtml2 += `<th class="sub-header" style="width: 60px; text-align: center;">Tgt</th><th class="sub-header" style="width: 60px; text-align: center; border-right: 1px solid var(--border);">Stk</th>`;
+            });
+            headerHtml1 += '<th rowspan="2" style="min-width: 80px; border-bottom: none;">Status</th></tr>';
+            headerHtml2 += '</tr>';
+            
+            thead.innerHTML = headerHtml1 + headerHtml2;
+
+            let bodyHtml = '';
+            
+            inventoryData.forEach((cat) => {
+                // Render MRP Rows
+                if (cat.mrpDetails && cat.mrpDetails.length > 0) {
+                    cat.mrpDetails.forEach(mrp => {
+                        let rowHtml = `<tr>
+                            <td style="color: var(--text-muted); font-weight: 400; font-size: 11px;">${cat.name}</td>
+                            <td><span class="badge badge-info">${mrp.range}</span></td>`;
+                        
+                        let rowStatus = 'OK';
+                        let hasAction = false;
+                        
+                        stores.forEach((store, si) => {
+                            const t = mrp.base[si] || 0;
+                            const s = mrp.present[si] || 0;
+                            const gap = s - t;
+                            const logic = getSmartLogic(si, mrp.base, mrp.present);
+                            
+                            // In Purchase Mode, hide rows with no purchase needed
+                            if(isPurchaseMode && logic.purchase === 0) {
+                                rowHtml += `<td></td><td></td>`;
+                            } else {
+                                if (gap < 0) rowStatus = 'SHORT';
+                                if(logic.purchase > 0) hasAction = true;
+                                
+                                // Target Cell
+                                rowHtml += `<td><span class="num-target">${t}</span></td>`;
+                                
+                                // Stock Cell with Color Logic
+                                let stockClass = '';
+                                if (gap > 0) stockClass = 'num-stock stock-surplus';
+                                else if (gap < 0) stockClass = 'num-stock stock-short';
+                                else stockClass = 'num-stock stock-equal';
+                                
+                                if(isPurchaseMode) {
+                                    // In purchase mode, show Purchase Qty in Blue
+                                    rowHtml += `<td><span class="purchase-matrix-val">${logic.purchase}</span></td>`;
+                                    rowStatus = 'BUY';
+                                } else {
+                                    rowHtml += `<td><span class="${stockClass}">${s}</span></td>`;
+                                }
+                            }
+                        });
+                        
+                        // Filter: If Purchase Mode and no action, skip row
+                        if(isPurchaseMode && !hasAction) return;
+                        
+                        rowHtml += `<td><span class="badge ${rowStatus === 'SHORT' || rowStatus === 'BUY' ? 'badge-danger' : 'badge-success'}">${rowStatus}</span></td></tr>`;
+                        bodyHtml += rowHtml;
+                    });
+                }
+
+                // Render Total Row
+                let totalHtml = `<tr style="background: rgba(13,148,136,0.05); font-weight: 700;">
+                    <td>${cat.name}</td>
+                    <td><span class="badge badge-warning">TOTAL</span></td>`;
+                
+                let totalHasAction = false;
+                
+                stores.forEach((store, si) => {
+                    const t = cat.base[si] || 0;
+                    const s = cat.present[si] || 0;
+                    const gap = s - t;
+                    const logic = getSmartLogic(si, cat.base, cat.present);
+                    
+                    if(isPurchaseMode && logic.purchase === 0) {
+                         totalHtml += `<td></td><td></td>`;
+                    } else {
+                        if(logic.purchase > 0) totalHasAction = true;
+                        
+                        totalHtml += `<td><span class="num-target">${t}</span></td>`;
+                        
+                        let stockClass = '';
+                        if (gap > 0) stockClass = 'num-stock stock-surplus';
+                        else if (gap < 0) stockClass = 'num-stock stock-short';
+                        else stockClass = 'num-stock stock-equal';
+                        
+                        if(isPurchaseMode) {
+                             totalHtml += `<td onclick="openModal(${si})" style="cursor: pointer;"><span class="purchase-matrix-val">${logic.purchase}</span></td>`;
+                        } else {
+                             totalHtml += `<td onclick="openModal(${si})" style="cursor: pointer;"><span class="${stockClass}">${s}</span></td>`;
+                        }
+                    }
+                });
+
+                if(isPurchaseMode && !totalHasAction) return;
+                
+                totalHtml += `<td></td></tr>`; 
+                bodyHtml += totalHtml;
+            });
+            
+            // If purchase mode and empty
+            if(isPurchaseMode && bodyHtml === '') {
+                bodyHtml = `<tr><td colspan="${stores.length * 2 + 3}" style="text-align:center; padding: 20px; color:var(--success);">No Purchase Requirements Found</td></tr>`;
+            }
+
+            tbody.innerHTML = bodyHtml;
         }
 
         // --- TABS & CHARTS ---
@@ -475,7 +580,7 @@
             });
         }
 
-        // --- PURCHASE REPORT TAB ---
+        // --- PURCHASE REPORT TAB (Horizontal Matrix) ---
         function openPurchaseReportTab() {
             localStorage.setItem('sg_report_data', JSON.stringify({ inventoryData, stores }));
             window.open(window.location.href.split('#')[0] + '#purchase', '_blank');
@@ -492,57 +597,30 @@
         function renderPurchasePage() {
             const savedData = JSON.parse(localStorage.getItem('sg_report_data'));
             if (!savedData) return;
-            const data = savedData.inventoryData;
-            const str = savedData.stores;
-            
-            let html = '';
+            // Overwrite local data with saved data
+            inventoryData = savedData.inventoryData;
+            stores = savedData.stores;
+
             let chartStats = { purchase: 0, categories: new Set() };
             
-            data.forEach(cat => {
-                const processRange = (rangeName, baseArr, presentArr) => {
-                    let rows = '';
-                    let rangePurchase = 0;
-                    
-                    str.forEach((store, si) => {
-                        const b = baseArr[si] || 0;
-                        const p = presentArr[si] || 0;
+            // Calculate Stats for Chart
+             inventoryData.forEach(cat => {
+                const processStats = (baseArr, presentArr) => {
+                    stores.forEach((store, si) => {
                         const logic = getSmartLogic(si, baseArr, presentArr);
-                        
                         if (logic.purchase > 0) {
-                            rangePurchase += logic.purchase;
                             chartStats.purchase += logic.purchase;
                             chartStats.categories.add(cat.name);
-                            
-                            rows += `<tr style="background: #fff;">
-                                <td style="width: 25%; border-bottom: 1px solid #f1f5f9;">${store}</td>
-                                <td style="width: 20%; text-align: right; border-bottom: 1px solid #f1f5f9;">${b}</td>
-                                <td style="width: 20%; text-align: right; border-bottom: 1px solid #f1f5f9;">${p}</td>
-                                <td style="width: 35%; text-align: right; border-bottom: 1px solid #f1f5f9; color: #dc2626; font-weight:700;">${logic.purchase}</td>
-                            </tr>`;
                         }
                     });
-
-                    if (rows) {
-                        html += `<div class="mrp-report-card">
-                            <div class="mrp-report-header">
-                                <div style="font-weight: 700; color: #0f172a;">${cat.name} <span style="color: #64748b; font-weight: 400;">(${rangeName})</span></div>
-                                <div class="flex gap-4 text-sm">
-                                    <span class="text-red-600 font-bold">Total Purchase: ${rangePurchase}</span>
-                                </div>
-                            </div>
-                            <table style="width: 100%; min-width: auto;"><thead><tr style="background: #f8fafc;"><th style="padding: 8px; width: 25%;">Branch</th><th style="padding: 8px; width: 20%; text-align: right;">Tgt</th><th style="padding: 8px; width: 20%; text-align: right;">Stk</th><th style="padding: 8px; width: 35%; text-align: right;">Purchase Qty</th></tr></thead><tbody>${rows}</tbody></table>
-                        </div>`;
-                    }
                 };
-                
-                if (cat.mrpDetails && cat.mrpDetails.length > 0) {
-                    cat.mrpDetails.forEach(mrp => processRange(mrp.range, mrp.base, mrp.present));
+                 if (cat.mrpDetails && cat.mrpDetails.length > 0) {
+                    cat.mrpDetails.forEach(mrp => processStats(mrp.base, mrp.present));
                 } else {
-                    processRange("Total Stock", cat.base, cat.present);
+                    processStats(cat.base, cat.present);
                 }
             });
 
-            document.getElementById('purchaseReportContent').innerHTML = html;
             document.getElementById('sumPurchase').innerText = chartStats.purchase.toLocaleString();
             document.getElementById('sumCats').innerText = chartStats.categories.size;
             
@@ -551,10 +629,12 @@
                 data: { labels: ['Purchase Required'], datasets: [{ label: 'Qty', data: [chartStats.purchase], backgroundColor: '#dc2626', borderRadius: 4 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
             });
+
+            // Render Horizontal Matrix
+            renderHorizontalMatrix('purchaseMatrixHead', 'purchaseMatrixBody', true);
         }
 
         // --- EXPORT FUNCTIONS ---
-        // 1. Branch Modal Export
         async function exportBranchReport() {
             if (currentModalBranchIndex === null) return;
             const si = currentModalBranchIndex;
@@ -588,63 +668,54 @@
             saveAs(new Blob([buffer]), `${stores[si]}_Report.xlsx`);
         }
 
-        // 2. Export All (Horizontal Format)
         async function exportMatrixExcel() {
             const wb = new ExcelJS.Workbook();
-            
-            // Sheet 1: Horizontal Matrix
             const wsMatrix = wb.addWorksheet('Horizontal Matrix');
             
-            // Header
-            const header = ['Category', 'MRP'];
-            stores.forEach(s => header.push(`${s} Tgt`, `${s} Stk`));
-            header.push('Status');
-            wsMatrix.addRow(header);
-            wsMatrix.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
-            wsMatrix.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
+            const header1 = ['Category', 'MRP'];
+            stores.forEach(s => header1.push(s, '')); 
+            header1.push('Status');
+            wsMatrix.addRow(header1);
             
-            // Columns
-            const cols = [{ width: 20 }, { width: 10 }];
-            stores.forEach(() => cols.push({ width: 8 }, { width: 8 }));
-            cols.push({ width: 10 });
-            wsMatrix.columns = cols;
-
-            let rowIdx = 2;
+            const header2 = ['', ''];
+            stores.forEach(() => header2.push('Target', 'Stock'));
+            header2.push('');
+            wsMatrix.addRow(header2);
+            
+            stores.forEach((_, i) => {
+                const colIndex = 3 + (i * 2);
+                wsMatrix.mergeCells(1, colIndex, 1, colIndex + 1);
+            });
+            
+            ['A1', 'B1', 'K1'].forEach(cell => { wsMatrix.getCell(cell).font = { bold: true }; wsMatrix.getCell(cell).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } }; });
+            
+            let rowIdx = 3;
             inventoryData.forEach(cat => {
-                // MRP Rows
                 if (cat.mrpDetails && cat.mrpDetails.length > 0) {
                     cat.mrpDetails.forEach(mrp => {
                         const rowData = [cat.name, mrp.range];
-                        let status = 'OK';
                         stores.forEach((_, si) => {
-                            const t = mrp.base[si] || 0;
-                            const s = mrp.present[si] || 0;
-                            if (s < t) status = 'SHORT';
-                            rowData.push(t, s);
+                            rowData.push(mrp.base[si] || 0);
+                            rowData.push(mrp.present[si] || 0);
                         });
-                        rowData.push(status);
+                        rowData.push('');
                         wsMatrix.getRow(rowIdx).values = rowData;
                         rowIdx++;
                     });
                 }
 
-                // Total Row
                 const totalData = [cat.name, 'TOTAL'];
-                let tStatus = 'OK';
                 stores.forEach((_, si) => {
-                    const t = cat.base[si] || 0;
-                    const s = cat.present[si] || 0;
-                    if (s < t) tStatus = 'SHORT';
-                    totalData.push(t, s);
+                    totalData.push(cat.base[si] || 0);
+                    totalData.push(cat.present[si] || 0);
                 });
-                totalData.push(tStatus);
+                totalData.push('');
                 const row = wsMatrix.getRow(rowIdx);
                 row.values = totalData;
                 row.font = { bold: true };
                 rowIdx++;
             });
 
-            // Sheet 2: Summary
             const wsSummary = wb.addWorksheet('Dashboard Summary');
             wsSummary.addRow(['Subham Grand - Total Network Report']);
             wsSummary.getRow(1).font = { size: 18, bold: true };
@@ -659,7 +730,6 @@
             saveAs(new Blob([buffer]), 'SubhamGrand_Horizontal_Report.xlsx');
         }
 
-        // 3. Purchase Report Export
         async function exportPurchaseReportExcel() {
             const savedData = JSON.parse(localStorage.getItem('sg_report_data'));
             if(!savedData) return alert('No data found');
@@ -668,33 +738,53 @@
             const str = savedData.stores;
             
             const wb = new ExcelJS.Workbook();
-            const ws = wb.addWorksheet('Purchase Report');
+            const ws = wb.addWorksheet('Purchase Matrix');
             
-            ws.addRow(['Purchase Requirement Report']);
-            ws.getRow(1).font = { size: 16, bold: true };
+            const header1 = ['Category', 'MRP'];
+            str.forEach(s => header1.push(s, '')); 
+            header1.push('Total');
+            ws.addRow(header1);
             
-            const headerRow = ws.getRow(3);
-            headerRow.values = ['Category', 'MRP Range', 'Branch', 'Target', 'Purchase Qty'];
-            headerRow.eachCell((cell) => {
-                cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDC2626' } };
+            const header2 = ['', ''];
+            str.forEach(() => header2.push('Target', 'Purchase Qty'));
+            header2.push('Purchase');
+            ws.addRow(header2);
+            
+            str.forEach((_, i) => {
+                const colIndex = 3 + (i * 2);
+                ws.mergeCells(1, colIndex, 1, colIndex + 1);
             });
             
-            ws.columns = [{ width: 25 }, { width: 12 }, { width: 12 }, { width: 10 }, { width: 12 }];
-            
-            let rowIdx = 4;
+            ws.columns = [{ width: 25 }, { width: 12 }];
+            str.forEach(() => ws.columns.push({ width: 8 }, { width: 12 }));
+            ws.columns.push({ width: 12 });
+
+            let rowIdx = 3;
             
             data.forEach(cat => {
                 const processRange = (rangeName, baseArr, presentArr) => {
+                    let rowData = [cat.name, rangeName];
+                    let totalRowPurchase = 0;
+                    let hasPurchase = false;
+                    
                     str.forEach((store, si) => {
                         const b = baseArr[si] || 0;
                         const logic = getSmartLogic(si, baseArr, presentArr);
                         
-                        if (logic.purchase > 0) {
-                            ws.getRow(rowIdx).values = [cat.name, rangeName, store, b, logic.purchase];
-                            rowIdx++;
+                        rowData.push(b);
+                        rowData.push(logic.purchase > 0 ? logic.purchase : '-');
+                        if(logic.purchase > 0) {
+                            totalRowPurchase += logic.purchase;
+                            hasPurchase = true;
                         }
                     });
+                    
+                    rowData.push(totalRowPurchase > 0 ? totalRowPurchase : '-');
+                    
+                    if(hasPurchase) {
+                        ws.getRow(rowIdx).values = rowData;
+                        rowIdx++;
+                    }
                 };
                 
                 if (cat.mrpDetails && cat.mrpDetails.length > 0) {
@@ -705,7 +795,7 @@
             });
             
             const buffer = await wb.xlsx.writeBuffer();
-            saveAs(new Blob([buffer]), 'SubhamGrand_Purchase_Report.xlsx');
+            saveAs(new Blob([buffer]), 'SubhamGrand_Purchase_Matrix.xlsx');
         }
 
         // --- ACTIONS & MODALS (Preserved) ---
@@ -716,8 +806,38 @@
         function toggleTheme() { document.body.classList.toggle('dark-mode'); render(); }
         function openModal(si) { currentModalBranchIndex = si; document.getElementById('modalStore').textContent = stores[si]; let html = ''; inventoryData.forEach(cat => { const logic = getSmartLogic(si, cat.base, cat.present); const gap = (cat.present[si] || 0) - (cat.base[si] || 0); const border = gap < 0 ? 'var(--danger)' : 'var(--success)'; html += `<div class="card p-4 mb-2" style="border-left: 4px solid ${border};"><div class="flex justify-between text-xs font-semibold uppercase mb-1" style="color: var(--text-muted);"><span>${cat.name}</span><span>Gap: ${gap > 0 ? '+' : ''}${gap}</span></div><div class="font-bold"><div class="analysis-cell">${logic.transfer ? `<span class="badge badge-info">Trans ${logic.transfer.qty} from ${logic.transfer.from}</span>` : ''}${logic.purchase > 0 ? `<span class="badge badge-danger">Buy ${logic.purchase}</span>` : ''}${!logic.transfer && logic.purchase === 0 ? `<span class="badge badge-success">OK</span>` : ''}</div></div>`; }); document.getElementById('modalBody').innerHTML = html; document.getElementById('modal').classList.remove('hidden'); }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-        function openManualModal() { render(); document.getElementById('manualModal').classList.remove('hidden'); }
+        
+        // Updated Manual Modal Logic
+        function openManualModal() { 
+            render(); // Ensure lists are populated
+            updateMrpOptions(); 
+            document.getElementById('manualModal').classList.remove('hidden'); 
+        }
+        
         function closeManualModal() { document.getElementById('manualModal').classList.add('hidden'); }
+        
+        // New: Dynamic MRP Options
+        function updateMrpOptions() {
+            const catName = document.getElementById('manualCatInput').value.toUpperCase().trim();
+            const mrpList = document.getElementById('mrpList');
+            mrpList.innerHTML = '<option value="TOTAL">TOTAL</option>'; // Always add Total option
+            
+            if(!catName) return;
+            
+            const cat = inventoryData.find(c => c.name === catName);
+            if(cat && cat.mrpDetails) {
+                cat.mrpDetails.forEach(mrp => {
+                    const option = document.createElement('option');
+                    option.value = mrp.range;
+                    mrpList.appendChild(option);
+                });
+            }
+        }
+        
+        // Attach event listener for category input
+        document.getElementById('manualCatInput').addEventListener('change', updateMrpOptions);
+        document.getElementById('manualCatInput').addEventListener('input', updateMrpOptions);
+
         function saveManualData() { const catName = document.getElementById('manualCatInput').value.toUpperCase().trim(); const mrp = document.getElementById('manualMrp').value.trim(); const si = parseInt(document.getElementById('manualBranch').value); const target = parseInt(document.getElementById('manualTarget').value) || 0; const stock = parseInt(document.getElementById('manualStock').value) || 0; if (!catName || !mrp || isNaN(si)) { alert('Missing fields'); return; } let catIndex = inventoryData.findIndex(c => c.name === catName); if (catIndex === -1) { inventoryData.push({ name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }); catIndex = inventoryData.length - 1; } const cat = inventoryData[catIndex]; let mrpRow = cat.mrpDetails.find(r => r.range === mrp); if (!mrpRow) { mrpRow = { range: mrp, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); } mrpRow.base[si] = target; mrpRow.present[si] = stock; recalculateCategoryTotals(catIndex); closeManualModal(); render(); alert('Saved'); }
 
         // Initialize
