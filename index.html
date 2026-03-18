@@ -74,10 +74,15 @@
             border: 1px solid rgba(0,0,0,0.1);
         }
         
-        /* Color Logic */
+        /* COLOR LOGIC UPDATED */
+        /* Excess: Stock > Target = RED */
         .stock-surplus { background-color: #fca5a5; color: #000000; }
-        .stock-short { background-color: #93c5fd; color: #000000; }
-        .stock-equal { background-color: #86efac; color: #000000; }
+        
+        /* Low: Stock < Target = GREEN */
+        .stock-short { background-color: #86efac; color: #000000; }
+        
+        /* Okay: Stock == Target = BLUE */
+        .stock-equal { background-color: #93c5fd; color: #000000; }
         
         /* Purchase Matrix Specific */
         .purchase-matrix-val {
@@ -312,7 +317,6 @@
 
     <script>
         // --- INITIAL CONFIG ---
-        // Default stores (will be overwritten by Excel headers if uploaded)
         let stores = ["SG", "SGHYD", "SGRJY", "SGTNL", "SIRIELR", "SGTNK", "SGTUNI", "SIRICPT", "SIRIVJY", "SIRIKKD", "SIRITPT", "VS"];
         
         // --- DATA STRUCTURE (Default) ---
@@ -803,7 +807,6 @@
             const netGap = globalBase - globalPresent;
             const efficiency = globalBase > 0 ? Math.round((globalPresent / globalBase) * 100) : 0;
             
-            // FIX: Ensure integers are displayed
             document.getElementById('totalBase').textContent = Math.round(globalBase).toLocaleString();
             document.getElementById('totalPresent').textContent = Math.round(globalPresent).toLocaleString();
             document.getElementById('purchaseSuggestion').textContent = Math.max(0, Math.round(netGap)).toLocaleString();
@@ -863,9 +866,10 @@
                                 rowHtml += `<td><span class="num-target">${t}</span></td>`;
                                 
                                 let stockClass = '';
-                                if (gap > 0) stockClass = 'num-stock stock-surplus';
-                                else if (gap < 0) stockClass = 'num-stock stock-short';
-                                else stockClass = 'num-stock stock-equal';
+                                // Updated Logic: Red=Excess, Green=Low, Blue=Equal
+                                if (gap > 0) stockClass = 'num-stock stock-surplus'; // Red
+                                else if (gap < 0) stockClass = 'num-stock stock-short'; // Green
+                                else stockClass = 'num-stock stock-equal'; // Blue
                                 
                                 if(isPurchaseMode) {
                                     rowHtml += `<td><span class="purchase-matrix-val">${logic.purchase}</span></td>`;
@@ -1371,7 +1375,7 @@
             saveAs(new Blob([buffer]), 'SubhamGrand_Purchase_Matrix.xlsx');
         }
 
-        // --- UPLOAD LOGIC (FIXED: FORCES INTEGERS) ---
+        // --- UPLOAD LOGIC (FIXED: Handles Suffixes like 1+1) ---
         async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1383,7 +1387,6 @@
                 await workbook.xlsx.load(data);
                 const ws = workbook.worksheets[0];
                 
-                // 1. READ HEADERS
                 const headerRow = ws.getRow(1);
                 const storeColMap = []; 
                 
@@ -1405,11 +1408,9 @@
                     alert('No store columns found in Excel.'); return;
                 }
 
-                // 2. UPDATE STORES
                 const oldStores = [...stores];
                 stores = storeColMap.map(m => m.storeName);
 
-                // 3. RESIZE DATA
                 inventoryData.forEach(cat => {
                     const newBase = Array(stores.length).fill(0);
                     
@@ -1438,35 +1439,45 @@
                     }
                 });
 
-                // 4. PARSE DATA
+                // IMPROVED NORMALIZATION LOGIC
                 const normalizeRange = (str) => {
                     if (!str) return '';
                     let s = str.toString().trim().toUpperCase();
                     if (s === 'TOTAL') return 'TOTAL';
+                    
+                    // 1. Handle Range with Suffix (e.g., "501-1000(1+1)" or "0-500 (1+1)")
+                    // Matches: StartNumber, Separator, EndNumber, Optional Suffix
+                    let match = s.match(/^(\d+)\s*[-<]+\s*(\d+)\s*(.*)/);
+                    if (match) {
+                        let suffix = match[3].trim(); // Capture "(1+1)" or similar
+                        return `${match[1]}<${match[2]}${suffix}`; 
+                    }
+                    
+                    // 2. Handle Greater Than/Less Than (e.g., ">7500")
+                    match = s.match(/^(>|<)\s*(\d+)\s*(.*)/);
+                    if (match) {
+                        return `${match[1]}${match[2]}${match[3].trim()}`;
+                    }
+                    
+                    // 3. Fallback
                     const numbers = s.match(/\d+/g);
                     if (numbers && numbers.length >= 2) return `${numbers[0]}<${numbers[1]}`;
-                    if (numbers && numbers.length === 1) {
-                        if (s.includes('>') && !s.includes('<')) return `>${numbers[0]}`;
-                        if (s.includes('<') && !s.includes('>')) return `<${numbers[0]}`;
-                        return `>${numbers[0]}`;
-                    }
+                    if (numbers && numbers.length === 1) return `>${numbers[0]}`;
+                    
                     return s;
                 };
 
                 ws.eachRow((row, rowNumber) => {
                     if (rowNumber === 1) return; 
 
-                    // FIX: HELPER TO GET EXACT INTEGER
                     const getVal = (idx) => {
                         const cell = row.getCell(idx);
                         if (cell.value === null || cell.value === undefined || cell.value === '') return 0;
                         let rawVal = 0;
-                        // Check formula results first
                         if (cell.result !== undefined) rawVal = parseFloat(cell.result);
                         else rawVal = parseFloat(cell.value);
                         
                         if (isNaN(rawVal)) return 0;
-                        // FORCE INTEGER (ROUND TO NEAREST)
                         return Math.round(rawVal);
                     };
                     
@@ -1514,7 +1525,7 @@
 
                 inventoryData.forEach((c, i) => recalculateCategoryTotals(i));
                 render();
-                alert('Upload Successful! Values rounded to nearest integer.');
+                alert('Upload Successful! Ranges and suffixes processed correctly.');
             };
             reader.readAsArrayBuffer(file);
         }
