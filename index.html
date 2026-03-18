@@ -311,12 +311,11 @@
     </div>
 
     <script>
-        // --- FIXED STORE LIST (DO NOT REORDER DYNAMICALLY) ---
-        // This order is now the "Source of Truth". 
-        // Excel columns will be mapped to THIS order to prevent mismatching.
+        // --- INITIAL CONFIG ---
+        // Default stores (will be overwritten by Excel headers if uploaded)
         let stores = ["SG", "SGHYD", "SGRJY", "SGTNL", "SIRIELR", "SGTNK", "SGTUNI", "SIRICPT", "SIRIVJY", "SIRIKKD", "SIRITPT", "VS"];
         
-        // --- DATA STRUCTURE (Matches Fixed Store Order) ---
+        // --- DATA STRUCTURE (Default) ---
         let inventoryData = [
             { 
                 name: "BNS HANDLOOM HF", 
@@ -698,7 +697,7 @@
             }
         ];
 
-        // Initialize 'present' arrays
+        // Initialize 'present' arrays with ZERO
         inventoryData.forEach(cat => {
             cat.present = Array(stores.length).fill(0);
             if(cat.mrpDetails && cat.mrpDetails.length > 0) {
@@ -715,6 +714,7 @@
         // --- LOGIC ---
         function getSmartLogic(si, baseArr, presentArr) {
             if (!baseArr || !presentArr) return { transfer: null, purchase: 0 };
+            // Safety check for array length
             if (si >= presentArr.length || si >= baseArr.length) return { transfer: null, purchase: 0 };
 
             const gap = (presentArr[si] || 0) - (baseArr[si] || 0);
@@ -726,6 +726,7 @@
 
             for (let i = 0; i < stores.length; i++) {
                 if (i === si) continue;
+                // Safety check
                 if (i >= presentArr.length || i >= baseArr.length) continue;
                 const surplus = (presentArr[i] || 0) - (baseArr[i] || 0);
                 if (surplus > maxSurplus) { maxSurplus = surplus; bestDonor = i; }
@@ -747,9 +748,11 @@
 
         function recalculateCategoryTotals(ci) {
             const cat = inventoryData[ci]; if (!cat) return;
+            // Ensure arrays are correct size
             if (!cat.base || cat.base.length !== stores.length) cat.base = Array(stores.length).fill(0);
             if (!cat.present || cat.present.length !== stores.length) cat.present = Array(stores.length).fill(0);
 
+            // Reset totals
             cat.base.fill(0); 
             cat.present.fill(0);
 
@@ -1102,6 +1105,7 @@
                 }
             });
 
+            // 1. Render Table
             let tableHtml = '';
             purchaseItems.forEach(item => {
                 tableHtml += `<tr>
@@ -1119,6 +1123,7 @@
             }
             document.getElementById('purchaseModalTableBody').innerHTML = tableHtml;
 
+            // 2. Render Chart
             const ctx = document.getElementById('purchaseModalChart').getContext('2d');
             if (purchaseModalChartInstance) purchaseModalChartInstance.destroy();
 
@@ -1157,7 +1162,7 @@
             document.getElementById('purchaseModal').classList.add('hidden');
         }
 
-        // --- EXPORT FUNCTIONS ---
+        // --- EXPORT STORE PURCHASE EXCEL ---
         async function exportStorePurchaseExcel() {
             if (currentModalBranchIndex === null) return;
             const si = currentModalBranchIndex;
@@ -1202,6 +1207,7 @@
             saveAs(new Blob([buffer]), `${storeName}_Purchase_Report.xlsx`);
         }
 
+        // --- EXISTING EXPORT FUNCTIONS ---
         async function exportBranchReport() {
             if (currentModalBranchIndex === null) return;
             const si = currentModalBranchIndex;
@@ -1370,7 +1376,7 @@
             saveAs(new Blob([buffer]), 'SubhamGrand_Purchase_Matrix.xlsx');
         }
 
-        // --- UPLOAD LOGIC (FIXED: STRICT MAPPING) ---
+        // --- UPLOAD LOGIC (FIXED FOR EXACT MAPPING) ---
         async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1382,43 +1388,72 @@
                 await workbook.xlsx.load(data);
                 const ws = workbook.worksheets[0];
                 
-                // 1. PARSE HEADERS
+                // 1. READ HEADERS EXACTLY
+                // We need to map the actual column index in Excel to the Store Name
+                // ignoring empty columns if any, but preserving order.
                 const headerRow = ws.getRow(1);
-                const headerValues = [];
+                const storeColMap = []; // Array of { colIdx, storeName }
+                
+                // Iterate over all cells in the header row to find store columns
+                // We assume Col 1 is Category, Col 2 is MRP, Col 3+ are Stores
                 headerRow.eachCell((cell, colNumber) => {
+                    if (colNumber <= 2) return; // Skip Category and MRP columns
+                    
                     let val = cell.value;
+                    // Handle rich text or formulas
                     if (cell.result !== undefined) val = cell.result;
                     if (val && typeof val === 'object' && val.richText) val = val.richText.map(t => t.text).join('');
-                    headerValues[colNumber] = val ? val.toString().trim().toUpperCase() : '';
+                    
+                    const headerText = val ? val.toString().trim().toUpperCase() : '';
+                    
+                    // Only add if header is not empty
+                    if (headerText) {
+                        storeColMap.push({ colIdx: colNumber, storeName: headerText });
+                    }
                 });
 
-                while (headerValues.length && headerValues[headerValues.length-1] === '') headerValues.pop();
-
-                if (headerValues.length < 3) {
-                    alert('Excel format invalid. Expected columns: Category, MRP, [Store Names...]'); return;
+                if (storeColMap.length === 0) {
+                    alert('No store columns found in Excel. Ensure Row 1 has headers starting from Column C.'); return;
                 }
 
-                // 2. BUILD COLUMN MAP (Excel Column Index -> Application Store Index)
-                // We use the fixed 'stores' array as the source of truth.
-                // If Excel Column 3 is "SGHYD", we find "SGHYD" in 'stores', get its index (1), and map Col 3 -> Index 1.
-                
-                const columnMap = {}; // Key: Excel Column Index (1-based), Value: Store Index in 'stores' array
+                // 2. UPDATE GLOBAL STORES to match Excel Order
+                const oldStores = [...stores];
+                // Extract just the names in the exact order they appear in Excel
+                stores = storeColMap.map(m => m.storeName);
 
-                // Loop through Excel headers starting from column 3 (Index 2 in 0-based, or Column C)
-                // Assuming Col 1 = Category, Col 2 = MRP
-                for(let i = 2; i < headerValues.length; i++) {
-                    const headerName = headerValues[i]; // e.g., "SGHYD"
-                    const storeIndex = stores.indexOf(headerName);
-                    if(storeIndex !== -1) {
-                        // Excel columns are 1-based in ExcelJS if not specified otherwise? 
-                        // headerValues array is 1-based from the eachCell loop above usually? 
-                        // Let's be explicit: headerValues comes from cell.colNumber.
-                        // So 'i' here matches the column number.
-                        columnMap[i] = storeIndex;
+                // 3. RESIZE DATA ARRAYS and MAP TARGETS
+                inventoryData.forEach(cat => {
+                    // Create new Base array matching the new store order
+                    const newBase = Array(stores.length).fill(0);
+                    
+                    // Try to preserve old targets if the store name existed before
+                    oldStores.forEach((oldName, oldIdx) => {
+                        const newIdx = stores.indexOf(oldName);
+                        if (newIdx !== -1 && cat.base[oldIdx] !== undefined) {
+                            newBase[newIdx] = cat.base[oldIdx];
+                        }
+                    });
+                    
+                    cat.base = newBase;
+                    cat.present = Array(stores.length).fill(0); // Reset stock for upload
+
+                    // Handle MRP details
+                    if (cat.mrpDetails) {
+                        cat.mrpDetails.forEach(mrp => {
+                            const newMrpBase = Array(stores.length).fill(0);
+                            oldStores.forEach((oldName, oldIdx) => {
+                                const newIdx = stores.indexOf(oldName);
+                                if (newIdx !== -1 && mrp.base[oldIdx] !== undefined) {
+                                    newMrpBase[newIdx] = mrp.base[oldIdx];
+                                }
+                            });
+                            mrp.base = newMrpBase;
+                            mrp.present = Array(stores.length).fill(0);
+                        });
                     }
-                }
+                });
 
-                // 3. PARSE DATA ROWS
+                // 4. PARSE DATA ROWS
                 const normalizeRange = (str) => {
                     if (!str) return '';
                     let s = str.toString().trim().toUpperCase();
@@ -1433,23 +1468,22 @@
                     return s;
                 };
 
-                // Reset 'present' data before filling to avoid mixing old data
-                inventoryData.forEach(cat => {
-                    cat.present.fill(0);
-                    if(cat.mrpDetails) cat.mrpDetails.forEach(m => m.present.fill(0));
-                });
-
                 ws.eachRow((row, rowNumber) => {
                     if (rowNumber === 1) return; // Skip header
 
+                    // Helper to get raw value
                     const getVal = (idx) => {
                         const cell = row.getCell(idx);
+                        // Check for valid numbers
                         if (cell.value === null || cell.value === undefined || cell.value === '') return 0;
+                        // Handle formulas
                         if (cell.result !== undefined) return parseFloat(cell.result) || 0;
+                        // Handle raw numbers
                         const num = parseFloat(cell.value);
                         return isNaN(num) ? 0 : num;
                     };
                     
+                    // Helper to get string for lookups
                     const getStr = (idx) => {
                          const cell = row.getCell(idx);
                          let val = cell.value;
@@ -1465,43 +1499,42 @@
                     
                     if (!catName) return;
 
+                    // Find or Create Category
                     let catIdx = inventoryData.findIndex(c => c.name === catName);
                     if (catIdx === -1) {
-                        // If category not found, add it, but ensure array size is correct
-                        const newCat = { 
-                            name: catName, 
-                            base: Array(stores.length).fill(0), 
-                            present: Array(stores.length).fill(0), 
-                            mrpDetails: [] 
-                        };
-                        inventoryData.push(newCat);
+                        inventoryData.push({ 
+                            name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] 
+                        });
                         catIdx = inventoryData.length - 1;
                     }
                     const cat = inventoryData[catIdx];
 
                     const isTotal = (mrpName === 'TOTAL' || mrpName === '');
                     
-                    // Iterate over the MAPPED columns
-                    Object.keys(columnMap).forEach(excelCol => {
-                        const storeIndex = columnMap[excelCol];
-                        const val = getVal(excelCol);
+                    // 5. MAP EXCEL COLUMNS TO STORES
+                    // Instead of assuming index order, we use the map created from headers
+                    storeColMap.forEach((mapItem, index) => {
+                        // mapItem = { colIdx: 3, storeName: "SG" }
+                        // index is the position in our new `stores` array (0, 1, 2...)
+                        
+                        const val = getVal(mapItem.colIdx);
 
                         if (isTotal) {
-                            cat.present[storeIndex] = val;
+                            cat.present[index] = val;
                         } else {
                             let mrpRow = cat.mrpDetails.find(r => r.range === mrpName);
                             if (!mrpRow) {
                                 mrpRow = { range: mrpName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) };
                                 cat.mrpDetails.push(mrpRow);
                             }
-                            mrpRow.present[storeIndex] = val;
+                            mrpRow.present[index] = val;
                         }
                     });
                 });
 
                 inventoryData.forEach((c, i) => recalculateCategoryTotals(i));
                 render();
-                alert('Upload Successful! Data mapped strictly by Store Name.');
+                alert('Upload Successful! Data columns mapped exactly to Excel headers.');
             };
             reader.readAsArrayBuffer(file);
         }
