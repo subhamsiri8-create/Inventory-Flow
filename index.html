@@ -714,7 +714,6 @@
         // --- LOGIC ---
         function getSmartLogic(si, baseArr, presentArr) {
             if (!baseArr || !presentArr) return { transfer: null, purchase: 0 };
-            // Safety check for array length
             if (si >= presentArr.length || si >= baseArr.length) return { transfer: null, purchase: 0 };
 
             const gap = (presentArr[si] || 0) - (baseArr[si] || 0);
@@ -726,7 +725,6 @@
 
             for (let i = 0; i < stores.length; i++) {
                 if (i === si) continue;
-                // Safety check
                 if (i >= presentArr.length || i >= baseArr.length) continue;
                 const surplus = (presentArr[i] || 0) - (baseArr[i] || 0);
                 if (surplus > maxSurplus) { maxSurplus = surplus; bestDonor = i; }
@@ -748,11 +746,9 @@
 
         function recalculateCategoryTotals(ci) {
             const cat = inventoryData[ci]; if (!cat) return;
-            // Ensure arrays are correct size
             if (!cat.base || cat.base.length !== stores.length) cat.base = Array(stores.length).fill(0);
             if (!cat.present || cat.present.length !== stores.length) cat.present = Array(stores.length).fill(0);
 
-            // Reset totals
             cat.base.fill(0); 
             cat.present.fill(0);
 
@@ -807,9 +803,10 @@
             const netGap = globalBase - globalPresent;
             const efficiency = globalBase > 0 ? Math.round((globalPresent / globalBase) * 100) : 0;
             
-            document.getElementById('totalBase').textContent = globalBase.toLocaleString();
-            document.getElementById('totalPresent').textContent = globalPresent.toLocaleString();
-            document.getElementById('purchaseSuggestion').textContent = Math.max(0, netGap).toLocaleString();
+            // FIX: Ensure integers are displayed
+            document.getElementById('totalBase').textContent = Math.round(globalBase).toLocaleString();
+            document.getElementById('totalPresent').textContent = Math.round(globalPresent).toLocaleString();
+            document.getElementById('purchaseSuggestion').textContent = Math.max(0, Math.round(netGap)).toLocaleString();
             document.getElementById('efficiency').textContent = efficiency + '%';
             
             if(summaryTbody) summaryTbody.innerHTML = summaryHtml;
@@ -1058,7 +1055,7 @@
                 }
             });
 
-            document.getElementById('sumPurchase').innerText = chartStats.purchase.toLocaleString();
+            document.getElementById('sumPurchase').innerText = Math.round(chartStats.purchase).toLocaleString();
             document.getElementById('sumCats').innerText = chartStats.categories.size;
             
             new Chart(document.getElementById('purchaseChart'), {
@@ -1105,7 +1102,6 @@
                 }
             });
 
-            // 1. Render Table
             let tableHtml = '';
             purchaseItems.forEach(item => {
                 tableHtml += `<tr>
@@ -1123,7 +1119,6 @@
             }
             document.getElementById('purchaseModalTableBody').innerHTML = tableHtml;
 
-            // 2. Render Chart
             const ctx = document.getElementById('purchaseModalChart').getContext('2d');
             if (purchaseModalChartInstance) purchaseModalChartInstance.destroy();
 
@@ -1376,7 +1371,7 @@
             saveAs(new Blob([buffer]), 'SubhamGrand_Purchase_Matrix.xlsx');
         }
 
-        // --- UPLOAD LOGIC (FIXED FOR EXACT MAPPING) ---
+        // --- UPLOAD LOGIC (FIXED: FORCES INTEGERS) ---
         async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1388,45 +1383,36 @@
                 await workbook.xlsx.load(data);
                 const ws = workbook.worksheets[0];
                 
-                // 1. READ HEADERS EXACTLY
-                // We need to map the actual column index in Excel to the Store Name
-                // ignoring empty columns if any, but preserving order.
+                // 1. READ HEADERS
                 const headerRow = ws.getRow(1);
-                const storeColMap = []; // Array of { colIdx, storeName }
+                const storeColMap = []; 
                 
-                // Iterate over all cells in the header row to find store columns
-                // We assume Col 1 is Category, Col 2 is MRP, Col 3+ are Stores
                 headerRow.eachCell((cell, colNumber) => {
-                    if (colNumber <= 2) return; // Skip Category and MRP columns
+                    if (colNumber <= 2) return; 
                     
                     let val = cell.value;
-                    // Handle rich text or formulas
                     if (cell.result !== undefined) val = cell.result;
                     if (val && typeof val === 'object' && val.richText) val = val.richText.map(t => t.text).join('');
                     
                     const headerText = val ? val.toString().trim().toUpperCase() : '';
                     
-                    // Only add if header is not empty
                     if (headerText) {
                         storeColMap.push({ colIdx: colNumber, storeName: headerText });
                     }
                 });
 
                 if (storeColMap.length === 0) {
-                    alert('No store columns found in Excel. Ensure Row 1 has headers starting from Column C.'); return;
+                    alert('No store columns found in Excel.'); return;
                 }
 
-                // 2. UPDATE GLOBAL STORES to match Excel Order
+                // 2. UPDATE STORES
                 const oldStores = [...stores];
-                // Extract just the names in the exact order they appear in Excel
                 stores = storeColMap.map(m => m.storeName);
 
-                // 3. RESIZE DATA ARRAYS and MAP TARGETS
+                // 3. RESIZE DATA
                 inventoryData.forEach(cat => {
-                    // Create new Base array matching the new store order
                     const newBase = Array(stores.length).fill(0);
                     
-                    // Try to preserve old targets if the store name existed before
                     oldStores.forEach((oldName, oldIdx) => {
                         const newIdx = stores.indexOf(oldName);
                         if (newIdx !== -1 && cat.base[oldIdx] !== undefined) {
@@ -1435,9 +1421,8 @@
                     });
                     
                     cat.base = newBase;
-                    cat.present = Array(stores.length).fill(0); // Reset stock for upload
+                    cat.present = Array(stores.length).fill(0);
 
-                    // Handle MRP details
                     if (cat.mrpDetails) {
                         cat.mrpDetails.forEach(mrp => {
                             const newMrpBase = Array(stores.length).fill(0);
@@ -1453,7 +1438,7 @@
                     }
                 });
 
-                // 4. PARSE DATA ROWS
+                // 4. PARSE DATA
                 const normalizeRange = (str) => {
                     if (!str) return '';
                     let s = str.toString().trim().toUpperCase();
@@ -1469,21 +1454,22 @@
                 };
 
                 ws.eachRow((row, rowNumber) => {
-                    if (rowNumber === 1) return; // Skip header
+                    if (rowNumber === 1) return; 
 
-                    // Helper to get raw value
+                    // FIX: HELPER TO GET EXACT INTEGER
                     const getVal = (idx) => {
                         const cell = row.getCell(idx);
-                        // Check for valid numbers
                         if (cell.value === null || cell.value === undefined || cell.value === '') return 0;
-                        // Handle formulas
-                        if (cell.result !== undefined) return parseFloat(cell.result) || 0;
-                        // Handle raw numbers
-                        const num = parseFloat(cell.value);
-                        return isNaN(num) ? 0 : num;
+                        let rawVal = 0;
+                        // Check formula results first
+                        if (cell.result !== undefined) rawVal = parseFloat(cell.result);
+                        else rawVal = parseFloat(cell.value);
+                        
+                        if (isNaN(rawVal)) return 0;
+                        // FORCE INTEGER (ROUND TO NEAREST)
+                        return Math.round(rawVal);
                     };
                     
-                    // Helper to get string for lookups
                     const getStr = (idx) => {
                          const cell = row.getCell(idx);
                          let val = cell.value;
@@ -1499,7 +1485,6 @@
                     
                     if (!catName) return;
 
-                    // Find or Create Category
                     let catIdx = inventoryData.findIndex(c => c.name === catName);
                     if (catIdx === -1) {
                         inventoryData.push({ 
@@ -1511,12 +1496,7 @@
 
                     const isTotal = (mrpName === 'TOTAL' || mrpName === '');
                     
-                    // 5. MAP EXCEL COLUMNS TO STORES
-                    // Instead of assuming index order, we use the map created from headers
                     storeColMap.forEach((mapItem, index) => {
-                        // mapItem = { colIdx: 3, storeName: "SG" }
-                        // index is the position in our new `stores` array (0, 1, 2...)
-                        
                         const val = getVal(mapItem.colIdx);
 
                         if (isTotal) {
@@ -1534,7 +1514,7 @@
 
                 inventoryData.forEach((c, i) => recalculateCategoryTotals(i));
                 render();
-                alert('Upload Successful! Data columns mapped exactly to Excel headers.');
+                alert('Upload Successful! Values rounded to nearest integer.');
             };
             reader.readAsArrayBuffer(file);
         }
