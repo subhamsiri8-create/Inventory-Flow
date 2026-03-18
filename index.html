@@ -54,10 +54,6 @@
         td { padding: 8px 4px; font-size: 12px; border-bottom: 1px solid var(--border); border-left: 1px solid var(--border); text-align: center; vertical-align: middle; }
         td:first-child { border-left: none; text-align: left; padding-left: 16px; font-weight: 600; }
         
-        /* Matrix Styles */
-        .matrix-cat-header { background: var(--accent); color: white; }
-        .matrix-cat-header td { border-bottom: none; font-size: 13px; text-align: left; }
-        
         /* Number Styles */
         .num-target {
             background-color: #f3f4f6;
@@ -283,26 +279,26 @@
 
     <script>
         // --- FIXED STORE LIST (Hardcoded) ---
-        let stores = ["SG HYD", "SG", "SGRJY", "SGTNL", "SIRI ELR", "ST", "TUNI", "SIRICPT", "SIRI VJY", "SIRIKKD", "SIRI TPT", "VS"];
+        let stores = ["SGHYD", "SG", "SGRJY", "SGTNL", "SIRIELR", "SGTNK", "SGTUNI", "SIRICPT", "SIRIVJY", "SIRIKKD", "SIRITPT", "VS"];
         
-        // --- DATA (Preserved) ---
+        // --- DATA (Updated to 0<500 style) ---
         let inventoryData = [
             { 
                 name: "BNS HANDLOOM HF", 
                 base: Array(12).fill(0), 
                 present: [], 
                 mrpDetails: [
-                    { range: "0-500", base: [250, 500, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] },
-                    { range: "501-1000", base: [450, 1000, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] },
-                    { range: "1001-1500", base: [500, 1200, 500, 1000, 750, 750, 750, 400, 1200, 750, 750, 750], present: [] },
-                    { range: "1501-2000", base: [250, 500, 250, 400, 300, 350, 350, 250, 500, 350, 350, 300], present: [] },
-                    { range: "2001-3000", base: [250, 500, 250, 350, 300, 350, 300, 250, 500, 350, 350, 300], present: [] },
-                    { range: "3001-4000", base: [150, 300, 150, 200, 200, 200, 200, 150, 300, 200, 200, 150], present: [] },
-                    { range: "4001-6000", base: [100, 200, 100, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] },
-                    { range: "6001-7500", base: [50, 100, 50, 100, 50, 100, 50, 50, 100, 100, 100, 100], present: [] },
+                    { range: "0<500", base: [250, 500, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] },
+                    { range: "501<1000", base: [450, 1000, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] },
+                    { range: "1001<1500", base: [500, 1200, 500, 1000, 750, 750, 750, 400, 1200, 750, 750, 750], present: [] },
+                    { range: "1501<2000", base: [250, 500, 250, 400, 300, 350, 350, 250, 500, 350, 350, 300], present: [] },
+                    { range: "2001<3000", base: [250, 500, 250, 350, 300, 350, 300, 250, 500, 350, 350, 300], present: [] },
+                    { range: "3001<4000", base: [150, 300, 150, 200, 200, 200, 200, 150, 300, 200, 200, 150], present: [] },
+                    { range: "4001<6000", base: [100, 200, 100, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] },
+                    { range: "6001<7500", base: [50, 100, 50, 100, 50, 100, 50, 50, 100, 100, 100, 100], present: [] },
                     { range: ">7500", base: [10, 20, 10, 0, 0, 10, 0, 20, 20, 10, 10, 20], present: [] },
-                    { range: "501-1000(1+1)", base: [500, 800, 500, 500, 500, 400, 1000, 400, 800, 400, 400, 400], present: [] },
-                    { range: "1001-2000(1+1)", base: [250, 500, 250, 400, 300, 300, 500, 300, 500, 300, 300, 400], present: [] }
+                    { range: "501<1000(1+1)", base: [500, 800, 500, 500, 500, 400, 1000, 400, 800, 400, 400, 400], present: [] },
+                    { range: "1001<2000(1+1)", base: [250, 500, 250, 400, 300, 300, 500, 300, 500, 300, 300, 400], present: [] }
                 ] 
             },
             { 
@@ -310,16 +306,16 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0-500", base: [87, 175, 87, 125, 125, 150, 175, 0, 175, 150, 150, 150], present: [] },
-                    { range: "501-1000", base: [185, 370, 185, 295, 245, 295, 345, 50, 370, 295, 295, 295], present: [] },
-                    { range: "1001-1500", base: [175, 400, 175, 350, 280, 350, 490, 200, 400, 350, 350, 350], present: [] },
-                    { range: "1501-2000", base: [200, 400, 200, 300, 150, 300, 200, 100, 400, 300, 300, 250], present: [] },
-                    { range: "2001-3000", base: [175, 350, 175, 300, 150, 350, 400, 150, 350, 350, 350, 250], present: [] },
-                    { range: "3001-4000", base: [63, 125, 63, 100, 100, 100, 100, 100, 125, 100, 100, 50], present: [] },
-                    { range: "4001-6000", base: [25, 50, 25, 25, 25, 50, 50, 25, 50, 50, 50, 25], present: [] },
+                    { range: "0<500", base: [87, 175, 87, 125, 125, 150, 175, 0, 175, 150, 150, 150], present: [] },
+                    { range: "501<1000", base: [185, 370, 185, 295, 245, 295, 345, 50, 370, 295, 295, 295], present: [] },
+                    { range: "1001<1500", base: [175, 400, 175, 350, 280, 350, 490, 200, 400, 350, 350, 350], present: [] },
+                    { range: "1501<2000", base: [200, 400, 200, 300, 150, 300, 200, 100, 400, 300, 300, 250], present: [] },
+                    { range: "2001<3000", base: [175, 350, 175, 300, 150, 350, 400, 150, 350, 350, 350, 250], present: [] },
+                    { range: "3001<4000", base: [63, 125, 63, 100, 100, 100, 100, 100, 125, 100, 100, 50], present: [] },
+                    { range: "4001<6000", base: [25, 50, 25, 25, 25, 50, 50, 25, 50, 50, 50, 25], present: [] },
                     { range: ">6000", base: [10, 20, 10, 0, 0, 0, 0, 0, 20, 0, 0, 0], present: [] },
-                    { range: "501-1000(1+1)", base: [87, 175, 87, 125, 125, 150, 175, 50, 175, 150, 150, 150], present: [] },
-                    { range: "1001-2000(1+1)", base: [58, 115, 58, 90, 75, 90, 105, 50, 115, 90, 90, 90], present: [] }
+                    { range: "501<1000(1+1)", base: [87, 175, 87, 125, 125, 150, 175, 50, 175, 150, 150, 150], present: [] },
+                    { range: "1001<2000(1+1)", base: [58, 115, 58, 90, 75, 90, 105, 50, 115, 90, 90, 90], present: [] }
                 ] 
             },
             { 
@@ -327,14 +323,14 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0-500", base: [100, 200, 100, 175, 150, 150, 175, 150, 200, 150, 150, 150], present: [] },
-                    { range: "501-1000", base: [133, 265, 133, 210, 210, 210, 210, 100, 265, 210, 210, 210], present: [] },
-                    { range: "1001-1500", base: [75, 150, 75, 120, 120, 120, 175, 100, 150, 120, 120, 120], present: [] },
-                    { range: "1501-2000", base: [50, 100, 50, 70, 70, 70, 70, 50, 100, 70, 70, 70], present: [] },
-                    { range: "2001-3000", base: Array(12).fill(0), present: [] },
-                    { range: "3001-4000", base: Array(12).fill(0), present: [] },
-                    { range: "501-1000(1+1)", base: [75, 150, 75, 115, 115, 115, 150, 120, 150, 115, 115, 115], present: [] },
-                    { range: "1001-2000(1+1)", base: [50, 100, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] }
+                    { range: "0<500", base: [100, 200, 100, 175, 150, 150, 175, 150, 200, 150, 150, 150], present: [] },
+                    { range: "501<1000", base: [133, 265, 133, 210, 210, 210, 210, 100, 265, 210, 210, 210], present: [] },
+                    { range: "1001<1500", base: [75, 150, 75, 120, 120, 120, 175, 100, 150, 120, 120, 120], present: [] },
+                    { range: "1501<2000", base: [50, 100, 50, 70, 70, 70, 70, 50, 100, 70, 70, 70], present: [] },
+                    { range: "2001<3000", base: Array(12).fill(0), present: [] },
+                    { range: "3001<4000", base: Array(12).fill(0), present: [] },
+                    { range: "501<1000(1+1)", base: [75, 150, 75, 115, 115, 115, 150, 120, 150, 115, 115, 115], present: [] },
+                    { range: "1001<2000(1+1)", base: [50, 100, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] }
                 ] 
             },
             { 
@@ -342,11 +338,11 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0-500", base: [60, 200, 60, 100, 120, 75, 150, 50, 200, 75, 75, 100], present: [] },
-                    { range: "501-1000", base: [150, 300, 150, 300, 175, 100, 100, 150, 300, 100, 100, 300], present: [] },
-                    { range: "1001-1500", base: [50, 100, 50, 120, 75, 50, 25, 75, 100, 50, 50, 120], present: [] },
-                    { range: "1501-2000", base: [25, 50, 25, 60, 40, 20, 0, 50, 50, 20, 20, 60], present: [] },
-                    { range: "2001-3000", base: [15, 30, 15, 20, 0, 20, 0, 0, 30, 20, 20, 20], present: [] }
+                    { range: "0<500", base: [60, 200, 60, 100, 120, 75, 150, 50, 200, 75, 75, 100], present: [] },
+                    { range: "501<1000", base: [150, 300, 150, 300, 175, 100, 100, 150, 300, 100, 100, 300], present: [] },
+                    { range: "1001<1500", base: [50, 100, 50, 120, 75, 50, 25, 75, 100, 50, 50, 120], present: [] },
+                    { range: "1501<2000", base: [25, 50, 25, 60, 40, 20, 0, 50, 50, 20, 20, 60], present: [] },
+                    { range: "2001<3000", base: [15, 30, 15, 20, 0, 20, 0, 0, 30, 20, 20, 20], present: [] }
                 ] 
             },
             { 
@@ -354,10 +350,10 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0-1000", base: [100, 200, 100, 150, 100, 100, 200, 100, 200, 100, 100, 175], present: [] },
-                    { range: "1001-1500", base: [60, 100, 60, 100, 50, 30, 100, 50, 100, 30, 30, 100], present: [] },
-                    { range: "1501-2000", base: [50, 75, 50, 75, 20, 30, 50, 50, 75, 30, 30, 75], present: [] },
-                    { range: "2001-3000", base: [15, 30, 15, 30, 0, 10, 20, 20, 30, 10, 10, 30], present: [] },
+                    { range: "0<1000", base: [100, 200, 100, 150, 100, 100, 200, 100, 200, 100, 100, 175], present: [] },
+                    { range: "1001<1500", base: [60, 100, 60, 100, 50, 30, 100, 50, 100, 30, 30, 100], present: [] },
+                    { range: "1501<2000", base: [50, 75, 50, 75, 20, 30, 50, 50, 75, 30, 30, 75], present: [] },
+                    { range: "2001<3000", base: [15, 30, 15, 30, 0, 10, 20, 20, 30, 10, 10, 30], present: [] },
                     { range: ">3000", base: Array(12).fill(0), present: [] }
                 ] 
             },
@@ -372,12 +368,12 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "1001-2000", base: [15, 30, 15, 30, 20, 20, 30, 20, 30, 20, 20, 30], present: [] },
-                    { range: "2001-3000", base: [10, 20, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] },
-                    { range: "3001-4000", base: [20, 40, 20, 40, 25, 30, 30, 20, 40, 30, 30, 40], present: [] },
-                    { range: "4001-5000", base: [20, 40, 20, 30, 20, 20, 20, 20, 40, 20, 20, 30], present: [] },
-                    { range: "5001-7000", base: [20, 30, 20, 30, 20, 25, 20, 20, 30, 25, 25, 30], present: [] },
-                    { range: "7001-10000", base: [5, 10, 5, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] }
+                    { range: "1001<2000", base: [15, 30, 15, 30, 20, 20, 30, 20, 30, 20, 20, 30], present: [] },
+                    { range: "2001<3000", base: [10, 20, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] },
+                    { range: "3001<4000", base: [20, 40, 20, 40, 25, 30, 30, 20, 40, 30, 30, 40], present: [] },
+                    { range: "4001<5000", base: [20, 40, 20, 30, 20, 20, 20, 20, 40, 20, 20, 30], present: [] },
+                    { range: "5001<7000", base: [20, 30, 20, 30, 20, 25, 20, 20, 30, 25, 25, 30], present: [] },
+                    { range: "7001<10000", base: [5, 10, 5, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] }
                 ] 
             },
             { 
@@ -385,10 +381,10 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "4001-5000", base: [10, 20, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] },
-                    { range: "5001-7000", base: [15, 30, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] },
-                    { range: "7001-10000", base: [15, 30, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] },
-                    { range: "10001-15000", base: [5, 10, 5, 0, 0, 0, 0, 10, 10, 0, 0, 10], present: [] }
+                    { range: "4001<5000", base: [10, 20, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] },
+                    { range: "5001<7000", base: [15, 30, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] },
+                    { range: "7001<10000", base: [15, 30, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] },
+                    { range: "10001<15000", base: [5, 10, 5, 0, 0, 0, 0, 10, 10, 0, 0, 10], present: [] }
                 ] 
             },
             { 
@@ -396,7 +392,7 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "7001-10000", base: [0, 30, 30, 30, 30, 30, 30, 20, 30, 30, 30, 30], present: [] },
+                    { range: "7001<10000", base: [0, 30, 30, 30, 30, 30, 30, 20, 30, 30, 30, 30], present: [] },
                     { range: ">10000", base: [0, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] }
                 ] 
             },
@@ -411,10 +407,10 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "1001-3000", base: [25, 50, 25, 50, 40, 30, 50, 40, 50, 30, 30, 50], present: [] },
-                    { range: "3001-5000", base: [20, 30, 20, 30, 30, 25, 40, 30, 30, 25, 25, 30], present: [] },
-                    { range: "5001-7000", base: [25, 50, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] },
-                    { range: "7001-10000", base: [25, 50, 25, 50, 30, 50, 30, 50, 50, 50, 50, 50], present: [] },
+                    { range: "1001<3000", base: [25, 50, 25, 50, 40, 30, 50, 40, 50, 30, 30, 50], present: [] },
+                    { range: "3001<5000", base: [20, 30, 20, 30, 30, 25, 40, 30, 30, 25, 25, 30], present: [] },
+                    { range: "5001<7000", base: [25, 50, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] },
+                    { range: "7001<10000", base: [25, 50, 25, 50, 30, 50, 30, 50, 50, 50, 50, 50], present: [] },
                     { range: ">10000", base: [5, 10, 5, 10, 0, 0, 10, 15, 10, 0, 0, 15], present: [] }
                 ] 
             },
@@ -423,16 +419,16 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0-1000", base: [30, 40, 30, 50, 25, 40, 60, 25, 40, 40, 40, 60], present: [] },
-                    { range: "1001-2000", base: [125, 150, 125, 200, 100, 175, 250, 100, 150, 175, 175, 250], present: [] },
-                    { range: "2001-3000", base: [100, 200, 100, 200, 100, 200, 250, 100, 200, 200, 200, 300], present: [] },
-                    { range: "3001-4000", base: [75, 150, 75, 150, 100, 175, 150, 100, 150, 175, 175, 150], present: [] },
-                    { range: "4001-5000", base: [50, 100, 50, 100, 75, 75, 100, 50, 100, 75, 75, 120], present: [] },
-                    { range: "5001-7000", base: [63, 120, 63, 120, 100, 75, 75, 50, 120, 75, 75, 120], present: [] },
-                    { range: "7001-10000", base: [50, 100, 50, 100, 50, 75, 100, 50, 100, 75, 75, 100], present: [] },
-                    { range: "10001-15000", base: [50, 100, 50, 100, 50, 90, 100, 50, 100, 90, 90, 100], present: [] },
-                    { range: "15001-20000", base: [25, 50, 25, 50, 20, 50, 50, 30, 50, 50, 50, 20], present: [] },
-                    { range: "20001-30000", base: [15, 25, 15, 20, 5, 10, 10, 10, 25, 10, 10, 20], present: [] },
+                    { range: "0<1000", base: [30, 40, 30, 50, 25, 40, 60, 25, 40, 40, 40, 60], present: [] },
+                    { range: "1001<2000", base: [125, 150, 125, 200, 100, 175, 250, 100, 150, 175, 175, 250], present: [] },
+                    { range: "2001<3000", base: [100, 200, 100, 200, 100, 200, 250, 100, 200, 200, 200, 300], present: [] },
+                    { range: "3001<4000", base: [75, 150, 75, 150, 100, 175, 150, 100, 150, 175, 175, 150], present: [] },
+                    { range: "4001<5000", base: [50, 100, 50, 100, 75, 75, 100, 50, 100, 75, 75, 120], present: [] },
+                    { range: "5001<7000", base: [63, 120, 63, 120, 100, 75, 75, 50, 120, 75, 75, 120], present: [] },
+                    { range: "7001<10000", base: [50, 100, 50, 100, 50, 75, 100, 50, 100, 75, 75, 100], present: [] },
+                    { range: "10001<15000", base: [50, 100, 50, 100, 50, 90, 100, 50, 100, 90, 90, 100], present: [] },
+                    { range: "15001<20000", base: [25, 50, 25, 50, 20, 50, 50, 30, 50, 50, 50, 20], present: [] },
+                    { range: "20001<30000", base: [15, 25, 15, 20, 5, 10, 10, 10, 25, 10, 10, 20], present: [] },
                     { range: ">30000", base: [5, 10, 5, 10, 0, 0, 0, 0, 10, 0, 0, 10], present: [] }
                 ] 
             },
@@ -441,12 +437,12 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "2001-3000", base: [20, 30, 20, 30, 20, 20, 30, 0, 30, 20, 20, 30], present: [] },
-                    { range: "3001-4000", base: [10, 20, 10, 20, 10, 20, 25, 10, 20, 20, 20, 20], present: [] },
-                    { range: "4001-5000", base: [10, 20, 10, 25, 10, 15, 30, 15, 20, 15, 15, 20], present: [] },
-                    { range: "5001-7000", base: [15, 40, 15, 30, 20, 30, 40, 15, 40, 30, 30, 30], present: [] },
-                    { range: "7001-10000", base: [10, 20, 10, 20, 5, 15, 40, 10, 20, 15, 15, 20], present: [] },
-                    { range: "10001-15000", base: [5, 10, 5, 10, 5, 10, 15, 10, 10, 10, 10, 15], present: [] },
+                    { range: "2001<3000", base: [20, 30, 20, 30, 20, 20, 30, 0, 30, 20, 20, 30], present: [] },
+                    { range: "3001<4000", base: [10, 20, 10, 20, 10, 20, 25, 10, 20, 20, 20, 20], present: [] },
+                    { range: "4001<5000", base: [10, 20, 10, 25, 10, 15, 30, 15, 20, 15, 15, 20], present: [] },
+                    { range: "5001<7000", base: [15, 40, 15, 30, 20, 30, 40, 15, 40, 30, 30, 30], present: [] },
+                    { range: "7001<10000", base: [10, 20, 10, 20, 5, 15, 40, 10, 20, 15, 15, 20], present: [] },
+                    { range: "10001<15000", base: [5, 10, 5, 10, 5, 10, 15, 10, 10, 10, 10, 15], present: [] },
                     { range: ">15000", base: Array(12).fill(0), present: [] }
                 ] 
             },
@@ -455,8 +451,8 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0-1100", base: [75, 200, 75, 150, 100, 120, 200, 50, 200, 120, 120, 150], present: [] },
-                    { range: "1101-2000", base: [100, 200, 100, 200, 150, 200, 200, 100, 200, 200, 200, 200], present: [] },
+                    { range: "0<1100", base: [75, 200, 75, 150, 100, 120, 200, 50, 200, 120, 120, 150], present: [] },
+                    { range: "1101<2000", base: [100, 200, 100, 200, 150, 200, 200, 100, 200, 200, 200, 200], present: [] },
                     { range: ">2000", base: [25, 50, 25, 50, 30, 30, 75, 50, 50, 30, 30, 50], present: [] }
                 ] 
             },
@@ -465,11 +461,11 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0-1000", base: [0, 30, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
-                    { range: "1001-2000", base: [0, 30, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
-                    { range: "2001-3000", base: [0, 30, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
-                    { range: "3001-4000", base: [0, 30, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
-                    { range: "4001-6000", base: [0, 30, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] },
+                    { range: "0<1000", base: [0, 30, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
+                    { range: "1001<2000", base: [0, 30, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
+                    { range: "2001<3000", base: [0, 30, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
+                    { range: "3001<4000", base: [0, 30, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
+                    { range: "4001<6000", base: [0, 30, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] },
                     { range: ">6000", base: [0, 30, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] }
                 ] 
             },
@@ -478,9 +474,9 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0-1000", base: [0, 15, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] },
-                    { range: "1001-2000", base: [0, 15, 15, 15, 15, 15, 15, 20, 15, 15, 15, 15], present: [] },
-                    { range: "2001-3000", base: [0, 15, 15, 15, 15, 15, 15, 10, 15, 15, 15, 15], present: [] },
+                    { range: "0<1000", base: [0, 15, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] },
+                    { range: "1001<2000", base: [0, 15, 15, 15, 15, 15, 15, 20, 15, 15, 15, 15], present: [] },
+                    { range: "2001<3000", base: [0, 15, 15, 15, 15, 15, 15, 10, 15, 15, 15, 15], present: [] },
                     { range: ">3000", base: [0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] }
                 ] 
             },
@@ -489,8 +485,8 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0-2000", base: [0, 30, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] },
-                    { range: "2001-3000", base: [0, 15, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] },
+                    { range: "0<2000", base: [0, 30, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] },
+                    { range: "2001<3000", base: [0, 15, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] },
                     { range: ">3000", base: [0, 10, 10, 10, 10, 10, 10, 0, 10, 10, 10, 10], present: [] }
                 ] 
             },
@@ -499,10 +495,10 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "1001-2000", base: [0, 30, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] },
-                    { range: "2001-3000", base: [0, 10, 10, 10, 10, 10, 10, 20, 10, 10, 10, 10], present: [] },
-                    { range: "3001-4000", base: [0, 10, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] },
-                    { range: "4001-6000", base: [0, 10, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] },
+                    { range: "1001<2000", base: [0, 30, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] },
+                    { range: "2001<3000", base: [0, 10, 10, 10, 10, 10, 10, 20, 10, 10, 10, 10], present: [] },
+                    { range: "3001<4000", base: [0, 10, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] },
+                    { range: "4001<6000", base: [0, 10, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] },
                     { range: ">6000", base: [0, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5], present: [] }
                 ] 
             },
@@ -511,10 +507,10 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "1001-3000", base: [0, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30], present: [] },
-                    { range: "3001-5000", base: [0, 20, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] },
-                    { range: "5001-7000", base: [0, 20, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] },
-                    { range: "7001-10000", base: [0, 10, 10, 10, 10, 10, 10, 15, 10, 10, 10, 10], present: [] },
+                    { range: "1001<3000", base: [0, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30], present: [] },
+                    { range: "3001<5000", base: [0, 20, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] },
+                    { range: "5001<7000", base: [0, 20, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] },
+                    { range: "7001<10000", base: [0, 10, 10, 10, 10, 10, 10, 15, 10, 10, 10, 10], present: [] },
                     { range: ">10000", base: [0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] }
                 ] 
             },
@@ -541,9 +537,9 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "2001-4000", base: [8, 30, 8, 15, 15, 15, 15, 0, 30, 15, 15, 30], present: [] },
-                    { range: "4001-6000", base: [5, 20, 5, 10, 10, 10, 10, 0, 20, 10, 10, 25], present: [] },
-                    { range: "6001-10000", base: [8, 15, 8, 10, 0, 10, 0, 10, 15, 10, 10, 20], present: [] },
+                    { range: "2001<4000", base: [8, 30, 8, 15, 15, 15, 15, 0, 30, 15, 15, 30], present: [] },
+                    { range: "4001<6000", base: [5, 20, 5, 10, 10, 10, 10, 0, 20, 10, 10, 25], present: [] },
+                    { range: "6001<10000", base: [8, 15, 8, 10, 0, 10, 0, 10, 15, 10, 10, 20], present: [] },
                     { range: ">10000", base: Array(12).fill(0), present: [] }
                 ] 
             },
@@ -552,7 +548,7 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0-2000", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] },
+                    { range: "0<2000", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] },
                     { range: ">2001", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] }
                 ] 
             },
@@ -561,10 +557,10 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0-250", base: [150, 500, 150, 300, 300, 300, 300, 200, 500, 300, 300, 300], present: [] },
-                    { range: "251-500", base: [200, 500, 200, 400, 400, 400, 400, 200, 500, 400, 400, 400], present: [] },
-                    { range: "501-750", base: [50, 200, 50, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] },
-                    { range: "751-1000", base: [25, 50, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] },
+                    { range: "0<250", base: [150, 500, 150, 300, 300, 300, 300, 200, 500, 300, 300, 300], present: [] },
+                    { range: "251<500", base: [200, 500, 200, 400, 400, 400, 400, 200, 500, 400, 400, 400], present: [] },
+                    { range: "501<750", base: [50, 200, 50, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] },
+                    { range: "751<1000", base: [25, 50, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] },
                     { range: ">1000", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] }
                 ] 
             },
@@ -573,9 +569,9 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "251-500", base: Array(12).fill(0), present: [] },
-                    { range: "501-750", base: Array(12).fill(0), present: [] },
-                    { range: "751-1000", base: Array(12).fill(0), present: [] },
+                    { range: "251<500", base: Array(12).fill(0), present: [] },
+                    { range: "501<750", base: Array(12).fill(0), present: [] },
+                    { range: "751<1000", base: Array(12).fill(0), present: [] },
                     { range: ">1000", base: Array(12).fill(0), present: [] }
                 ] 
             },
@@ -619,10 +615,10 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0-400", base: [200, 400, 200, 400, 200, 200, 400, 0, 400, 200, 200, 200], present: [] },
-                    { range: "401-600", base: [100, 200, 100, 200, 100, 100, 200, 0, 200, 100, 100, 100], present: [] },
+                    { range: "0<400", base: [200, 400, 200, 400, 200, 200, 400, 0, 400, 200, 200, 200], present: [] },
+                    { range: "401<600", base: [100, 200, 100, 200, 100, 100, 200, 0, 200, 100, 100, 100], present: [] },
                     { range: ">600", base: [50, 100, 50, 100, 50, 50, 100, 0, 100, 50, 50, 50], present: [] },
-                    { range: "601-1999 (1+1)", base: [200, 400, 200, 400, 200, 200, 400, 200, 400, 200, 200, 200], present: [] }
+                    { range: "601<1999 (1+1)", base: [200, 400, 200, 400, 200, 200, 400, 200, 400, 200, 200, 200], present: [] }
                 ] 
             },
             { 
@@ -630,8 +626,8 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0-599", base: [0, 80, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] },
-                    { range: "600-1000", base: [0, 80, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] },
+                    { range: "0<599", base: [0, 80, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] },
+                    { range: "600<1000", base: [0, 80, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] },
                     { range: ">1000", base: [0, 40, 20, 40, 25, 20, 40, 20, 20, 20, 20, 10], present: [] }
                 ] 
             },
@@ -1203,7 +1199,8 @@
             saveAs(new Blob([buffer]), 'SubhamGrand_Purchase_Matrix.xlsx');
         }
 
-        // --- SMART UPLOAD LOGIC (Range Normalization) ---
+        // --- STRICT UPLOAD LOGIC (Number Based Conversion to 0<500) ---
+        // Ignores text variations like "0-500", ">=0<500" -> Forces "0<500"
         async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1222,62 +1219,77 @@
                     headerValues[colNumber] = cell.value ? cell.value.toString().trim() : '';
                 });
 
-                // Remove empty headers at end
                 while (headerValues.length && headerValues[headerValues.length-1] === '') headerValues.pop();
 
                 if (headerValues.length < 3) {
                     alert('Excel format invalid. Expected columns: Category, MRP, [Store Names...]'); return;
                 }
 
-                // 2. --- MAP EXCEL COLUMNS TO FIXED STORES ---
-                // Excel columns start at index 2 (0-based from header slice).
                 const excelStoreNames = headerValues.slice(2).map(h => h.toUpperCase());
-                
-                // Create a map: { excelColumnIndex -> storeIndex }
                 const storeMap = {};
                 excelStoreNames.forEach((name, excelColIdx) => {
                     const storeIndex = stores.indexOf(name);
-                    if (storeIndex !== -1) {
-                        storeMap[excelColIdx] = storeIndex;
-                    }
+                    if (storeIndex !== -1) storeMap[excelColIdx] = storeIndex;
                 });
 
-                // 3. --- NORMALIZATION HELPER ---
-                // Converts "0<500" -> "0-500" and "0 - 500" -> "0-500"
+                // 2. --- NORMALIZATION HELPER (Strict Number Extraction) ---
+                // Ignores text "slab 2 range texts", only extracts numbers to form "0<500"
                 const normalizeRange = (str) => {
                     if (!str) return '';
-                    // Replace '<' with '-', then remove all spaces
-                    return str.toString().replace(/</g, '-').replace(/\s+/g, '').trim();
+                    let s = str.toString().trim().toUpperCase();
+                    
+                    // Check for TOTAL first
+                    if (s === 'TOTAL') return 'TOTAL';
+                    
+                    // Extract all numbers from the string (ignoring text, dashes, spaces)
+                    // "0-500" -> [0, 500]
+                    // ">=0<500" -> [0, 500]
+                    // "Slab 0 to 500" -> [0, 500]
+                    const numbers = s.match(/\d+/g);
+                    
+                    // Case 1: Two numbers found -> Force "0<500" format
+                    if (numbers && numbers.length >= 2) {
+                        return `${numbers[0]}<${numbers[1]}`;
+                    }
+                    
+                    // Case 2: Single number (e.g., >3000)
+                    if (numbers && numbers.length === 1) {
+                        // Check for greater/less symbols
+                        if (s.includes('>') && !s.includes('<')) return `>${numbers[0]}`;
+                        if (s.includes('<') && !s.includes('>')) return `<${numbers[0]}`;
+                        if (s.includes('>=')) return `>=${numbers[0]}`;
+                        if (s.includes('<=')) return `<=${numbers[0]}`;
+                        return `>${numbers[0]}`; // Default single number as ">"
+                    }
+                    
+                    return s; // Fallback
                 };
 
-                // 4. --- PARSE DATA ROWS ---
+                // 3. --- PARSE DATA ROWS ---
                 ws.eachRow((row, rowNumber) => {
-                    if (rowNumber === 1) return; // Skip header
+                    if (rowNumber === 1) return;
 
+                    // Strict Value: Blank = 0, Text = 0
                     const getVal = (idx) => {
                         const cell = row.getCell(idx);
-                        if (!cell.value) return 0;
+                        if (cell.value === null || cell.value === undefined || cell.value === '') return 0;
                         if (cell.result !== undefined) return parseFloat(cell.result) || 0;
-                        return parseFloat(cell.value) || 0;
+                        const num = parseFloat(cell.value);
+                        return isNaN(num) ? 0 : num;
                     };
                     
-                    // Helper to get clean string for matching
                     const getStr = (idx) => {
                          const cell = row.getCell(idx);
                          if (cell.type === ExcelJS.ValueType.Number) return cell.value.toString();
                          return cell.value ? cell.value.toString().trim().toUpperCase() : '';
                     };
 
-                    // Column 1 = Category Name
                     const catName = getStr(1); 
-                    // Column 2 = MRP Range (Raw input e.g., "0<500")
-                    const rawMrpName = getStr(2);
-                    // Normalize: "0<500" becomes "0-500"
+                    const rawMrpName = getStr(2); 
                     const mrpName = normalizeRange(rawMrpName);
                     
                     if (!catName) return;
 
-                    // Find Category
                     let catIdx = inventoryData.findIndex(c => c.name === catName);
                     if (catIdx === -1) {
                         inventoryData.push({ 
@@ -1287,21 +1299,16 @@
                     }
                     const cat = inventoryData[catIdx];
 
-                    // If MRP column is blank or TOTAL, treat as total row
                     const isTotal = (mrpName === 'TOTAL' || mrpName === '');
                     
-                    // Loop through mapped stores
                     Object.keys(storeMap).forEach(excelColIdx => {
                         const storeIndex = storeMap[excelColIdx];
                         const excelColNumber = parseInt(excelColIdx) + 3;
-                        
                         const val = getVal(excelColNumber);
                         
-                        // STRICT: Update ONLY 'present'. Ignore 'base'.
                         if (isTotal) {
                             cat.present[storeIndex] = val;
                         } else {
-                            // Find existing MRP row using NORMALIZED name
                             let mrpRow = cat.mrpDetails.find(r => r.range === mrpName);
                             if (!mrpRow) {
                                 mrpRow = { range: mrpName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) };
@@ -1312,10 +1319,9 @@
                     });
                 });
 
-                // 5. --- FINALIZE ---
                 inventoryData.forEach((c, i) => recalculateCategoryTotals(i));
                 render();
-                alert('Stock updated successfully! Logic: Converted ranges like "0<500" to "0-500".');
+                alert('Upload Successful! Data mapped accurately using 0<500 format. Blank cells treated as 0.');
             };
             reader.readAsArrayBuffer(file);
         }
