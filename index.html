@@ -81,13 +81,18 @@
         
         /* Purchase Matrix Specific */
         .purchase-matrix-val {
-            background-color: #93c5fd;
-            color: #000000;
+            background-color: #fee2e2;
+            color: #991b1b;
             font-family: 'Space Mono', monospace;
             font-weight: 700;
             display: block;
             padding: 4px;
             border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid #fecaca;
+        }
+        .purchase-matrix-val:hover {
+            background-color: #fecaca;
         }
         
         /* Suggestion Badges */
@@ -99,6 +104,7 @@
         /* Modal */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 24px; }
         .modal-content { background: var(--bg-secondary); border-radius: 16px; max-width: 600px; width: 100%; max-height: 90vh; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        .modal-lg { max-width: 900px; }
         .hidden { display: none !important; }
         
         /* Purchase Page */
@@ -229,7 +235,7 @@
         </div>
     </div>
 
-    <!-- BRANCH MODAL -->
+    <!-- BRANCH MODAL (Dashboard) -->
     <div id="modal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 650px;">
             <div class="p-6 flex justify-between items-center" style="background: var(--accent); color: #fff;">
@@ -244,12 +250,40 @@
         </div>
     </div>
 
+    <!-- PURCHASE DETAIL MODAL (Report) -->
+    <div id="purchaseModal" class="modal-overlay hidden">
+        <div class="modal-content modal-lg">
+            <div class="p-6 flex justify-between items-center" style="background: var(--danger); color: #fff;">
+                <div>
+                    <h2 id="purchaseModalStore" class="text-lg font-bold"></h2>
+                    <p class="text-xs opacity-80">Purchase Requirement Breakdown</p>
+                </div>
+                <button onclick="closePurchaseModal()" class="text-2xl opacity-80 hover:opacity-100">&times;</button>
+            </div>
+            <div id="purchaseModalBody" class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                <div style="height: 250px; position: relative;">
+                    <canvas id="purchaseModalChart"></canvas>
+                </div>
+                <div class="table-container" style="border:none;">
+                    <table class="mini-table" id="purchaseDetailTable">
+                        <thead><tr><th>Category</th><th>MRP</th><th>Tgt</th><th>Stk</th><th>Shortage</th><th>Purchase Qty</th></tr></thead>
+                        <tbody id="purchaseModalTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="p-4 flex gap-2" style="border-top: 1px solid var(--border);">
+                <button onclick="exportStorePurchaseExcel()" class="btn btn-danger w-full no-print">Export Purchase List</button>
+                <button onclick="closePurchaseModal()" class="btn btn-secondary w-full no-print">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- PURCHASE REPORT VIEW -->
     <div id="purchaseReportView" class="container hidden">
         <div class="purchase-header">
-            <div><h1 class="text-2xl font-bold">Purchase Requirement Report</h1><p class="text-sm opacity-80">Net requirements after transfer adjustments</p></div>
+            <div><h1 class="text-2xl font-bold">Purchase Requirement Report</h1><p class="text-sm opacity-80">Net requirements after transfer adjustments. Click Total values to drill down.</p></div>
             <div class="flex gap-2 no-print">
-                <button onclick="exportPurchaseReportExcel()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Export Excel</button>
+                <button onclick="exportPurchaseReportExcel()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Export All</button>
                 <button onclick="window.close()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Close Tab</button>
             </div>
         </div>
@@ -262,11 +296,10 @@
                      <div class="p-4 rounded" style="background: #fff5f5;"><p class="text-xs text-gray-500 uppercase">Total Purchase Qty</p><p class="font-bold text-red-600 text-xl" id="sumPurchase">0</p></div>
                      <div class="p-4 rounded" style="background: #f0fdf4;"><p class="text-xs text-gray-500 uppercase">Categories Affected</p><p class="font-bold text-green-600 text-xl" id="sumCats">0</p></div>
                  </div>
-                 <p class="text-xs text-gray-500 mt-4">This report lists items where internal transfer is not possible.</p>
+                 <p class="text-xs text-gray-500 mt-4">This report lists items where internal transfer is not possible. Click store totals below to drill down.</p>
             </div>
         </div>
         
-        <!-- Horizontal Purchase Matrix Table -->
         <div class="card">
             <div class="table-container" style="border:none;">
                 <table id="purchaseHorizontalTable">
@@ -278,27 +311,29 @@
     </div>
 
     <script>
-        // --- FIXED STORE LIST (Hardcoded) ---
-        let stores = ["SGHYD", "SG", "SGRJY", "SGTNL", "SIRIELR", "SGTNK", "SGTUNI", "SIRICPT", "SIRIVJY", "SIRIKKD", "SIRITPT", "VS"];
+        // --- FIXED STORE LIST (DO NOT REORDER DYNAMICALLY) ---
+        // This order is now the "Source of Truth". 
+        // Excel columns will be mapped to THIS order to prevent mismatching.
+        let stores = ["SG", "SGHYD", "SGRJY", "SGTNL", "SIRIELR", "SGTNK", "SGTUNI", "SIRICPT", "SIRIVJY", "SIRIKKD", "SIRITPT", "VS"];
         
-        // --- DATA (Updated to 0<500 style) ---
+        // --- DATA STRUCTURE (Matches Fixed Store Order) ---
         let inventoryData = [
             { 
                 name: "BNS HANDLOOM HF", 
                 base: Array(12).fill(0), 
                 present: [], 
                 mrpDetails: [
-                    { range: "0<500", base: [250, 500, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] },
-                    { range: "501<1000", base: [450, 1000, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] },
-                    { range: "1001<1500", base: [500, 1200, 500, 1000, 750, 750, 750, 400, 1200, 750, 750, 750], present: [] },
-                    { range: "1501<2000", base: [250, 500, 250, 400, 300, 350, 350, 250, 500, 350, 350, 300], present: [] },
-                    { range: "2001<3000", base: [250, 500, 250, 350, 300, 350, 300, 250, 500, 350, 350, 300], present: [] },
-                    { range: "3001<4000", base: [150, 300, 150, 200, 200, 200, 200, 150, 300, 200, 200, 150], present: [] },
-                    { range: "4001<6000", base: [100, 200, 100, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] },
-                    { range: "6001<7500", base: [50, 100, 50, 100, 50, 100, 50, 50, 100, 100, 100, 100], present: [] },
-                    { range: ">7500", base: [10, 20, 10, 0, 0, 10, 0, 20, 20, 10, 10, 20], present: [] },
-                    { range: "501<1000(1+1)", base: [500, 800, 500, 500, 500, 400, 1000, 400, 800, 400, 400, 400], present: [] },
-                    { range: "1001<2000(1+1)", base: [250, 500, 250, 400, 300, 300, 500, 300, 500, 300, 300, 400], present: [] }
+                    { range: "0<500", base: [500, 250, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] },
+                    { range: "501<1000", base: [1000, 450, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] },
+                    { range: "1001<1500", base: [1200, 500, 500, 1000, 750, 750, 750, 400, 1200, 750, 750, 750], present: [] },
+                    { range: "1501<2000", base: [500, 250, 250, 400, 300, 350, 350, 250, 500, 350, 350, 300], present: [] },
+                    { range: "2001<3000", base: [500, 250, 250, 350, 300, 350, 300, 250, 500, 350, 350, 300], present: [] },
+                    { range: "3001<4000", base: [300, 150, 150, 200, 200, 200, 200, 150, 300, 200, 200, 150], present: [] },
+                    { range: "4001<6000", base: [200, 100, 100, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] },
+                    { range: "6001<7500", base: [100, 50, 50, 100, 50, 100, 50, 50, 100, 100, 100, 100], present: [] },
+                    { range: ">7500", base: [20, 10, 10, 0, 0, 10, 0, 20, 20, 10, 10, 20], present: [] },
+                    { range: "501<1000(1+1)", base: [800, 500, 500, 500, 500, 400, 1000, 400, 800, 400, 400, 400], present: [] },
+                    { range: "1001<2000(1+1)", base: [500, 250, 250, 400, 300, 300, 500, 300, 500, 300, 300, 400], present: [] }
                 ] 
             },
             { 
@@ -306,16 +341,16 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0<500", base: [87, 175, 87, 125, 125, 150, 175, 0, 175, 150, 150, 150], present: [] },
-                    { range: "501<1000", base: [185, 370, 185, 295, 245, 295, 345, 50, 370, 295, 295, 295], present: [] },
-                    { range: "1001<1500", base: [175, 400, 175, 350, 280, 350, 490, 200, 400, 350, 350, 350], present: [] },
-                    { range: "1501<2000", base: [200, 400, 200, 300, 150, 300, 200, 100, 400, 300, 300, 250], present: [] },
-                    { range: "2001<3000", base: [175, 350, 175, 300, 150, 350, 400, 150, 350, 350, 350, 250], present: [] },
-                    { range: "3001<4000", base: [63, 125, 63, 100, 100, 100, 100, 100, 125, 100, 100, 50], present: [] },
-                    { range: "4001<6000", base: [25, 50, 25, 25, 25, 50, 50, 25, 50, 50, 50, 25], present: [] },
-                    { range: ">6000", base: [10, 20, 10, 0, 0, 0, 0, 0, 20, 0, 0, 0], present: [] },
-                    { range: "501<1000(1+1)", base: [87, 175, 87, 125, 125, 150, 175, 50, 175, 150, 150, 150], present: [] },
-                    { range: "1001<2000(1+1)", base: [58, 115, 58, 90, 75, 90, 105, 50, 115, 90, 90, 90], present: [] }
+                    { range: "0<500", base: [175, 87, 87, 125, 125, 150, 175, 0, 175, 150, 150, 150], present: [] },
+                    { range: "501<1000", base: [370, 185, 185, 295, 245, 295, 345, 50, 370, 295, 295, 295], present: [] },
+                    { range: "1001<1500", base: [400, 175, 175, 350, 280, 350, 490, 200, 400, 350, 350, 350], present: [] },
+                    { range: "1501<2000", base: [400, 200, 200, 300, 150, 300, 200, 100, 400, 300, 300, 250], present: [] },
+                    { range: "2001<3000", base: [350, 175, 175, 300, 150, 350, 400, 150, 350, 350, 350, 250], present: [] },
+                    { range: "3001<4000", base: [125, 63, 63, 100, 100, 100, 100, 100, 125, 100, 100, 50], present: [] },
+                    { range: "4001<6000", base: [50, 25, 25, 25, 25, 50, 50, 25, 50, 50, 50, 25], present: [] },
+                    { range: ">6000", base: [20, 10, 10, 0, 0, 0, 0, 0, 20, 0, 0, 0], present: [] },
+                    { range: "501<1000(1+1)", base: [175, 87, 87, 125, 125, 150, 175, 50, 175, 150, 150, 150], present: [] },
+                    { range: "1001<2000(1+1)", base: [115, 58, 58, 90, 75, 90, 105, 50, 115, 90, 90, 90], present: [] }
                 ] 
             },
             { 
@@ -323,14 +358,14 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0<500", base: [100, 200, 100, 175, 150, 150, 175, 150, 200, 150, 150, 150], present: [] },
-                    { range: "501<1000", base: [133, 265, 133, 210, 210, 210, 210, 100, 265, 210, 210, 210], present: [] },
-                    { range: "1001<1500", base: [75, 150, 75, 120, 120, 120, 175, 100, 150, 120, 120, 120], present: [] },
-                    { range: "1501<2000", base: [50, 100, 50, 70, 70, 70, 70, 50, 100, 70, 70, 70], present: [] },
+                    { range: "0<500", base: [200, 100, 100, 175, 150, 150, 175, 150, 200, 150, 150, 150], present: [] },
+                    { range: "501<1000", base: [265, 133, 133, 210, 210, 210, 210, 100, 265, 210, 210, 210], present: [] },
+                    { range: "1001<1500", base: [150, 75, 75, 120, 120, 120, 175, 100, 150, 120, 120, 120], present: [] },
+                    { range: "1501<2000", base: [100, 50, 50, 70, 70, 70, 70, 50, 100, 70, 70, 70], present: [] },
                     { range: "2001<3000", base: Array(12).fill(0), present: [] },
                     { range: "3001<4000", base: Array(12).fill(0), present: [] },
-                    { range: "501<1000(1+1)", base: [75, 150, 75, 115, 115, 115, 150, 120, 150, 115, 115, 115], present: [] },
-                    { range: "1001<2000(1+1)", base: [50, 100, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] }
+                    { range: "501<1000(1+1)", base: [150, 75, 75, 115, 115, 115, 150, 120, 150, 115, 115, 115], present: [] },
+                    { range: "1001<2000(1+1)", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] }
                 ] 
             },
             { 
@@ -338,11 +373,11 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0<500", base: [60, 200, 60, 100, 120, 75, 150, 50, 200, 75, 75, 100], present: [] },
-                    { range: "501<1000", base: [150, 300, 150, 300, 175, 100, 100, 150, 300, 100, 100, 300], present: [] },
-                    { range: "1001<1500", base: [50, 100, 50, 120, 75, 50, 25, 75, 100, 50, 50, 120], present: [] },
-                    { range: "1501<2000", base: [25, 50, 25, 60, 40, 20, 0, 50, 50, 20, 20, 60], present: [] },
-                    { range: "2001<3000", base: [15, 30, 15, 20, 0, 20, 0, 0, 30, 20, 20, 20], present: [] }
+                    { range: "0<500", base: [200, 60, 60, 100, 120, 75, 150, 50, 200, 75, 75, 100], present: [] },
+                    { range: "501<1000", base: [300, 150, 150, 300, 175, 100, 100, 150, 300, 100, 100, 300], present: [] },
+                    { range: "1001<1500", base: [100, 50, 50, 120, 75, 50, 25, 75, 100, 50, 50, 120], present: [] },
+                    { range: "1501<2000", base: [50, 25, 25, 60, 40, 20, 0, 50, 50, 20, 20, 60], present: [] },
+                    { range: "2001<3000", base: [30, 15, 15, 20, 0, 20, 0, 0, 30, 20, 20, 20], present: [] }
                 ] 
             },
             { 
@@ -350,10 +385,10 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0<1000", base: [100, 200, 100, 150, 100, 100, 200, 100, 200, 100, 100, 175], present: [] },
-                    { range: "1001<1500", base: [60, 100, 60, 100, 50, 30, 100, 50, 100, 30, 30, 100], present: [] },
-                    { range: "1501<2000", base: [50, 75, 50, 75, 20, 30, 50, 50, 75, 30, 30, 75], present: [] },
-                    { range: "2001<3000", base: [15, 30, 15, 30, 0, 10, 20, 20, 30, 10, 10, 30], present: [] },
+                    { range: "0<1000", base: [200, 100, 100, 150, 100, 100, 200, 100, 200, 100, 100, 175], present: [] },
+                    { range: "1001<1500", base: [100, 60, 60, 100, 50, 30, 100, 50, 100, 30, 30, 100], present: [] },
+                    { range: "1501<2000", base: [75, 50, 50, 75, 20, 30, 50, 50, 75, 30, 30, 75], present: [] },
+                    { range: "2001<3000", base: [30, 15, 15, 30, 0, 10, 20, 20, 30, 10, 10, 30], present: [] },
                     { range: ">3000", base: Array(12).fill(0), present: [] }
                 ] 
             },
@@ -368,12 +403,12 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "1001<2000", base: [15, 30, 15, 30, 20, 20, 30, 20, 30, 20, 20, 30], present: [] },
-                    { range: "2001<3000", base: [10, 20, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] },
-                    { range: "3001<4000", base: [20, 40, 20, 40, 25, 30, 30, 20, 40, 30, 30, 40], present: [] },
-                    { range: "4001<5000", base: [20, 40, 20, 30, 20, 20, 20, 20, 40, 20, 20, 30], present: [] },
-                    { range: "5001<7000", base: [20, 30, 20, 30, 20, 25, 20, 20, 30, 25, 25, 30], present: [] },
-                    { range: "7001<10000", base: [5, 10, 5, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] }
+                    { range: "1001<2000", base: [30, 15, 15, 30, 20, 20, 30, 20, 30, 20, 20, 30], present: [] },
+                    { range: "2001<3000", base: [20, 10, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] },
+                    { range: "3001<4000", base: [40, 20, 20, 40, 25, 30, 30, 20, 40, 30, 30, 40], present: [] },
+                    { range: "4001<5000", base: [40, 20, 20, 30, 20, 20, 20, 20, 40, 20, 20, 30], present: [] },
+                    { range: "5001<7000", base: [30, 20, 20, 30, 20, 25, 20, 20, 30, 25, 25, 30], present: [] },
+                    { range: "7001<10000", base: [10, 5, 5, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] }
                 ] 
             },
             { 
@@ -381,10 +416,10 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "4001<5000", base: [10, 20, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] },
-                    { range: "5001<7000", base: [15, 30, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] },
-                    { range: "7001<10000", base: [15, 30, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] },
-                    { range: "10001<15000", base: [5, 10, 5, 0, 0, 0, 0, 10, 10, 0, 0, 10], present: [] }
+                    { range: "4001<5000", base: [20, 10, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] },
+                    { range: "5001<7000", base: [30, 15, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] },
+                    { range: "7001<10000", base: [30, 15, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] },
+                    { range: "10001<15000", base: [10, 5, 5, 0, 0, 0, 0, 10, 10, 0, 0, 10], present: [] }
                 ] 
             },
             { 
@@ -392,13 +427,13 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "7001<10000", base: [0, 30, 30, 30, 30, 30, 30, 20, 30, 30, 30, 30], present: [] },
-                    { range: ">10000", base: [0, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] }
+                    { range: "7001<10000", base: [30, 0, 30, 30, 30, 30, 30, 20, 30, 30, 30, 30], present: [] },
+                    { range: ">10000", base: [20, 0, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] }
                 ] 
             },
             { 
                 name: "UPPADA (NELLORE)", 
-                base: [0, 100, 100, 100, 40, 70, 70, 0, 100, 70, 70, 100], 
+                base: [100, 0, 100, 100, 40, 70, 70, 0, 100, 70, 70, 100], 
                 present: [],
                 mrpDetails: []
             },
@@ -407,11 +442,11 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "1001<3000", base: [25, 50, 25, 50, 40, 30, 50, 40, 50, 30, 30, 50], present: [] },
-                    { range: "3001<5000", base: [20, 30, 20, 30, 30, 25, 40, 30, 30, 25, 25, 30], present: [] },
-                    { range: "5001<7000", base: [25, 50, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] },
-                    { range: "7001<10000", base: [25, 50, 25, 50, 30, 50, 30, 50, 50, 50, 50, 50], present: [] },
-                    { range: ">10000", base: [5, 10, 5, 10, 0, 0, 10, 15, 10, 0, 0, 15], present: [] }
+                    { range: "1001<3000", base: [50, 25, 25, 50, 40, 30, 50, 40, 50, 30, 30, 50], present: [] },
+                    { range: "3001<5000", base: [30, 20, 20, 30, 30, 25, 40, 30, 30, 25, 25, 30], present: [] },
+                    { range: "5001<7000", base: [50, 25, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] },
+                    { range: "7001<10000", base: [50, 25, 25, 50, 30, 50, 30, 50, 50, 50, 50, 50], present: [] },
+                    { range: ">10000", base: [10, 5, 5, 10, 0, 0, 10, 15, 10, 0, 0, 15], present: [] }
                 ] 
             },
             { 
@@ -419,17 +454,17 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0<1000", base: [30, 40, 30, 50, 25, 40, 60, 25, 40, 40, 40, 60], present: [] },
-                    { range: "1001<2000", base: [125, 150, 125, 200, 100, 175, 250, 100, 150, 175, 175, 250], present: [] },
-                    { range: "2001<3000", base: [100, 200, 100, 200, 100, 200, 250, 100, 200, 200, 200, 300], present: [] },
-                    { range: "3001<4000", base: [75, 150, 75, 150, 100, 175, 150, 100, 150, 175, 175, 150], present: [] },
-                    { range: "4001<5000", base: [50, 100, 50, 100, 75, 75, 100, 50, 100, 75, 75, 120], present: [] },
-                    { range: "5001<7000", base: [63, 120, 63, 120, 100, 75, 75, 50, 120, 75, 75, 120], present: [] },
-                    { range: "7001<10000", base: [50, 100, 50, 100, 50, 75, 100, 50, 100, 75, 75, 100], present: [] },
-                    { range: "10001<15000", base: [50, 100, 50, 100, 50, 90, 100, 50, 100, 90, 90, 100], present: [] },
-                    { range: "15001<20000", base: [25, 50, 25, 50, 20, 50, 50, 30, 50, 50, 50, 20], present: [] },
-                    { range: "20001<30000", base: [15, 25, 15, 20, 5, 10, 10, 10, 25, 10, 10, 20], present: [] },
-                    { range: ">30000", base: [5, 10, 5, 10, 0, 0, 0, 0, 10, 0, 0, 10], present: [] }
+                    { range: "0<1000", base: [40, 30, 30, 50, 25, 40, 60, 25, 40, 40, 40, 60], present: [] },
+                    { range: "1001<2000", base: [150, 125, 125, 200, 100, 175, 250, 100, 150, 175, 175, 250], present: [] },
+                    { range: "2001<3000", base: [200, 100, 100, 200, 100, 200, 250, 100, 200, 200, 200, 300], present: [] },
+                    { range: "3001<4000", base: [150, 75, 75, 150, 100, 175, 150, 100, 150, 175, 175, 150], present: [] },
+                    { range: "4001<5000", base: [100, 50, 50, 100, 75, 75, 100, 50, 100, 75, 75, 120], present: [] },
+                    { range: "5001<7000", base: [120, 63, 63, 120, 100, 75, 75, 50, 120, 75, 75, 120], present: [] },
+                    { range: "7001<10000", base: [100, 50, 50, 100, 50, 75, 100, 50, 100, 75, 75, 100], present: [] },
+                    { range: "10001<15000", base: [100, 50, 50, 100, 50, 90, 100, 50, 100, 90, 90, 100], present: [] },
+                    { range: "15001<20000", base: [50, 25, 25, 50, 20, 50, 50, 30, 50, 50, 50, 20], present: [] },
+                    { range: "20001<30000", base: [25, 15, 15, 20, 5, 10, 10, 10, 25, 10, 10, 20], present: [] },
+                    { range: ">30000", base: [10, 5, 5, 10, 0, 0, 0, 0, 10, 0, 0, 10], present: [] }
                 ] 
             },
             { 
@@ -437,12 +472,12 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "2001<3000", base: [20, 30, 20, 30, 20, 20, 30, 0, 30, 20, 20, 30], present: [] },
-                    { range: "3001<4000", base: [10, 20, 10, 20, 10, 20, 25, 10, 20, 20, 20, 20], present: [] },
-                    { range: "4001<5000", base: [10, 20, 10, 25, 10, 15, 30, 15, 20, 15, 15, 20], present: [] },
-                    { range: "5001<7000", base: [15, 40, 15, 30, 20, 30, 40, 15, 40, 30, 30, 30], present: [] },
-                    { range: "7001<10000", base: [10, 20, 10, 20, 5, 15, 40, 10, 20, 15, 15, 20], present: [] },
-                    { range: "10001<15000", base: [5, 10, 5, 10, 5, 10, 15, 10, 10, 10, 10, 15], present: [] },
+                    { range: "2001<3000", base: [30, 20, 20, 30, 20, 20, 30, 0, 30, 20, 20, 30], present: [] },
+                    { range: "3001<4000", base: [20, 10, 10, 20, 10, 20, 25, 10, 20, 20, 20, 20], present: [] },
+                    { range: "4001<5000", base: [20, 10, 10, 25, 10, 15, 30, 15, 20, 15, 15, 20], present: [] },
+                    { range: "5001<7000", base: [40, 15, 15, 30, 20, 30, 40, 15, 40, 30, 30, 30], present: [] },
+                    { range: "7001<10000", base: [20, 10, 10, 20, 5, 15, 40, 10, 20, 15, 15, 20], present: [] },
+                    { range: "10001<15000", base: [10, 5, 5, 10, 5, 10, 15, 10, 10, 10, 10, 15], present: [] },
                     { range: ">15000", base: Array(12).fill(0), present: [] }
                 ] 
             },
@@ -451,9 +486,9 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0<1100", base: [75, 200, 75, 150, 100, 120, 200, 50, 200, 120, 120, 150], present: [] },
-                    { range: "1101<2000", base: [100, 200, 100, 200, 150, 200, 200, 100, 200, 200, 200, 200], present: [] },
-                    { range: ">2000", base: [25, 50, 25, 50, 30, 30, 75, 50, 50, 30, 30, 50], present: [] }
+                    { range: "0<1100", base: [200, 75, 75, 150, 100, 120, 200, 50, 200, 120, 120, 150], present: [] },
+                    { range: "1101<2000", base: [200, 100, 100, 200, 150, 200, 200, 100, 200, 200, 200, 200], present: [] },
+                    { range: ">2000", base: [50, 25, 25, 50, 30, 30, 75, 50, 50, 30, 30, 50], present: [] }
                 ] 
             },
             { 
@@ -461,12 +496,12 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0<1000", base: [0, 30, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
-                    { range: "1001<2000", base: [0, 30, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
-                    { range: "2001<3000", base: [0, 30, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
-                    { range: "3001<4000", base: [0, 30, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
-                    { range: "4001<6000", base: [0, 30, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] },
-                    { range: ">6000", base: [0, 30, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] }
+                    { range: "0<1000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
+                    { range: "1001<2000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
+                    { range: "2001<3000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
+                    { range: "3001<4000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
+                    { range: "4001<6000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] },
+                    { range: ">6000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] }
                 ] 
             },
             { 
@@ -474,10 +509,10 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0<1000", base: [0, 15, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] },
-                    { range: "1001<2000", base: [0, 15, 15, 15, 15, 15, 15, 20, 15, 15, 15, 15], present: [] },
-                    { range: "2001<3000", base: [0, 15, 15, 15, 15, 15, 15, 10, 15, 15, 15, 15], present: [] },
-                    { range: ">3000", base: [0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] }
+                    { range: "0<1000", base: [15, 0, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] },
+                    { range: "1001<2000", base: [15, 0, 15, 15, 15, 15, 15, 20, 15, 15, 15, 15], present: [] },
+                    { range: "2001<3000", base: [15, 0, 15, 15, 15, 15, 15, 10, 15, 15, 15, 15], present: [] },
+                    { range: ">3000", base: [10, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] }
                 ] 
             },
             { 
@@ -485,9 +520,9 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0<2000", base: [0, 30, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] },
-                    { range: "2001<3000", base: [0, 15, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] },
-                    { range: ">3000", base: [0, 10, 10, 10, 10, 10, 10, 0, 10, 10, 10, 10], present: [] }
+                    { range: "0<2000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] },
+                    { range: "2001<3000", base: [15, 0, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] },
+                    { range: ">3000", base: [10, 0, 10, 10, 10, 10, 10, 0, 10, 10, 10, 10], present: [] }
                 ] 
             },
             { 
@@ -495,11 +530,11 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "1001<2000", base: [0, 30, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] },
-                    { range: "2001<3000", base: [0, 10, 10, 10, 10, 10, 10, 20, 10, 10, 10, 10], present: [] },
-                    { range: "3001<4000", base: [0, 10, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] },
-                    { range: "4001<6000", base: [0, 10, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] },
-                    { range: ">6000", base: [0, 5, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5], present: [] }
+                    { range: "1001<2000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] },
+                    { range: "2001<3000", base: [10, 0, 10, 10, 10, 10, 10, 20, 10, 10, 10, 10], present: [] },
+                    { range: "3001<4000", base: [10, 0, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] },
+                    { range: "4001<6000", base: [10, 0, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] },
+                    { range: ">6000", base: [5, 0, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5], present: [] }
                 ] 
             },
             { 
@@ -507,28 +542,28 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "1001<3000", base: [0, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30], present: [] },
-                    { range: "3001<5000", base: [0, 20, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] },
-                    { range: "5001<7000", base: [0, 20, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] },
-                    { range: "7001<10000", base: [0, 10, 10, 10, 10, 10, 10, 15, 10, 10, 10, 10], present: [] },
-                    { range: ">10000", base: [0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] }
+                    { range: "1001<3000", base: [30, 0, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30], present: [] },
+                    { range: "3001<5000", base: [20, 0, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] },
+                    { range: "5001<7000", base: [20, 0, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] },
+                    { range: "7001<10000", base: [10, 0, 10, 10, 10, 10, 10, 15, 10, 10, 10, 10], present: [] },
+                    { range: ">10000", base: [10, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] }
                 ] 
             },
             { 
                 name: "IKKAT PAWADAS 24 INCHES", 
-                base: [0, 10, 10, 5, 5, 5, 5, 5, 10, 5, 5, 10], 
+                base: [10, 0, 10, 5, 5, 5, 5, 5, 10, 5, 5, 10], 
                 present: [],
                 mrpDetails: []
             },
             { 
                 name: "IKKAT PAWADAS 36 INCHES", 
-                base: [0, 10, 10, 5, 5, 5, 5, 5, 10, 5, 5, 10], 
+                base: [10, 0, 10, 5, 5, 5, 5, 5, 10, 5, 5, 10], 
                 present: [],
                 mrpDetails: []
             },
             { 
                 name: "IKKAT PAWADAS 45 INCHES", 
-                base: [0, 15, 15, 10, 10, 10, 10, 10, 10, 10, 10, 15], 
+                base: [15, 0, 15, 10, 10, 10, 10, 10, 10, 10, 10, 15], 
                 present: [],
                 mrpDetails: []
             },
@@ -537,9 +572,9 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "2001<4000", base: [8, 30, 8, 15, 15, 15, 15, 0, 30, 15, 15, 30], present: [] },
-                    { range: "4001<6000", base: [5, 20, 5, 10, 10, 10, 10, 0, 20, 10, 10, 25], present: [] },
-                    { range: "6001<10000", base: [8, 15, 8, 10, 0, 10, 0, 10, 15, 10, 10, 20], present: [] },
+                    { range: "2001<4000", base: [30, 8, 8, 15, 15, 15, 15, 0, 30, 15, 15, 30], present: [] },
+                    { range: "4001<6000", base: [20, 5, 5, 10, 10, 10, 10, 0, 20, 10, 10, 25], present: [] },
+                    { range: "6001<10000", base: [15, 8, 8, 10, 0, 10, 0, 10, 15, 10, 10, 20], present: [] },
                     { range: ">10000", base: Array(12).fill(0), present: [] }
                 ] 
             },
@@ -557,10 +592,10 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0<250", base: [150, 500, 150, 300, 300, 300, 300, 200, 500, 300, 300, 300], present: [] },
-                    { range: "251<500", base: [200, 500, 200, 400, 400, 400, 400, 200, 500, 400, 400, 400], present: [] },
-                    { range: "501<750", base: [50, 200, 50, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] },
-                    { range: "751<1000", base: [25, 50, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] },
+                    { range: "0<250", base: [500, 150, 150, 300, 300, 300, 300, 200, 500, 300, 300, 300], present: [] },
+                    { range: "251<500", base: [500, 200, 200, 400, 400, 400, 400, 200, 500, 400, 400, 400], present: [] },
+                    { range: "501<750", base: [200, 50, 50, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] },
+                    { range: "751<1000", base: [50, 25, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] },
                     { range: ">1000", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] }
                 ] 
             },
@@ -580,8 +615,8 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "<12000", base: [0, 15, 15, 15, 10, 10, 15, 10, 15, 10, 10, 15], present: [] },
-                    { range: ">12000", base: [0, 15, 10, 15, 10, 10, 10, 15, 10, 10, 10, 15], present: [] }
+                    { range: "<12000", base: [15, 0, 15, 15, 10, 10, 15, 10, 15, 10, 10, 15], present: [] },
+                    { range: ">12000", base: [15, 0, 10, 15, 10, 10, 10, 15, 10, 10, 10, 15], present: [] }
                 ] 
             },
             { 
@@ -589,11 +624,11 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "B.K COTTON", base: [75, 150, 75, 150, 100, 100, 150, 100, 150, 100, 100, 100], present: [] },
-                    { range: "KARISHMA COTTON", base: [50, 100, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] },
-                    { range: "MEENA COTTON", base: [150, 300, 150, 300, 200, 200, 300, 100, 300, 200, 200, 200], present: [] },
-                    { range: "MP COTTON", base: [50, 100, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] },
-                    { range: "SARVODAYA COTTON", base: [100, 200, 100, 200, 100, 100, 200, 100, 200, 100, 100, 100], present: [] }
+                    { range: "B.K COTTON", base: [150, 75, 75, 150, 100, 100, 150, 100, 150, 100, 100, 100], present: [] },
+                    { range: "KARISHMA COTTON", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] },
+                    { range: "MEENA COTTON", base: [300, 150, 150, 300, 200, 200, 300, 100, 300, 200, 200, 200], present: [] },
+                    { range: "MP COTTON", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] },
+                    { range: "SARVODAYA COTTON", base: [200, 100, 100, 200, 100, 100, 200, 100, 200, 100, 100, 100], present: [] }
                 ] 
             },
             { 
@@ -615,10 +650,10 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0<400", base: [200, 400, 200, 400, 200, 200, 400, 0, 400, 200, 200, 200], present: [] },
-                    { range: "401<600", base: [100, 200, 100, 200, 100, 100, 200, 0, 200, 100, 100, 100], present: [] },
-                    { range: ">600", base: [50, 100, 50, 100, 50, 50, 100, 0, 100, 50, 50, 50], present: [] },
-                    { range: "601<1999 (1+1)", base: [200, 400, 200, 400, 200, 200, 400, 200, 400, 200, 200, 200], present: [] }
+                    { range: "0<400", base: [400, 200, 200, 400, 200, 200, 400, 0, 400, 200, 200, 200], present: [] },
+                    { range: "401<600", base: [200, 100, 100, 200, 100, 100, 200, 0, 200, 100, 100, 100], present: [] },
+                    { range: ">600", base: [100, 50, 50, 100, 50, 50, 100, 0, 100, 50, 50, 50], present: [] },
+                    { range: "601<1999 (1+1)", base: [400, 200, 200, 400, 200, 200, 400, 200, 400, 200, 200, 200], present: [] }
                 ] 
             },
             { 
@@ -626,32 +661,32 @@
                 base: Array(12).fill(0), 
                 present: [],
                 mrpDetails: [
-                    { range: "0<599", base: [0, 80, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] },
-                    { range: "600<1000", base: [0, 80, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] },
-                    { range: ">1000", base: [0, 40, 20, 40, 25, 20, 40, 20, 20, 20, 20, 10], present: [] }
+                    { range: "0<599", base: [80, 0, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] },
+                    { range: "600<1000", base: [80, 0, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] },
+                    { range: ">1000", base: [40, 0, 20, 40, 25, 20, 40, 20, 20, 20, 20, 10], present: [] }
                 ] 
             },
             { 
                 name: "HI FANCY CRAPES & GEOS", 
-                base: [75, 250, 75, 150, 150, 150, 200, 100, 250, 150, 150, 100], 
+                base: [250, 75, 75, 150, 150, 150, 200, 100, 250, 150, 150, 100], 
                 present: [],
                 mrpDetails: []
             },
             { 
                 name: "SUPERNET PRINTED", 
-                base: [75, 200, 75, 150, 100, 100, 100, 100, 200, 100, 100, 100], 
+                base: [200, 75, 75, 150, 100, 100, 100, 100, 200, 100, 100, 100], 
                 present: [],
                 mrpDetails: []
             },
             { 
                 name: "MUNGA KOTA PRINTED", 
-                base: [0, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50], 
+                base: [50, 0, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50], 
                 present: [],
                 mrpDetails: []
             },
             { 
                 name: "PATTU BLOUSE WORK", 
-                base: [10, 25, 10, 25, 15, 20, 20, 20, 25, 20, 20, 20], 
+                base: [25, 10, 10, 25, 15, 20, 20, 20, 25, 20, 20, 20], 
                 present: [],
                 mrpDetails: []
             },
@@ -663,7 +698,7 @@
             }
         ];
 
-        // Initialize 'present' arrays with ZERO (Default)
+        // Initialize 'present' arrays
         inventoryData.forEach(cat => {
             cat.present = Array(stores.length).fill(0);
             if(cat.mrpDetails && cat.mrpDetails.length > 0) {
@@ -675,10 +710,13 @@
 
         let mainChart = null; let pieChart = null;
         let currentModalBranchIndex = null;
+        let purchaseModalChartInstance = null;
 
-        // --- LOGIC (Preserved) ---
+        // --- LOGIC ---
         function getSmartLogic(si, baseArr, presentArr) {
             if (!baseArr || !presentArr) return { transfer: null, purchase: 0 };
+            if (si >= presentArr.length || si >= baseArr.length) return { transfer: null, purchase: 0 };
+
             const gap = (presentArr[si] || 0) - (baseArr[si] || 0);
             if (gap >= 0) return { transfer: null, purchase: 0 };
             
@@ -688,6 +726,7 @@
 
             for (let i = 0; i < stores.length; i++) {
                 if (i === si) continue;
+                if (i >= presentArr.length || i >= baseArr.length) continue;
                 const surplus = (presentArr[i] || 0) - (baseArr[i] || 0);
                 if (surplus > maxSurplus) { maxSurplus = surplus; bestDonor = i; }
             }
@@ -708,7 +747,12 @@
 
         function recalculateCategoryTotals(ci) {
             const cat = inventoryData[ci]; if (!cat) return;
-            cat.base = Array(stores.length).fill(0); cat.present = Array(stores.length).fill(0);
+            if (!cat.base || cat.base.length !== stores.length) cat.base = Array(stores.length).fill(0);
+            if (!cat.present || cat.present.length !== stores.length) cat.present = Array(stores.length).fill(0);
+
+            cat.base.fill(0); 
+            cat.present.fill(0);
+
             if (cat.mrpDetails && cat.mrpDetails.length > 0) {
                 cat.mrpDetails.forEach(row => {
                     if (row.base && row.present) {
@@ -833,6 +877,7 @@
                         
                         if(isPurchaseMode && !hasAction) return;
                         
+                        let suggestionHtml = '';
                         if(isPurchaseMode) {
                             suggestionHtml = `<span class="badge suggestion-purchase">Buy ${totalRowPurchase}</span>`;
                         } else {
@@ -890,7 +935,7 @@
                         else stockClass = 'num-stock stock-equal';
                         
                         if(isPurchaseMode) {
-                             totalHtml += `<td onclick="openModal(${si})" style="cursor: pointer;"><span class="purchase-matrix-val">${logic.purchase}</span></td>`;
+                             totalHtml += `<td onclick="openPurchaseStoreModal(${si})" style="cursor: pointer;"><span class="purchase-matrix-val">${logic.purchase}</span></td>`;
                         } else {
                              totalHtml += `<td onclick="openModal(${si})" style="cursor: pointer;"><span class="${stockClass}">${s}</span></td>`;
                         }
@@ -910,16 +955,18 @@
                         if(g < 0 && Math.abs(g) > maxShortage) { maxShortage = Math.abs(g); shortageStore = store; }
                     });
 
+                    let suggestionHtml = '';
                     if (surplusStore && shortageStore) {
                         const qty = Math.min(maxSurplus, maxShortage);
-                        totalHtml += `<td><span class="badge suggestion-transfer">${surplusStore} → ${shortageStore} (${qty})</span></td>`;
+                        suggestionHtml = `<span class="badge suggestion-transfer">${surplusStore} → ${shortageStore} (${qty})</span>`;
                     } else if (shortageStore) {
-                        totalHtml += `<td><span class="badge suggestion-shortage">Shortage (No Stock)</span></td>`;
+                        suggestionHtml = `<span class="badge suggestion-shortage">Shortage (No Stock)</span>`;
                     } else if (surplusStore) {
-                        totalHtml += `<td><span class="badge suggestion-surplus">Surplus</span></td>`;
+                        suggestionHtml = `<span class="badge suggestion-surplus">Surplus</span>`;
                     } else {
-                        totalHtml += `<td><span class="badge badge-success">OK</span></td>`;
+                        suggestionHtml = `<span class="badge badge-success">OK</span>`;
                     }
+                    totalHtml += `<td>${suggestionHtml}</td>`;
                 }
 
                 if(isPurchaseMode && !totalHasAction) return;
@@ -1020,7 +1067,141 @@
             renderHorizontalMatrix('purchaseMatrixHead', 'purchaseMatrixBody', true);
         }
 
+        // --- PURCHASE STORE MODAL LOGIC ---
+        function openPurchaseStoreModal(si) {
+            currentModalBranchIndex = si;
+            const storeName = stores[si];
+            document.getElementById('purchaseModalStore').textContent = `${storeName} - Purchase Breakdown`;
+            
+            const purchaseItems = [];
+            
+            inventoryData.forEach(cat => {
+                const processItem = (itemName, mrpRange, baseArr, presentArr) => {
+                    const logic = getSmartLogic(si, baseArr, presentArr);
+                    if (logic.purchase > 0) {
+                        const t = baseArr[si] || 0;
+                        const s = presentArr[si] || 0;
+                        const shortage = t - s;
+                        purchaseItems.push({
+                            category: itemName,
+                            mrp: mrpRange,
+                            target: t,
+                            stock: s,
+                            shortage: shortage,
+                            purchase: logic.purchase
+                        });
+                    }
+                };
+
+                if (cat.mrpDetails && cat.mrpDetails.length > 0) {
+                    cat.mrpDetails.forEach(mrp => {
+                        processItem(cat.name, mrp.range, mrp.base, mrp.present);
+                    });
+                } else {
+                    processItem(cat.name, 'TOTAL', cat.base, cat.present);
+                }
+            });
+
+            let tableHtml = '';
+            purchaseItems.forEach(item => {
+                tableHtml += `<tr>
+                    <td>${item.category}</td>
+                    <td>${item.mrp}</td>
+                    <td class="mono">${item.target}</td>
+                    <td class="mono">${item.stock}</td>
+                    <td class="mono" style="color: var(--danger);">${item.shortage}</td>
+                    <td class="mono" style="font-weight: 700;">${item.purchase}</td>
+                </tr>`;
+            });
+            
+            if(purchaseItems.length === 0) {
+                tableHtml = `<tr><td colspan="6" style="text-align:center;">No purchase requirements for this store.</td></tr>`;
+            }
+            document.getElementById('purchaseModalTableBody').innerHTML = tableHtml;
+
+            const ctx = document.getElementById('purchaseModalChart').getContext('2d');
+            if (purchaseModalChartInstance) purchaseModalChartInstance.destroy();
+
+            const chartLabels = purchaseItems.map(i => i.category + ' ' + i.mrp);
+            const chartData = purchaseItems.map(i => i.purchase);
+
+            purchaseModalChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Purchase Qty',
+                        data: chartData,
+                        backgroundColor: '#dc2626'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: `Purchase Requirements for ${storeName}` }
+                    },
+                    scales: {
+                        x: { beginAtZero: true, grid: { display: false } },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+
+            document.getElementById('purchaseModal').classList.remove('hidden');
+        }
+
+        function closePurchaseModal() {
+            document.getElementById('purchaseModal').classList.add('hidden');
+        }
+
         // --- EXPORT FUNCTIONS ---
+        async function exportStorePurchaseExcel() {
+            if (currentModalBranchIndex === null) return;
+            const si = currentModalBranchIndex;
+            const storeName = stores[si];
+
+            const wb = new ExcelJS.Workbook();
+            const ws = wb.addWorksheet('Purchase Report');
+
+            ws.addRow([`Purchase Requirement Report: ${storeName}`]);
+            ws.mergeCells('A1:F1');
+            ws.getRow(1).font = { bold: true, size: 16, color: { argb: 'FFDC2626' } };
+
+            ws.getRow(3).values = ['Category', 'MRP', 'Target', 'Stock', 'Shortage', 'Purchase Qty'];
+            ws.getRow(3).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            ws.getRow(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDC2626' } };
+            ws.columns = [
+                { width: 25 }, { width: 15 }, { width: 10 }, { width: 10 }, { width: 10 }, { width: 12 }
+            ];
+
+            let rowIdx = 4;
+
+            inventoryData.forEach(cat => {
+                const process = (name, range, baseArr, presentArr) => {
+                    const logic = getSmartLogic(si, baseArr, presentArr);
+                    if (logic.purchase > 0) {
+                        const t = baseArr[si] || 0;
+                        const s = presentArr[si] || 0;
+                        const short = t - s;
+                        ws.getRow(rowIdx).values = [name, range, t, s, short, logic.purchase];
+                        rowIdx++;
+                    }
+                };
+
+                if (cat.mrpDetails && cat.mrpDetails.length > 0) {
+                    cat.mrpDetails.forEach(mrp => process(cat.name, mrp.range, mrp.base, mrp.present));
+                } else {
+                    process(cat.name, 'TOTAL', cat.base, cat.present);
+                }
+            });
+
+            const buffer = await wb.xlsx.writeBuffer();
+            saveAs(new Blob([buffer]), `${storeName}_Purchase_Report.xlsx`);
+        }
+
         async function exportBranchReport() {
             if (currentModalBranchIndex === null) return;
             const si = currentModalBranchIndex;
@@ -1117,16 +1298,6 @@
                 rowIdx++;
             });
 
-            const wsSummary = wb.addWorksheet('Dashboard Summary');
-            wsSummary.addRow(['Subham Grand - Total Network Report']);
-            wsSummary.getRow(1).font = { size: 18, bold: true };
-            let gBase = 0, gPres = 0;
-            inventoryData.forEach(c => { gBase += c.base.reduce((a,b) => a+b, 0); gPres += c.present.reduce((a,b) => a+b, 0); });
-            wsSummary.addRow(['Total Network Target', gBase]);
-            wsSummary.addRow(['Total Present Stock', gPres]);
-            wsSummary.addRow(['Net Shortage', Math.max(0, gBase - gPres)]);
-            wsSummary.columns = [{ width: 25 }, { width: 15 }];
-
             const buffer = await wb.xlsx.writeBuffer();
             saveAs(new Blob([buffer]), 'SubhamGrand_Horizontal_Report.xlsx');
         }
@@ -1199,8 +1370,7 @@
             saveAs(new Blob([buffer]), 'SubhamGrand_Purchase_Matrix.xlsx');
         }
 
-        // --- STRICT UPLOAD LOGIC (Number Based Conversion to 0<500) ---
-        // Ignores text variations like "0-500", ">=0<500" -> Forces "0<500"
+        // --- UPLOAD LOGIC (FIXED: STRICT MAPPING) ---
         async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1212,11 +1382,14 @@
                 await workbook.xlsx.load(data);
                 const ws = workbook.worksheets[0];
                 
-                // 1. --- PARSE HEADERS (Row 1) ---
+                // 1. PARSE HEADERS
                 const headerRow = ws.getRow(1);
                 const headerValues = [];
                 headerRow.eachCell((cell, colNumber) => {
-                    headerValues[colNumber] = cell.value ? cell.value.toString().trim() : '';
+                    let val = cell.value;
+                    if (cell.result !== undefined) val = cell.result;
+                    if (val && typeof val === 'object' && val.richText) val = val.richText.map(t => t.text).join('');
+                    headerValues[colNumber] = val ? val.toString().trim().toUpperCase() : '';
                 });
 
                 while (headerValues.length && headerValues[headerValues.length-1] === '') headerValues.pop();
@@ -1225,51 +1398,50 @@
                     alert('Excel format invalid. Expected columns: Category, MRP, [Store Names...]'); return;
                 }
 
-                const excelStoreNames = headerValues.slice(2).map(h => h.toUpperCase());
-                const storeMap = {};
-                excelStoreNames.forEach((name, excelColIdx) => {
-                    const storeIndex = stores.indexOf(name);
-                    if (storeIndex !== -1) storeMap[excelColIdx] = storeIndex;
-                });
+                // 2. BUILD COLUMN MAP (Excel Column Index -> Application Store Index)
+                // We use the fixed 'stores' array as the source of truth.
+                // If Excel Column 3 is "SGHYD", we find "SGHYD" in 'stores', get its index (1), and map Col 3 -> Index 1.
+                
+                const columnMap = {}; // Key: Excel Column Index (1-based), Value: Store Index in 'stores' array
 
-                // 2. --- NORMALIZATION HELPER (Strict Number Extraction) ---
-                // Ignores text "slab 2 range texts", only extracts numbers to form "0<500"
+                // Loop through Excel headers starting from column 3 (Index 2 in 0-based, or Column C)
+                // Assuming Col 1 = Category, Col 2 = MRP
+                for(let i = 2; i < headerValues.length; i++) {
+                    const headerName = headerValues[i]; // e.g., "SGHYD"
+                    const storeIndex = stores.indexOf(headerName);
+                    if(storeIndex !== -1) {
+                        // Excel columns are 1-based in ExcelJS if not specified otherwise? 
+                        // headerValues array is 1-based from the eachCell loop above usually? 
+                        // Let's be explicit: headerValues comes from cell.colNumber.
+                        // So 'i' here matches the column number.
+                        columnMap[i] = storeIndex;
+                    }
+                }
+
+                // 3. PARSE DATA ROWS
                 const normalizeRange = (str) => {
                     if (!str) return '';
                     let s = str.toString().trim().toUpperCase();
-                    
-                    // Check for TOTAL first
                     if (s === 'TOTAL') return 'TOTAL';
-                    
-                    // Extract all numbers from the string (ignoring text, dashes, spaces)
-                    // "0-500" -> [0, 500]
-                    // ">=0<500" -> [0, 500]
-                    // "Slab 0 to 500" -> [0, 500]
                     const numbers = s.match(/\d+/g);
-                    
-                    // Case 1: Two numbers found -> Force "0<500" format
-                    if (numbers && numbers.length >= 2) {
-                        return `${numbers[0]}<${numbers[1]}`;
-                    }
-                    
-                    // Case 2: Single number (e.g., >3000)
+                    if (numbers && numbers.length >= 2) return `${numbers[0]}<${numbers[1]}`;
                     if (numbers && numbers.length === 1) {
-                        // Check for greater/less symbols
                         if (s.includes('>') && !s.includes('<')) return `>${numbers[0]}`;
                         if (s.includes('<') && !s.includes('>')) return `<${numbers[0]}`;
-                        if (s.includes('>=')) return `>=${numbers[0]}`;
-                        if (s.includes('<=')) return `<=${numbers[0]}`;
-                        return `>${numbers[0]}`; // Default single number as ">"
+                        return `>${numbers[0]}`;
                     }
-                    
-                    return s; // Fallback
+                    return s;
                 };
 
-                // 3. --- PARSE DATA ROWS ---
-                ws.eachRow((row, rowNumber) => {
-                    if (rowNumber === 1) return;
+                // Reset 'present' data before filling to avoid mixing old data
+                inventoryData.forEach(cat => {
+                    cat.present.fill(0);
+                    if(cat.mrpDetails) cat.mrpDetails.forEach(m => m.present.fill(0));
+                });
 
-                    // Strict Value: Blank = 0, Text = 0
+                ws.eachRow((row, rowNumber) => {
+                    if (rowNumber === 1) return; // Skip header
+
                     const getVal = (idx) => {
                         const cell = row.getCell(idx);
                         if (cell.value === null || cell.value === undefined || cell.value === '') return 0;
@@ -1280,8 +1452,11 @@
                     
                     const getStr = (idx) => {
                          const cell = row.getCell(idx);
+                         let val = cell.value;
+                         if (cell.result !== undefined) val = cell.result;
+                         if (val && typeof val === 'object' && val.richText) val = val.richText.map(t => t.text).join('');
                          if (cell.type === ExcelJS.ValueType.Number) return cell.value.toString();
-                         return cell.value ? cell.value.toString().trim().toUpperCase() : '';
+                         return val ? val.toString().trim().toUpperCase() : '';
                     };
 
                     const catName = getStr(1); 
@@ -1292,20 +1467,25 @@
 
                     let catIdx = inventoryData.findIndex(c => c.name === catName);
                     if (catIdx === -1) {
-                        inventoryData.push({ 
-                            name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] 
-                        });
+                        // If category not found, add it, but ensure array size is correct
+                        const newCat = { 
+                            name: catName, 
+                            base: Array(stores.length).fill(0), 
+                            present: Array(stores.length).fill(0), 
+                            mrpDetails: [] 
+                        };
+                        inventoryData.push(newCat);
                         catIdx = inventoryData.length - 1;
                     }
                     const cat = inventoryData[catIdx];
 
                     const isTotal = (mrpName === 'TOTAL' || mrpName === '');
                     
-                    Object.keys(storeMap).forEach(excelColIdx => {
-                        const storeIndex = storeMap[excelColIdx];
-                        const excelColNumber = parseInt(excelColIdx) + 3;
-                        const val = getVal(excelColNumber);
-                        
+                    // Iterate over the MAPPED columns
+                    Object.keys(columnMap).forEach(excelCol => {
+                        const storeIndex = columnMap[excelCol];
+                        const val = getVal(excelCol);
+
                         if (isTotal) {
                             cat.present[storeIndex] = val;
                         } else {
@@ -1321,7 +1501,7 @@
 
                 inventoryData.forEach((c, i) => recalculateCategoryTotals(i));
                 render();
-                alert('Upload Successful! Data mapped accurately using 0<500 format. Blank cells treated as 0.');
+                alert('Upload Successful! Data mapped strictly by Store Name.');
             };
             reader.readAsArrayBuffer(file);
         }
