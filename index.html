@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subham Grand | Supply Intelligence</title>
+    <title>Subham Grand | Cloud Sync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
@@ -94,6 +94,12 @@
         .badge-success { background: rgba(5,150,105,0.1); color: var(--success); }
         .badge-info { background: rgba(37,99,235,0.1); color: var(--info); }
         .badge-warning { background: rgba(245,158,11,0.1); color: var(--warning); }
+        
+        /* Sync Status Indicator */
+        .sync-status { font-size: 11px; padding: 4px 8px; border-radius: 4px; margin-left: 10px; font-weight: 600; }
+        .sync-ok { background: #d1fae5; color: #065f46; }
+        .sync-pending { background: #fef3c7; color: #92400e; }
+        .sync-error { background: #fee2e2; color: #991b1b; }
     </style>
 </head>
 <body>
@@ -104,7 +110,10 @@
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <div class="flex items-center gap-4">
                     <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--accent);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18"/></svg></div>
-                    <div><h1 class="text-xl font-bold tracking-tight">Subham Grand</h1><p class="text-xs" style="color: var(--text-muted)">Supply Intelligence Dashboard</p></div>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight">Subham Grand</h1>
+                        <p class="text-xs" style="color: var(--text-muted)">Supply Intelligence <span id="syncStatus" class="sync-status sync-pending">Local Data</span></p>
+                    </div>
                 </div>
                 <div class="flex flex-wrap gap-2 no-print">
                     <button onclick="toggleTheme()" class="btn btn-secondary">Theme</button>
@@ -115,7 +124,7 @@
                     <input type="file" id="uploadInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleFileUpload(event)">
                     
                     <!-- Save & Reset Buttons -->
-                    <button onclick="saveData()" class="btn btn-success">Save Data</button>
+                    <button onclick="saveData()" class="btn btn-success">Save to Cloud</button>
                     <button onclick="resetData()" class="btn btn-danger">Reset Stock</button>
                     
                     <button onclick="exportMatrixExcel()" class="btn btn-secondary">Export All</button>
@@ -179,15 +188,13 @@
                 <div class="card p-6"><h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Add Branch</h3><div class="flex gap-2"><input type="text" id="newBr" placeholder="Name" class="input-field"><button onclick="addBr()" class="btn btn-primary">Add</button></div></div>
                 <div class="card p-6"><h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Add Category</h3><div class="flex gap-2"><input type="text" id="newCat" placeholder="Name" class="input-field"><button onclick="addCat()" class="btn btn-primary">Add</button></div></div>
                 
-                <!-- SET TARGET CARD UPDATED -->
+                <!-- SET TARGET CARD -->
                 <div class="card p-6">
                     <h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Set Target</h3>
                     <div class="flex flex-col gap-2">
                         <div class="flex gap-2">
                             <select id="selCat" class="input-field text-xs" onchange="updateTargetMrpOptions()"></select>
-                            <select id="selMrp" class="input-field text-xs">
-                                <option value="TOTAL">TOTAL</option>
-                            </select>
+                            <select id="selMrp" class="input-field text-xs"><option value="TOTAL">TOTAL</option></select>
                         </div>
                         <div class="flex gap-2">
                             <select id="selBr" class="input-field text-xs"></select>
@@ -237,7 +244,7 @@
         </div>
     </div>
 
-    <!-- BRANCH MODAL (Dashboard) -->
+    <!-- BRANCH MODAL -->
     <div id="modal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 650px;">
             <div class="p-6 flex justify-between items-center" style="background: var(--accent); color: #fff;">
@@ -252,23 +259,17 @@
         </div>
     </div>
 
-    <!-- PURCHASE DETAIL MODAL (Report) -->
+    <!-- PURCHASE MODAL -->
     <div id="purchaseModal" class="modal-overlay hidden">
         <div class="modal-content modal-lg">
             <div class="p-6 flex justify-between items-center" style="background: var(--danger); color: #fff;">
-                <div>
-                    <h2 id="purchaseModalStore" class="text-lg font-bold"></h2>
-                    <p class="text-xs opacity-80">Purchase Requirement Breakdown</p>
-                </div>
+                <div><h2 id="purchaseModalStore" class="text-lg font-bold"></h2><p class="text-xs opacity-80">Purchase Requirement Breakdown</p></div>
                 <button onclick="closePurchaseModal()" class="text-2xl opacity-80 hover:opacity-100">&times;</button>
             </div>
             <div id="purchaseModalBody" class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                 <div style="height: 250px; position: relative;"><canvas id="purchaseModalChart"></canvas></div>
                 <div class="table-container" style="border:none;">
-                    <table class="mini-table" id="purchaseDetailTable">
-                        <thead><tr><th>Category</th><th>MRP</th><th>Tgt</th><th>Stk</th><th>Shortage</th><th>Purchase Qty</th></tr></thead>
-                        <tbody id="purchaseModalTableBody"></tbody>
-                    </table>
+                    <table class="mini-table" id="purchaseDetailTable"><thead><tr><th>Category</th><th>MRP</th><th>Tgt</th><th>Stk</th><th>Shortage</th><th>Purchase Qty</th></tr></thead><tbody id="purchaseModalTableBody"></tbody></table>
                 </div>
             </div>
             <div class="p-4 flex gap-2" style="border-top: 1px solid var(--border);">
@@ -301,10 +302,13 @@
     </div>
 
     <script>
-        // --- INITIAL CONFIG ---
+        // --- GOOGLE SHEET CONFIGURATION ---
+        // YOUR URL IS INSERTED BELOW:
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2rXpYpZVwOW0nRFFNAnmv2SQmPjci7k-AbEpoZdQu2MSmJhfK1YHa3TceB66lqBr-tw/exec';
+
         let stores = ["SG", "SGHYD", "SGRJY", "SGTNL", "SIRIELR", "SGTNK", "SGTUNI", "SIRICPT", "SIRIVJY", "SIRIKKD", "SIRITPT", "VS"];
         
-        // --- DEFAULT DATA TEMPLATE (Used for Reset) ---
+        // --- DEFAULT DATA TEMPLATE ---
         const defaultInventoryTemplate = [
             { name: "BNS HANDLOOM HF", base: Array(12).fill(0), present: [], mrpDetails: [
                 { range: "0<500", base: [500, 250, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] }, { range: "501<1000", base: [1000, 450, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] }, { range: "1001<1500", base: [1200, 500, 500, 1000, 750, 750, 750, 400, 1200, 750, 750, 750], present: [] }, { range: "1501<2000", base: [500, 250, 250, 400, 300, 350, 350, 250, 500, 350, 350, 300], present: [] }, { range: "2001<3000", base: [500, 250, 250, 350, 300, 350, 300, 250, 500, 350, 350, 300], present: [] }, { range: "3001<4000", base: [300, 150, 150, 200, 200, 200, 200, 150, 300, 200, 200, 150], present: [] }, { range: "4001<6000", base: [200, 100, 100, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] }, { range: "6001<7500", base: [100, 50, 50, 100, 50, 100, 50, 50, 100, 100, 100, 100], present: [] }, { range: ">7500", base: [20, 10, 10, 0, 0, 10, 0, 20, 20, 10, 10, 20], present: [] }, { range: "501<1000(1+1)", base: [800, 500, 500, 500, 500, 400, 1000, 400, 800, 400, 400, 400], present: [] }, { range: "1001<2000(1+1)", base: [500, 250, 250, 400, 300, 300, 500, 300, 500, 300, 300, 400], present: [] } ] },
@@ -346,9 +350,8 @@
         ];
 
         // Active Data
-        let inventoryData = JSON.parse(JSON.stringify(defaultInventoryTemplate)); // Deep copy
+        let inventoryData = JSON.parse(JSON.stringify(defaultInventoryTemplate));
         
-        // Initialize 'present' arrays
         function initPresentArrays(data) {
             data.forEach(cat => {
                 cat.present = Array(stores.length).fill(0);
@@ -363,26 +366,72 @@
         let currentModalBranchIndex = null;
         let purchaseModalChartInstance = null;
 
-        // --- SAVE & RESET FUNCTIONS ---
+        // --- GOOGLE SHEET SYNC FUNCTIONS ---
+        function updateSyncStatus(status) {
+            const el = document.getElementById('syncStatus');
+            if (!el) return;
+            if(status === 'saving') { el.textContent = 'Saving...'; el.className = 'sync-status sync-pending'; }
+            else if(status === 'saved') { el.textContent = 'Saved to Cloud'; el.className = 'sync-status sync-ok'; }
+            else if(status === 'loading') { el.textContent = 'Loading...'; el.className = 'sync-status sync-pending'; }
+            else if(status === 'error') { el.textContent = 'Sync Error'; el.className = 'sync-status sync-error'; }
+            else { el.textContent = 'Local Data'; el.className = 'sync-status sync-pending'; }
+        }
+
         function saveData() {
-            localStorage.setItem('subham_inventory', JSON.stringify(inventoryData));
-            localStorage.setItem('subham_stores', JSON.stringify(stores));
-            alert('Data Saved Successfully!');
+            if(!GOOGLE_SCRIPT_URL) {
+                alert("Google Script URL is missing.");
+                return;
+            }
+            
+            updateSyncStatus('saving');
+            
+            const payload = {
+                stores: stores,
+                inventoryData: inventoryData
+            };
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors', 
+                cache: 'no-cache',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(() => {
+                updateSyncStatus('saved');
+                alert('Data saved to Google Sheet successfully!');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                updateSyncStatus('error');
+                alert('Failed to save data.');
+            });
         }
 
         function loadData() {
-            const savedInv = localStorage.getItem('subham_inventory');
-            const savedStores = localStorage.getItem('subham_stores');
-            if(savedInv && savedStores) {
-                try {
-                    inventoryData = JSON.parse(savedInv);
-                    stores = JSON.parse(savedStores);
-                    initPresentArrays(inventoryData);
-                } catch (e) {
-                    console.error("Failed to load saved data, resetting.", e);
-                    resetData(true); 
-                }
+            if(!GOOGLE_SCRIPT_URL) {
+                updateSyncStatus('local');
+                return;
             }
+
+            updateSyncStatus('loading');
+            
+            fetch(GOOGLE_SCRIPT_URL)
+            .then(response => response.json())
+            .then(data => {
+                if(data.stores) stores = data.stores;
+                if(data.inventoryData) {
+                    inventoryData = data.inventoryData;
+                    initPresentArrays(inventoryData);
+                }
+                render();
+                updateSyncStatus('saved');
+            })
+            .catch(error => {
+                console.error('Error loading data:', error);
+                updateSyncStatus('error');
+                render();
+            });
         }
 
         function resetData(silent = false) {
@@ -398,7 +447,7 @@
                     });
                 }
             });
-            saveData(); 
+            saveData();
             render();
             if(!silent) alert('Stock Reset to 0.');
         }
@@ -475,10 +524,7 @@
             selCat.innerHTML = catOptsSelect; selBr.innerHTML = brOpts; chartFilter.innerHTML = catOptsSelect;
             document.getElementById('catList').innerHTML = catOptsDatalist;
             document.getElementById('manualBranch').innerHTML = '<option value="-1">ALL STORES</option>' + brOpts;
-            
-            // IMPORTANT: Update Target MRP options after render
             updateTargetMrpOptions();
-
             if (!document.getElementById('tabAnalytics').classList.contains('hidden')) refreshCharts();
         }
 
@@ -591,6 +637,7 @@
             if (isNaN(newVal)) { alert("Invalid number."); return; }
             if (mrpIdx === -1) { inventoryData[ci].present[si] = newVal; } 
             else { inventoryData[ci].mrpDetails[mrpIdx].present[si] = newVal; recalculateCategoryTotals(ci); }
+            updateSyncStatus('local');
             render();
         }
 
@@ -640,12 +687,10 @@
             alert('Category Added');
         }
 
-        // UPDATED: Update MRP options for Set Target
         function updateTargetMrpOptions() {
             const ci = parseInt(document.getElementById('selCat').value);
             const mrpSelect = document.getElementById('selMrp');
             mrpSelect.innerHTML = '<option value="TOTAL">TOTAL</option>';
-            
             if (!isNaN(ci)) {
                 const cat = inventoryData[ci];
                 if (cat.mrpDetails && cat.mrpDetails.length > 0) {
@@ -659,31 +704,21 @@
             }
         }
 
-        // UPDATED: Set Target with MRP support
         function setTarget() {
             const ci = parseInt(document.getElementById('selCat').value);
-            const mrpVal = document.getElementById('selMrp').value; // Get MRP value
+            const mrpVal = document.getElementById('selMrp').value;
             const si = parseInt(document.getElementById('selBr').value);
             const val = parseInt(document.getElementById('targetVal').value) || 0;
-            
             if (isNaN(ci) || isNaN(si)) { alert('Select Category and Branch'); return; }
-
             const cat = inventoryData[ci];
-
-            // If MRP is TOTAL or empty, set main category target
-            if (mrpVal === 'TOTAL' || !mrpVal) {
-                cat.base[si] = val;
-            } else {
-                // Find specific MRP row
+            if (mrpVal === 'TOTAL' || !mrpVal) { cat.base[si] = val; }
+            else {
                 let mrpRow = cat.mrpDetails.find(r => r.range === mrpVal);
-                if (!mrpRow) {
-                    // Create if not exists (should exist usually)
-                    mrpRow = { range: mrpVal, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) };
-                    cat.mrpDetails.push(mrpRow);
-                }
+                if (!mrpRow) { mrpRow = { range: mrpVal, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); }
                 mrpRow.base[si] = val;
                 recalculateCategoryTotals(ci);
             }
+            updateSyncStatus('local');
             render();
             alert('Target Set');
         }
@@ -700,7 +735,7 @@
         async function exportPurchaseReportExcel() { const savedData = JSON.parse(localStorage.getItem('sg_report_data')); if(!savedData) return alert('No data found'); const data = savedData.inventoryData; const str = savedData.stores; const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Purchase Matrix'); const header1 = ['Category', 'MRP']; str.forEach(s => header1.push(s, '')); header1.push('Total'); ws.addRow(header1); const header2 = ['', '']; str.forEach(() => header2.push('Target', 'Purchase Qty')); header2.push('Purchase'); ws.addRow(header2); str.forEach((_, i) => { const colIndex = 3 + (i * 2); ws.mergeCells(1, colIndex, 1, colIndex + 1); }); ws.columns = [{ width: 25 }, { width: 12 }]; str.forEach(() => ws.columns.push({ width: 8 }, { width: 12 })); ws.columns.push({ width: 12 }); let rowIdx = 3; data.forEach(cat => { const processRange = (rangeName, baseArr, presentArr) => { let rowData = [cat.name, rangeName]; let totalRowPurchase = 0; let hasPurchase = false; str.forEach((store, si) => { const b = baseArr[si] || 0; const logic = getSmartLogic(si, baseArr, presentArr); rowData.push(b); rowData.push(logic.purchase > 0 ? logic.purchase : '-'); if(logic.purchase > 0) { totalRowPurchase += logic.purchase; hasPurchase = true; } }); rowData.push(totalRowPurchase > 0 ? totalRowPurchase : '-'); if(hasPurchase) { ws.getRow(rowIdx).values = rowData; rowIdx++; } }; if (cat.mrpDetails && cat.mrpDetails.length > 0) { cat.mrpDetails.forEach(mrp => processRange(mrp.range, mrp.base, mrp.present)); } else { processRange("TOTAL", cat.base, cat.present); } }); const buffer = await wb.xlsx.writeBuffer(); saveAs(new Blob([buffer]), 'SubhamGrand_Purchase_Matrix.xlsx'); }
 
         // --- UPLOAD LOGIC ---
-        async function handleFileUpload(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async (e) => { const data = new Uint8Array(e.target.result); const workbook = new ExcelJS.Workbook(); await workbook.xlsx.load(data); const ws = workbook.worksheets[0]; const headerRow = ws.getRow(1); const storeColMap = []; headerRow.eachCell((cell, colNumber) => { if (colNumber <= 2) return; let val = cell.value; if (cell.result !== undefined) val = cell.result; if (val && typeof val === 'object' && val.richText) val = val.richText.map(t => t.text).join(''); const headerText = val ? val.toString().trim().toUpperCase() : ''; if (headerText) { storeColMap.push({ colIdx: colNumber, storeName: headerText }); } }); if (storeColMap.length === 0) { alert('No store columns found in Excel.'); return; } const oldStores = [...stores]; stores = storeColMap.map(m => m.storeName); inventoryData.forEach(cat => { const newBase = Array(stores.length).fill(0); oldStores.forEach((oldName, oldIdx) => { const newIdx = stores.indexOf(oldName); if (newIdx !== -1 && cat.base[oldIdx] !== undefined) { newBase[newIdx] = cat.base[oldIdx]; } }); cat.base = newBase; cat.present = Array(stores.length).fill(0); if (cat.mrpDetails) { cat.mrpDetails.forEach(mrp => { const newMrpBase = Array(stores.length).fill(0); oldStores.forEach((oldName, oldIdx) => { const newIdx = stores.indexOf(oldName); if (newIdx !== -1 && mrp.base[oldIdx] !== undefined) { newMrpBase[newIdx] = mrp.base[oldIdx]; } }); mrp.base = newMrpBase; mrp.present = Array(stores.length).fill(0); }); } }); const normalizeRange = (str) => { if (!str) return ''; let s = str.toString().trim().toUpperCase(); if (s === 'TOTAL') return 'TOTAL'; let match = s.match(/^(\d+)\s*[-<]+\s*(\d+)\s*(.*)/); if (match) { let suffix = match[3].trim(); return `${match[1]}<${match[2]}${suffix}`; } match = s.match(/^(>|<)\s*(\d+)\s*(.*)/); if (match) { return `${match[1]}${match[2]}${match[3].trim()}`; } const numbers = s.match(/\d+/g); if (numbers && numbers.length >= 2) return `${numbers[0]}<${numbers[1]}`; if (numbers && numbers.length === 1) return `>${numbers[0]}`; return s; }; ws.eachRow((row, rowNumber) => { if (rowNumber === 1) return; const getVal = (idx) => { const cell = row.getCell(idx); if (cell.value === null || cell.value === undefined || cell.value === '') return 0; let rawVal = 0; if (cell.result !== undefined) rawVal = parseFloat(cell.result); else rawVal = parseFloat(cell.value); if (isNaN(rawVal)) return 0; return Math.round(rawVal); }; const getStr = (idx) => { const cell = row.getCell(idx); let val = cell.value; if (cell.result !== undefined) val = cell.result; if (val && typeof val === 'object' && val.richText) val = val.richText.map(t => t.text).join(''); if (cell.type === ExcelJS.ValueType.Number) return cell.value.toString(); return val ? val.toString().trim().toUpperCase() : ''; }; const catName = getStr(1); const rawMrpName = getStr(2); const mrpName = normalizeRange(rawMrpName); if (!catName) return; let catIdx = inventoryData.findIndex(c => c.name === catName); if (catIdx === -1) { inventoryData.push({ name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }); catIdx = inventoryData.length - 1; } const cat = inventoryData[catIdx]; const isTotal = (mrpName === 'TOTAL' || mrpName === ''); storeColMap.forEach((mapItem, index) => { const val = getVal(mapItem.colIdx); if (isTotal) { cat.present[index] = val; } else { let mrpRow = cat.mrpDetails.find(r => r.range === mrpName); if (!mrpRow) { mrpRow = { range: mrpName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); } mrpRow.present[index] = val; } }); }); inventoryData.forEach((c, i) => recalculateCategoryTotals(i)); render(); alert('File Uploaded Successfully! Remember to click SAVE to keep changes.'); }; reader.readAsArrayBuffer(file); }
+        async function handleFileUpload(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async (e) => { const data = new Uint8Array(e.target.result); const workbook = new ExcelJS.Workbook(); await workbook.xlsx.load(data); const ws = workbook.worksheets[0]; const headerRow = ws.getRow(1); const storeColMap = []; headerRow.eachCell((cell, colNumber) => { if (colNumber <= 2) return; let val = cell.value; if (cell.result !== undefined) val = cell.result; if (val && typeof val === 'object' && val.richText) val = val.richText.map(t => t.text).join(''); const headerText = val ? val.toString().trim().toUpperCase() : ''; if (headerText) { storeColMap.push({ colIdx: colNumber, storeName: headerText }); } }); if (storeColMap.length === 0) { alert('No store columns found in Excel.'); return; } const oldStores = [...stores]; stores = storeColMap.map(m => m.storeName); inventoryData.forEach(cat => { const newBase = Array(stores.length).fill(0); oldStores.forEach((oldName, oldIdx) => { const newIdx = stores.indexOf(oldName); if (newIdx !== -1 && cat.base[oldIdx] !== undefined) { newBase[newIdx] = cat.base[oldIdx]; } }); cat.base = newBase; cat.present = Array(stores.length).fill(0); if (cat.mrpDetails) { cat.mrpDetails.forEach(mrp => { const newMrpBase = Array(stores.length).fill(0); oldStores.forEach((oldName, oldIdx) => { const newIdx = stores.indexOf(oldName); if (newIdx !== -1 && mrp.base[oldIdx] !== undefined) { newMrpBase[newIdx] = mrp.base[oldIdx]; } }); mrp.base = newMrpBase; mrp.present = Array(stores.length).fill(0); }); } }); const normalizeRange = (str) => { if (!str) return ''; let s = str.toString().trim().toUpperCase(); if (s === 'TOTAL') return 'TOTAL'; let match = s.match(/^(\d+)\s*[-<]+\s*(\d+)\s*(.*)/); if (match) { let suffix = match[3].trim(); return `${match[1]}<${match[2]}${suffix}`; } match = s.match(/^(>|<)\s*(\d+)\s*(.*)/); if (match) { return `${match[1]}${match[2]}${match[3].trim()}`; } const numbers = s.match(/\d+/g); if (numbers && numbers.length >= 2) return `${numbers[0]}<${numbers[1]}`; if (numbers && numbers.length === 1) return `>${numbers[0]}`; return s; }; ws.eachRow((row, rowNumber) => { if (rowNumber === 1) return; const getVal = (idx) => { const cell = row.getCell(idx); if (cell.value === null || cell.value === undefined || cell.value === '') return 0; let rawVal = 0; if (cell.result !== undefined) rawVal = parseFloat(cell.result); else rawVal = parseFloat(cell.value); if (isNaN(rawVal)) return 0; return Math.round(rawVal); }; const getStr = (idx) => { const cell = row.getCell(idx); let val = cell.value; if (cell.result !== undefined) val = cell.result; if (val && typeof val === 'object' && val.richText) val = val.richText.map(t => t.text).join(''); if (cell.type === ExcelJS.ValueType.Number) return cell.value.toString(); return val ? val.toString().trim().toUpperCase() : ''; }; const catName = getStr(1); const rawMrpName = getStr(2); const mrpName = normalizeRange(rawMrpName); if (!catName) return; let catIdx = inventoryData.findIndex(c => c.name === catName); if (catIdx === -1) { inventoryData.push({ name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }); catIdx = inventoryData.length - 1; } const cat = inventoryData[catIdx]; const isTotal = (mrpName === 'TOTAL' || mrpName === ''); storeColMap.forEach((mapItem, index) => { const val = getVal(mapItem.colIdx); if (isTotal) { cat.present[index] = val; } else { let mrpRow = cat.mrpDetails.find(r => r.range === mrpName); if (!mrpRow) { mrpRow = { range: mrpName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); } mrpRow.present[index] = val; } }); }); inventoryData.forEach((c, i) => recalculateCategoryTotals(i)); updateSyncStatus('local'); render(); alert('File Uploaded Successfully! Remember to click SAVE to keep changes.'); }; reader.readAsArrayBuffer(file); }
 
         function toggleTheme() { document.body.classList.toggle('dark-mode'); render(); }
         function openModal(si) { currentModalBranchIndex = si; document.getElementById('modalStore').textContent = stores[si]; let html = ''; inventoryData.forEach(cat => { const logic = getSmartLogic(si, cat.base, cat.present); const gap = (cat.present[si] || 0) - (cat.base[si] || 0); const border = gap < 0 ? 'var(--danger)' : 'var(--success)'; html += `<div class="card p-4 mb-2" style="border-left: 4px solid ${border};"><div class="flex justify-between text-xs font-semibold uppercase mb-1" style="color: var(--text-muted);"><span>${cat.name}</span><span>Gap: ${gap > 0 ? '+' : ''}${gap}</span></div><div class="font-bold"><div class="analysis-cell">${logic.transfer ? `<span class="badge badge-info">Trans ${logic.transfer.qty} fr. ${logic.transfer.from}</span>` : ''}${logic.purchase > 0 ? `<span class="badge badge-danger">Buy ${logic.purchase}</span>` : ''}${!logic.transfer && logic.purchase === 0 ? `<span class="badge badge-success">OK</span>` : ''}</div></div>`; }); document.getElementById('modalBody').innerHTML = html; document.getElementById('modal').classList.remove('hidden'); }
@@ -717,13 +752,10 @@
             const si = parseInt(document.getElementById('manualBranch').value); 
             const target = parseInt(document.getElementById('manualTarget').value) || 0; 
             const stock = parseInt(document.getElementById('manualStock').value) || 0; 
-            
             if (!catName || !mrp || isNaN(si)) { alert('Missing fields'); return; } 
-            
             let catIndex = inventoryData.findIndex(c => c.name === catName); 
             if (catIndex === -1) { inventoryData.push({ name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }); catIndex = inventoryData.length - 1; } 
             const cat = inventoryData[catIndex]; 
-            
             if (si === -1) {
                 const confirmed = confirm(`This will set ${stock} stock and ${target} target for "${catName} - ${mrp}" across ALL ${stores.length} stores. Proceed?`);
                 if(!confirmed) return;
@@ -743,7 +775,10 @@
                     recalculateCategoryTotals(catIndex);
                 }
             }
-            closeManualModal(); render(); alert('Entry Saved. Click "Save Data" in header to persist.');
+            closeManualModal(); 
+            updateSyncStatus('local'); 
+            render(); 
+            alert('Entry Saved. Click "Save to Cloud" to persist.'); 
         }
 
         window.onload = function() { 
