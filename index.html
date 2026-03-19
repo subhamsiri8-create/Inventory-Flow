@@ -110,6 +110,9 @@
                     <button onclick="toggleTheme()" class="btn btn-secondary">Theme</button>
                     <button onclick="openPurchaseReportTab()" class="btn btn-danger">Purchase Report</button>
                     
+                    <!-- Cloud Sync Button -->
+                    <button onclick="loadFromSheet()" class="btn btn-info">Sync Cloud</button>
+
                     <!-- Upload Button -->
                     <button onclick="document.getElementById('uploadInput').click()" class="btn btn-primary">Upload Stock</button>
                     <input type="file" id="uploadInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleFileUpload(event)">
@@ -304,7 +307,7 @@
         // --- INITIAL CONFIG ---
         let stores = ["SG", "SGHYD", "SGRJY", "SGTNL", "SIRIELR", "SGTNK", "SGTUNI", "SIRICPT", "SIRIVJY", "SIRIKKD", "SIRITPT", "VS"];
         
-        // --- DEFAULT DATA TEMPLATE (Used for Reset) ---
+        // --- DEFAULT DATA TEMPLATE ---
         const defaultInventoryTemplate = [
             { name: "BNS HANDLOOM HF", base: Array(12).fill(0), present: [], mrpDetails: [
                 { range: "0<500", base: [500, 250, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] }, { range: "501<1000", base: [1000, 450, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] }, { range: "1001<1500", base: [1200, 500, 500, 1000, 750, 750, 750, 400, 1200, 750, 750, 750], present: [] }, { range: "1501<2000", base: [500, 250, 250, 400, 300, 350, 350, 250, 500, 350, 350, 300], present: [] }, { range: "2001<3000", base: [500, 250, 250, 350, 300, 350, 300, 250, 500, 350, 350, 300], present: [] }, { range: "3001<4000", base: [300, 150, 150, 200, 200, 200, 200, 150, 300, 200, 200, 150], present: [] }, { range: "4001<6000", base: [200, 100, 100, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] }, { range: "6001<7500", base: [100, 50, 50, 100, 50, 100, 50, 50, 100, 100, 100, 100], present: [] }, { range: ">7500", base: [20, 10, 10, 0, 0, 10, 0, 20, 20, 10, 10, 20], present: [] }, { range: "501<1000(1+1)", base: [800, 500, 500, 500, 500, 400, 1000, 400, 800, 400, 400, 400], present: [] }, { range: "1001<2000(1+1)", base: [500, 250, 250, 400, 300, 300, 500, 300, 500, 300, 300, 400], present: [] } ] },
@@ -363,6 +366,37 @@
         let currentModalBranchIndex = null;
         let purchaseModalChartInstance = null;
 
+        // --- CLOUD SYNC FUNCTION ---
+        async function loadFromSheet() {
+            const url = 'https://script.google.com/macros/s/AKfycbyYwcqHWsbv4pMB0gQdNJxfKCA-Cv3wsZ0Vy3UmQCFtUS-ZR3igo4Cvx3wl2nEjJ-/exec';
+            try {
+                alert('Syncing with Cloud...');
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                // Assumption: The script returns an object with inventoryData and stores
+                if (data && data.inventoryData) {
+                    inventoryData = data.inventoryData;
+                    if(data.stores) stores = data.stores;
+                    initPresentArrays(inventoryData); // Ensure structure integrity
+                    render();
+                    alert('Cloud Data Synced Successfully!');
+                } else if (Array.isArray(data)) {
+                     // Fallback if it returns just the array
+                     inventoryData = data;
+                     initPresentArrays(inventoryData);
+                     render();
+                     alert('Cloud Data Synced!');
+                } else {
+                    console.error("Invalid data format", data);
+                    alert('Received invalid data format from cloud.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Failed to sync with cloud. Check console for details.');
+            }
+        }
+
         // --- SAVE & RESET FUNCTIONS ---
         function saveData() {
             localStorage.setItem('subham_inventory', JSON.stringify(inventoryData));
@@ -387,7 +421,7 @@
 
         function resetData(silent = false) {
             if(!silent) {
-                if(!confirm('Are you sure? This will set all Stock values to 0 but keep your Targets.')) return;
+                if(!confirm('Set ALL Stock to 0? Targets will remain unchanged.')) return;
             }
             
             inventoryData.forEach(cat => {
@@ -475,10 +509,7 @@
             selCat.innerHTML = catOptsSelect; selBr.innerHTML = brOpts; chartFilter.innerHTML = catOptsSelect;
             document.getElementById('catList').innerHTML = catOptsDatalist;
             document.getElementById('manualBranch').innerHTML = '<option value="-1">ALL STORES</option>' + brOpts;
-            
-            // IMPORTANT: Update Target MRP options after render
             updateTargetMrpOptions();
-
             if (!document.getElementById('tabAnalytics').classList.contains('hidden')) refreshCharts();
         }
 
@@ -640,7 +671,6 @@
             alert('Category Added');
         }
 
-        // UPDATED: Update MRP options for Set Target
         function updateTargetMrpOptions() {
             const ci = parseInt(document.getElementById('selCat').value);
             const mrpSelect = document.getElementById('selMrp');
@@ -659,10 +689,9 @@
             }
         }
 
-        // UPDATED: Set Target with MRP support
         function setTarget() {
             const ci = parseInt(document.getElementById('selCat').value);
-            const mrpVal = document.getElementById('selMrp').value; // Get MRP value
+            const mrpVal = document.getElementById('selMrp').value;
             const si = parseInt(document.getElementById('selBr').value);
             const val = parseInt(document.getElementById('targetVal').value) || 0;
             
@@ -670,14 +699,11 @@
 
             const cat = inventoryData[ci];
 
-            // If MRP is TOTAL or empty, set main category target
             if (mrpVal === 'TOTAL' || !mrpVal) {
                 cat.base[si] = val;
             } else {
-                // Find specific MRP row
                 let mrpRow = cat.mrpDetails.find(r => r.range === mrpVal);
                 if (!mrpRow) {
-                    // Create if not exists (should exist usually)
                     mrpRow = { range: mrpVal, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) };
                     cat.mrpDetails.push(mrpRow);
                 }
@@ -711,46 +737,9 @@
         document.getElementById('manualCatInput').addEventListener('change', updateMrpOptions);
         document.getElementById('manualCatInput').addEventListener('input', updateMrpOptions);
 
-        function saveManualData() { 
-            const catName = document.getElementById('manualCatInput').value.toUpperCase().trim(); 
-            const mrp = document.getElementById('manualMrp').value.trim(); 
-            const si = parseInt(document.getElementById('manualBranch').value); 
-            const target = parseInt(document.getElementById('manualTarget').value) || 0; 
-            const stock = parseInt(document.getElementById('manualStock').value) || 0; 
-            
-            if (!catName || !mrp || isNaN(si)) { alert('Missing fields'); return; } 
-            
-            let catIndex = inventoryData.findIndex(c => c.name === catName); 
-            if (catIndex === -1) { inventoryData.push({ name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }); catIndex = inventoryData.length - 1; } 
-            const cat = inventoryData[catIndex]; 
-            
-            if (si === -1) {
-                const confirmed = confirm(`This will set ${stock} stock and ${target} target for "${catName} - ${mrp}" across ALL ${stores.length} stores. Proceed?`);
-                if(!confirmed) return;
-                if (mrp === 'TOTAL') { for(let i=0; i<stores.length; i++) { cat.base[i] = target; cat.present[i] = stock; } }
-                else {
-                    let mrpRow = cat.mrpDetails.find(r => r.range === mrp);
-                    if (!mrpRow) { mrpRow = { range: mrp, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); }
-                    for(let i=0; i<stores.length; i++) { mrpRow.base[i] = target; mrpRow.present[i] = stock; }
-                    recalculateCategoryTotals(catIndex);
-                }
-            } else {
-                if (mrp === 'TOTAL') { cat.base[si] = target; cat.present[si] = stock; }
-                else {
-                    let mrpRow = cat.mrpDetails.find(r => r.range === mrp);
-                    if (!mrpRow) { mrpRow = { range: mrp, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); }
-                    mrpRow.base[si] = target; mrpRow.present[si] = stock;
-                    recalculateCategoryTotals(catIndex);
-                }
-            }
-            closeManualModal(); render(); alert('Entry Saved. Click "Save Data" in header to persist.');
-        }
+        function saveManualData() { const catName = document.getElementById('manualCatInput').value.toUpperCase().trim(); const mrp = document.getElementById('manualMrp').value.trim(); const si = parseInt(document.getElementById('manualBranch').value); const target = parseInt(document.getElementById('manualTarget').value) || 0; const stock = parseInt(document.getElementById('manualStock').value) || 0; if (!catName || !mrp || isNaN(si)) { alert('Missing fields'); return; } let catIndex = inventoryData.findIndex(c => c.name === catName); if (catIndex === -1) { inventoryData.push({ name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }); catIndex = inventoryData.length - 1; } const cat = inventoryData[catIndex]; if (si === -1) { const confirmed = confirm(`This will set ${stock} stock and ${target} target for "${catName} - ${mrp}" across ALL ${stores.length} stores. Proceed?`); if(!confirmed) return; if (mrp === 'TOTAL') { for(let i=0; i<stores.length; i++) { cat.base[i] = target; cat.present[i] = stock; } } else { let mrpRow = cat.mrpDetails.find(r => r.range === mrp); if (!mrpRow) { mrpRow = { range: mrp, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); } for(let i=0; i<stores.length; i++) { mrpRow.base[i] = target; mrpRow.present[i] = stock; } recalculateCategoryTotals(catIndex); } } else { if (mrp === 'TOTAL') { cat.base[si] = target; cat.present[si] = stock; } else { let mrpRow = cat.mrpDetails.find(r => r.range === mrp); if (!mrpRow) { mrpRow = { range: mrp, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); } mrpRow.base[si] = target; mrpRow.present[si] = stock; recalculateCategoryTotals(catIndex); } } closeManualModal(); render(); alert('Entry Saved. Click "Save Data" in header to persist.'); }
 
-        window.onload = function() { 
-            loadData(); 
-            checkPurchaseReportMode(); 
-            render(); 
-        };
+        window.onload = function() { loadData(); checkPurchaseReportMode(); render(); };
     </script>
 </body>
 </html>
