@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subham Grand | Full Data Sync</title>
+    <title>Subham Grand | Supply Intelligence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
@@ -12,103 +12,182 @@
     <style>
         :root {
             --bg: #f1f5f9; --bg-secondary: #ffffff; --text: #0f172a; --text-muted: #64748b;
-            --accent: #0d9488; --danger: #dc2626; --success: #059669; --info: #2563eb; --border: #e2e8f0;
+            --accent: #0d9488; --accent-light: #14b8a6; --danger: #dc2626; --warning: #f59e0b;
+            --success: #059669; --info: #2563eb; --border: #e2e8f0;
         }
         .dark-mode {
-            --bg: #0f172a; --bg-secondary: #1e293b; --text: #f1f5f9; --text-muted: #94a3b8; --border: #334155;
+            --bg: #0f172a; --bg-secondary: #1e293b; --text: #f1f5f9; --text-muted: #94a3b8;
+            --accent: #14b8a6; --accent-light: #2dd4bf; --danger: #f87171; --warning: #fbbf24;
+            --success: #34d399; --info: #60a5fa; --border: #334155;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; min-height: 100vh; }
         .mono { font-family: 'Space Mono', monospace; }
         .container { max-width: 100%; margin: 0 auto; padding: 24px; }
         .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        
+        /* Tabs */
         .tab-bar { display: flex; gap: 4px; background: var(--bg-secondary); padding: 4px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; cursor: pointer; }
-        .tab-btn.active { background: var(--accent); color: white; }
-        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; white-space: nowrap; }
+        .tab-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .tab-btn.active { background: var(--accent); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tab-btn:hover:not(.active) { background: var(--border); }
+        
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; white-space: nowrap; }
         .btn-primary { background: var(--accent); color: #fff; }
         .btn-danger { background: var(--danger); color: #fff; }
         .btn-success { background: var(--success); color: #fff; }
         .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+        .btn-info { background: var(--info); color: #fff; }
+        
         .input-field { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; background: var(--bg); color: var(--text); }
+        .input-field:focus { outline: none; border-color: var(--accent); }
+        
+        /* Tables */
         .table-container { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; }
-        th { background: var(--bg); padding: 10px 4px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-muted); border-bottom: 2px solid var(--border); border-left: 1px solid var(--border); }
+        
+        th { background: var(--bg); padding: 10px 4px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 2px solid var(--border); border-left: 1px solid var(--border); white-space: nowrap; }
         th:first-child { border-left: none; text-align: left; padding-left: 16px; }
         th.group-header { background: var(--accent); color: white; font-size: 12px; border-bottom: none; }
-        th.sub-header { font-size: 10px; background: rgba(13, 148, 136, 0.1); color: var(--accent); }
-        td { padding: 8px 4px; font-size: 12px; border-bottom: 1px solid var(--border); border-left: 1px solid var(--border); text-align: center; }
+        th.sub-header { font-size: 10px; background: rgba(13, 148, 136, 0.1); color: var(--accent); border-bottom: 2px solid var(--accent); }
+        
+        td { padding: 8px 4px; font-size: 12px; border-bottom: 1px solid var(--border); border-left: 1px solid var(--border); text-align: center; vertical-align: middle; }
         td:first-child { border-left: none; text-align: left; padding-left: 16px; font-weight: 600; }
+        
+        /* Number Styles */
         .num-target { background-color: #f3f4f6; color: #374151; font-family: 'Space Mono', monospace; font-weight: 600; display: block; padding: 4px; border-radius: 4px; }
-        .num-stock { font-family: 'Space Mono', monospace; font-weight: 700; display: block; padding: 4px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; }
-        .stock-surplus { background-color: #fca5a5; color: #000; }
-        .stock-short { background-color: #86efac; color: #000; }
-        .stock-equal { background-color: #93c5fd; color: #000; }
-        .purchase-matrix-val { background-color: #fee2e2; color: #991b1b; font-family: 'Space Mono', monospace; font-weight: 700; display: block; padding: 4px; border-radius: 4px; cursor: pointer; }
-        .suggestion-purchase { background-color: #fef3c7; color: #92400e; font-size: 12px; padding: 6px 10px; font-weight: 700; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 24px; }
-        .modal-content { background: var(--bg-secondary); border-radius: 16px; max-width: 600px; width: 100%; max-height: 90vh; overflow: hidden; }
+        .num-stock { font-family: 'Space Mono', monospace; font-weight: 700; display: block; padding: 4px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: opacity 0.2s; }
+        .num-stock:hover { opacity: 0.8; box-shadow: 0 0 0 2px var(--accent); }
+        
+        /* COLOR LOGIC */
+        .stock-surplus { background-color: #fca5a5; color: #000000; }
+        .stock-short { background-color: #86efac; color: #000000; }
+        .stock-equal { background-color: #93c5fd; color: #000000; }
+        
+        /* Purchase Matrix Specific */
+        .purchase-matrix-val { background-color: #fee2e2; color: #991b1b; font-family: 'Space Mono', monospace; font-weight: 700; display: block; padding: 4px; border-radius: 4px; cursor: pointer; border: 1px solid #fecaca; }
+        .purchase-matrix-val:hover { background-color: #fecaca; }
+        
+        /* Suggestion Badges */
+        .suggestion-transfer { background-color: #dbeafe; color: #1e3a8a; }
+        .suggestion-purchase { background-color: #fef3c7; color: #92400e; font-size: 12px; padding: 6px 10px; font-weight: 700; border: 1px solid #fde68a; }
+        .suggestion-shortage { background-color: #e5e7eb; color: #374151; }
+        .suggestion-surplus { background-color: #fee2e2; color: #991b1b; }
+        
+        /* Modal */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 24px; }
+        .modal-content { background: var(--bg-secondary); border-radius: 16px; max-width: 600px; width: 100%; max-height: 90vh; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        .modal-lg { max-width: 900px; }
         .hidden { display: none !important; }
-        .badge { display: inline-flex; padding: 4px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; }
+        
+        /* Purchase Page */
+        .purchase-header { background: linear-gradient(135deg, var(--danger), #b91c1c); color: white; padding: 24px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Summary Table */
+        .mini-table { width: 100%; min-width: auto; font-size: 12px; }
+        .mini-table th { font-size: 10px; padding: 8px; text-align: left; }
+        .mini-table td { font-size: 12px; padding: 8px; text-align: left; border: none; }
+        .mini-table tr { border-bottom: 1px solid var(--border); }
+        
+        .badge { display: inline-flex; padding: 4px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; margin-right: 4px; }
         .badge-danger { background: rgba(220,38,38,0.1); color: var(--danger); }
         .badge-success { background: rgba(5,150,105,0.1); color: var(--success); }
-        .sync-status { font-size: 11px; padding: 4px 8px; border-radius: 4px; margin-left: 10px; font-weight: 600; }
-        .sync-ok { background: #d1fae5; color: #065f46; }
-        .sync-pending { background: #fef3c7; color: #92400e; }
+        .badge-info { background: rgba(37,99,235,0.1); color: var(--info); }
+        .badge-warning { background: rgba(245,158,11,0.1); color: var(--warning); }
     </style>
 </head>
 <body>
 
+    <!-- DASHBOARD VIEW -->
     <div id="dashboardView" class="container">
         <header class="card p-6 mb-6">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <div class="flex items-center gap-4">
                     <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--accent);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18"/></svg></div>
-                    <div>
-                        <h1 class="text-xl font-bold tracking-tight">Subham Grand</h1>
-                        <p class="text-xs" style="color: var(--text-muted)">Full Data Sync <span id="syncStatus" class="sync-status sync-pending">Local</span></p>
-                    </div>
+                    <div><h1 class="text-xl font-bold tracking-tight">Subham Grand</h1><p class="text-xs" style="color: var(--text-muted)">Supply Intelligence Dashboard</p></div>
                 </div>
                 <div class="flex flex-wrap gap-2 no-print">
                     <button onclick="toggleTheme()" class="btn btn-secondary">Theme</button>
+                    <button onclick="openPurchaseReportTab()" class="btn btn-danger">Purchase Report</button>
+                    
+                    <!-- Upload Button -->
                     <button onclick="document.getElementById('uploadInput').click()" class="btn btn-primary">Upload Stock</button>
                     <input type="file" id="uploadInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleFileUpload(event)">
-                    <button onclick="saveData()" class="btn btn-success">Save to Cloud</button>
+                    
+                    <!-- Save & Reset Buttons -->
+                    <button onclick="saveData()" class="btn btn-success">Save Data</button>
                     <button onclick="resetData()" class="btn btn-danger">Reset Stock</button>
+                    
                     <button onclick="exportMatrixExcel()" class="btn btn-secondary">Export All</button>
                     <button onclick="openManualModal()" class="btn btn-secondary">Manual</button>
                 </div>
             </div>
         </header>
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6" style="max-width: 1600px; margin: 0 auto;">
             <div class="card p-4"><p class="text-xs font-semibold uppercase mb-1" style="color: var(--text-muted)">Target</p><div id="totalBase" class="text-2xl font-bold mono">0</div></div>
             <div class="card p-4"><p class="text-xs font-semibold uppercase mb-1" style="color: var(--text-muted)">Stock</p><div id="totalPresent" class="text-2xl font-bold mono" style="color: var(--info)">0</div></div>
             <div class="card p-4" style="border-left: 4px solid var(--danger);"><p class="text-xs font-semibold uppercase mb-1" style="color: var(--danger)">Net Shortage</p><div id="purchaseSuggestion" class="text-2xl font-bold mono" style="color: var(--danger)">0</div></div>
             <div class="card p-4" style="border-left: 4px solid var(--success);"><p class="text-xs font-semibold uppercase mb-1" style="color: var(--text-muted)">Efficiency</p><div id="efficiency" class="text-2xl font-bold mono" style="color: var(--success)">0%</div></div>
         </div>
 
-        <div class="tab-bar no-print">
+        <div class="tab-bar no-print" style="max-width: 1600px; margin: 0 auto 20px auto;">
             <button class="tab-btn active" onclick="switchTab('matrix')">Stock Matrix</button>
+            <button class="tab-btn" onclick="switchTab('analytics')">Analytics</button>
             <button class="tab-btn" onclick="switchTab('actions')">Actions</button>
         </div>
 
         <div id="tabMatrix" class="tab-content">
             <div class="card"><div class="table-container" style="border:none;">
-                <table id="horizontalTable"><thead id="matrixHead"></thead><tbody id="tableBody"></tbody></table>
+                <table id="horizontalTable">
+                    <thead id="matrixHead"></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
             </div></div>
         </div>
 
+        <div id="tabAnalytics" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" style="max-width: 1600px; margin: 0 auto;">
+                <div class="lg:col-span-2 card p-6" style="height: 450px;">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold">Performance Overview</h3>
+                        <select id="chartFilter" onchange="refreshCharts()" class="input-field" style="width:auto"></select>
+                    </div>
+                    <div style="position:relative; height:calc(100% - 40px);"><canvas id="mainChart"></canvas></div>
+                </div>
+                <div class="flex flex-col gap-6">
+                    <div class="card p-6 flex-grow" style="height: 220px;">
+                        <h3 class="font-bold mb-2">Actions Distribution</h3>
+                        <div style="position:relative; height:calc(100% - 30px);"><canvas id="pieChart"></canvas></div>
+                    </div>
+                    <div class="card p-4 flex-grow">
+                        <h3 class="font-bold mb-3 text-sm">Network Total Report</h3>
+                        <div class="table-container" style="border:none;">
+                            <table class="mini-table">
+                                <thead><tr><th>Category</th><th>Tgt</th><th>Stk</th><th>Action</th></tr></thead>
+                                <tbody id="summaryTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACTIONS TAB -->
         <div id="tabActions" class="tab-content hidden">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" style="max-width: 1600px; margin: 0 auto;">
                 <div class="card p-6"><h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Add Branch</h3><div class="flex gap-2"><input type="text" id="newBr" placeholder="Name" class="input-field"><button onclick="addBr()" class="btn btn-primary">Add</button></div></div>
                 <div class="card p-6"><h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Add Category</h3><div class="flex gap-2"><input type="text" id="newCat" placeholder="Name" class="input-field"><button onclick="addCat()" class="btn btn-primary">Add</button></div></div>
+                
+                <!-- SET TARGET CARD UPDATED -->
                 <div class="card p-6">
                     <h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Set Target</h3>
                     <div class="flex flex-col gap-2">
                         <div class="flex gap-2">
                             <select id="selCat" class="input-field text-xs" onchange="updateTargetMrpOptions()"></select>
-                            <select id="selMrp" class="input-field text-xs"><option value="TOTAL">TOTAL</option></select>
+                            <select id="selMrp" class="input-field text-xs">
+                                <option value="TOTAL">TOTAL</option>
+                            </select>
                         </div>
                         <div class="flex gap-2">
                             <select id="selBr" class="input-field text-xs"></select>
@@ -121,45 +200,116 @@
         </div>
     </div>
 
-    <!-- Manual Modal -->
+    <!-- MANUAL MODAL -->
     <div id="manualModal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="p-6" style="background: var(--accent); color: #fff;"><h2 class="text-lg font-bold">Manual Data Entry</h2></div>
             <div class="p-6 space-y-4">
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Category</label><input type="text" id="manualCatInput" list="catList" class="input-field" placeholder="Select category" oninput="updateMrpOptions()"><datalist id="catList"></datalist></div>
-                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">MRP Range</label><input type="text" id="manualMrp" list="mrpList" class="input-field" placeholder="Select MRP"><datalist id="mrpList"></datalist></div>
+                    <div>
+                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Category</label>
+                        <input type="text" id="manualCatInput" list="catList" class="input-field" placeholder="Select or type category" oninput="updateMrpOptions()">
+                        <datalist id="catList"></datalist>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">MRP Range</label>
+                        <input type="text" id="manualMrp" list="mrpList" class="input-field" placeholder="Select MRP range">
+                        <datalist id="mrpList"></datalist>
+                    </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Branch</label><select id="manualBranch" class="input-field"><option value="-1">ALL STORES</option></select></div>
-                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Target / Stock</label><div class="flex gap-2"><input type="number" id="manualTarget" class="input-field" placeholder="Tgt"><input type="number" id="manualStock" class="input-field" placeholder="Stk"></div></div>
+                    <div>
+                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Branch</label>
+                        <select id="manualBranch" class="input-field"><option value="-1">ALL STORES</option></select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Target / Stock</label>
+                        <div class="flex gap-2">
+                            <input type="number" id="manualTarget" class="input-field" placeholder="Tgt">
+                            <input type="number" id="manualStock" class="input-field" placeholder="Stk">
+                        </div>
+                    </div>
                 </div>
+                <p class="text-xs" style="color: var(--text-muted)">Note: Select "ALL STORES" to apply values to every branch.</p>
                 <button onclick="saveManualData()" class="btn btn-success w-full py-3 mt-2">Save Entry</button>
             </div>
             <div class="p-4 text-center" style="border-top: 1px solid var(--border);"><button onclick="closeManualModal()" class="text-xs font-bold uppercase" style="color: var(--text-muted);">Cancel</button></div>
         </div>
     </div>
 
-    <!-- Branch Modal -->
+    <!-- BRANCH MODAL (Dashboard) -->
     <div id="modal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 650px;">
-            <div class="p-6 flex justify-between items-center" style="background: var(--accent); color: #fff;"><h2 id="modalStore" class="text-lg font-bold"></h2><button onclick="closeModal()" class="text-2xl">&times;</button></div>
+            <div class="p-6 flex justify-between items-center" style="background: var(--accent); color: #fff;">
+                <h2 id="modalStore" class="text-lg font-bold"></h2>
+                <button onclick="closeModal()" class="text-2xl opacity-80 hover:opacity-100">&times;</button>
+            </div>
             <div id="modalBody" class="p-6 space-y-3 max-h-96 overflow-y-auto"></div>
-            <div class="p-4 flex gap-2" style="border-top: 1px solid var(--border);"><button onclick="exportBranchReport()" class="btn btn-info w-full">Export</button><button onclick="closeModal()" class="btn btn-secondary w-full">Close</button></div>
+            <div class="p-4 flex gap-2" style="border-top: 1px solid var(--border);">
+                <button onclick="exportBranchReport()" class="btn btn-info w-full no-print">Export to Excel</button>
+                <button onclick="closeModal()" class="btn btn-secondary w-full no-print">Close</button>
+            </div>
         </div>
     </div>
 
+    <!-- PURCHASE DETAIL MODAL (Report) -->
+    <div id="purchaseModal" class="modal-overlay hidden">
+        <div class="modal-content modal-lg">
+            <div class="p-6 flex justify-between items-center" style="background: var(--danger); color: #fff;">
+                <div>
+                    <h2 id="purchaseModalStore" class="text-lg font-bold"></h2>
+                    <p class="text-xs opacity-80">Purchase Requirement Breakdown</p>
+                </div>
+                <button onclick="closePurchaseModal()" class="text-2xl opacity-80 hover:opacity-100">&times;</button>
+            </div>
+            <div id="purchaseModalBody" class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                <div style="height: 250px; position: relative;"><canvas id="purchaseModalChart"></canvas></div>
+                <div class="table-container" style="border:none;">
+                    <table class="mini-table" id="purchaseDetailTable">
+                        <thead><tr><th>Category</th><th>MRP</th><th>Tgt</th><th>Stk</th><th>Shortage</th><th>Purchase Qty</th></tr></thead>
+                        <tbody id="purchaseModalTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="p-4 flex gap-2" style="border-top: 1px solid var(--border);">
+                <button onclick="exportStorePurchaseExcel()" class="btn btn-danger w-full no-print">Export Purchase List</button>
+                <button onclick="closePurchaseModal()" class="btn btn-secondary w-full no-print">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PURCHASE REPORT VIEW -->
+    <div id="purchaseReportView" class="container hidden">
+        <div class="purchase-header">
+            <div><h1 class="text-2xl font-bold">Purchase Requirement Report</h1><p class="text-sm opacity-80">Net requirements after transfer adjustments.</p></div>
+            <div class="flex gap-2 no-print">
+                <button onclick="exportPurchaseReportExcel()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Export All</button>
+                <button onclick="window.close()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Close Tab</button>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div class="card p-6" style="height: 350px;"><h3 class="font-bold mb-4">Purchase Volume</h3><div style="position:relative; height:calc(100% - 30px);"><canvas id="purchaseChart"></canvas></div></div>
+            <div class="card p-6 lg:col-span-2">
+                 <h3 class="font-bold mb-4">Summary</h3>
+                 <div class="grid grid-cols-2 gap-4">
+                     <div class="p-4 rounded" style="background: #fff5f5;"><p class="text-xs text-gray-500 uppercase">Total Purchase Qty</p><p class="font-bold text-red-600 text-xl" id="sumPurchase">0</p></div>
+                     <div class="p-4 rounded" style="background: #f0fdf4;"><p class="text-xs text-gray-500 uppercase">Categories Affected</p><p class="font-bold text-green-600 text-xl" id="sumCats">0</p></div>
+                 </div>
+            </div>
+        </div>
+        <div class="card"><div class="table-container" style="border:none;"><table id="purchaseHorizontalTable"><thead id="purchaseMatrixHead"></thead><tbody id="purchaseMatrixBody"></tbody></table></div></div>
+    </div>
+
     <script>
-        // --- CONFIG ---
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyYwcqHWsbv4pMB0gQdNJxfKCA-Cv3wsZ0Vy3UmQCFtUS-ZR3s3gf6CWNLlLfCNyDLhfw/exec';
+        // --- INITIAL CONFIG ---
         let stores = ["SG", "SGHYD", "SGRJY", "SGTNL", "SIRIELR", "SGTNK", "SGTUNI", "SIRICPT", "SIRIVJY", "SIRIKKD", "SIRITPT", "VS"];
         
-        // --- FULL DEFAULT TEMPLATE ---
+        // --- DEFAULT DATA TEMPLATE (Used for Reset) ---
         const defaultInventoryTemplate = [
             { name: "BNS HANDLOOM HF", base: Array(12).fill(0), present: [], mrpDetails: [
                 { range: "0<500", base: [500, 250, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] }, { range: "501<1000", base: [1000, 450, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] }, { range: "1001<1500", base: [1200, 500, 500, 1000, 750, 750, 750, 400, 1200, 750, 750, 750], present: [] }, { range: "1501<2000", base: [500, 250, 250, 400, 300, 350, 350, 250, 500, 350, 350, 300], present: [] }, { range: "2001<3000", base: [500, 250, 250, 350, 300, 350, 300, 250, 500, 350, 350, 300], present: [] }, { range: "3001<4000", base: [300, 150, 150, 200, 200, 200, 200, 150, 300, 200, 200, 150], present: [] }, { range: "4001<6000", base: [200, 100, 100, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] }, { range: "6001<7500", base: [100, 50, 50, 100, 50, 100, 50, 50, 100, 100, 100, 100], present: [] }, { range: ">7500", base: [20, 10, 10, 0, 0, 10, 0, 20, 20, 10, 10, 20], present: [] }, { range: "501<1000(1+1)", base: [800, 500, 500, 500, 500, 400, 1000, 400, 800, 400, 400, 400], present: [] }, { range: "1001<2000(1+1)", base: [500, 250, 250, 400, 300, 300, 500, 300, 500, 300, 300, 400], present: [] } ] },
             { name: "SILK WORK SAREES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [175, 87, 87, 125, 125, 150, 175, 0, 175, 150, 150, 150], present: [] }, { range: "501<1000", base: [370, 185, 185, 295, 245, 295, 345, 50, 370, 295, 295, 295], present: [] }, { range: "1001<1500", base: [400, 175, 175, 350, 280, 350, 490, 200, 400, 350, 350, 350], present: [] }, { range: "1501<2000", base: [400, 200, 200, 300, 150, 300, 200, 100, 400, 300, 300, 250], present: [] }, { range: "2001<3000", base: [350, 175, 175, 300, 150, 350, 400, 150, 350, 350, 350, 250], present: [] }, { range: "3001<4000", base: [125, 63, 63, 100, 100, 100, 100, 100, 125, 100, 100, 50], present: [] }, { range: "4001<6000", base: [50, 25, 25, 25, 25, 50, 50, 25, 50, 50, 50, 25], present: [] }, { range: ">6000", base: [20, 10, 10, 0, 0, 0, 0, 0, 20, 0, 0, 0], present: [] }, { range: "501<1000(1+1)", base: [175, 87, 87, 125, 125, 150, 175, 50, 175, 150, 150, 150], present: [] }, { range: "1001<2000(1+1)", base: [115, 58, 58, 90, 75, 90, 105, 50, 115, 90, 90, 90], present: [] } ] },
-            { name: "PRINT WORK SAREES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [200, 100, 100, 175, 150, 150, 175, 150, 200, 150, 150, 150], present: [] }, { range: "501<1000", base: [265, 133, 133, 210, 210, 210, 210, 100, 265, 210, 210, 210], present: [] }, { range: "1001<1500", base: [150, 75, 75, 120, 120, 120, 175, 100, 150, 120, 120, 120], present: [] }, { range: "1501<2000", base: [100, 50, 50, 70, 70, 70, 70, 50, 100, 70, 70, 70], present: [] }, { range: "501<1000(1+1)", base: [150, 75, 75, 115, 115, 115, 150, 120, 150, 115, 115, 115], present: [] }, { range: "1001<2000(1+1)", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] } ] },
+            { name: "PRINT WORK SAREES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [200, 100, 100, 175, 150, 150, 175, 150, 200, 150, 150, 150], present: [] }, { range: "501<1000", base: [265, 133, 133, 210, 210, 210, 210, 100, 265, 210, 210, 210], present: [] }, { range: "1001<1500", base: [150, 75, 75, 120, 120, 120, 175, 100, 150, 120, 120, 120], present: [] }, { range: "1501<2000", base: [100, 50, 50, 70, 70, 70, 70, 50, 100, 70, 70, 70], present: [] }, { range: "2001<3000", base: Array(12).fill(0), present: [] }, { range: "3001<4000", base: Array(12).fill(0), present: [] }, { range: "501<1000(1+1)", base: [150, 75, 75, 115, 115, 115, 150, 120, 150, 115, 115, 115], present: [] }, { range: "1001<2000(1+1)", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] } ] },
             { name: "HANDLOOM COTTON", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [200, 60, 60, 100, 120, 75, 150, 50, 200, 75, 75, 100], present: [] }, { range: "501<1000", base: [300, 150, 150, 300, 175, 100, 100, 150, 300, 100, 100, 300], present: [] }, { range: "1001<1500", base: [100, 50, 50, 120, 75, 50, 25, 75, 100, 50, 50, 120], present: [] }, { range: "1501<2000", base: [50, 25, 25, 60, 40, 20, 0, 50, 50, 20, 20, 60], present: [] }, { range: "2001<3000", base: [30, 15, 15, 20, 0, 20, 0, 0, 30, 20, 20, 20], present: [] } ] },
             { name: "VENKATAGIRI", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<1000", base: [200, 100, 100, 150, 100, 100, 200, 100, 200, 100, 100, 175], present: [] }, { range: "1001<1500", base: [100, 60, 60, 100, 50, 30, 100, 50, 100, 30, 30, 100], present: [] }, { range: "1501<2000", base: [75, 50, 50, 75, 20, 30, 50, 50, 75, 30, 30, 75], present: [] }, { range: "2001<3000", base: [30, 15, 15, 30, 0, 10, 20, 20, 30, 10, 10, 30], present: [] }, { range: ">3000", base: Array(12).fill(0), present: [] } ] },
             { name: "UPPADA (MANGALAGIRI)", base: [50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [], mrpDetails: [] },
@@ -196,8 +346,9 @@
         ];
 
         // Active Data
-        let inventoryData = JSON.parse(JSON.stringify(defaultInventoryTemplate));
+        let inventoryData = JSON.parse(JSON.stringify(defaultInventoryTemplate)); // Deep copy
         
+        // Initialize 'present' arrays
         function initPresentArrays(data) {
             data.forEach(cat => {
                 cat.present = Array(stores.length).fill(0);
@@ -210,75 +361,49 @@
 
         let mainChart = null; let pieChart = null;
         let currentModalBranchIndex = null;
+        let purchaseModalChartInstance = null;
 
-        // --- SYNC FUNCTIONS ---
-        function updateSyncStatus(status) {
-            const el = document.getElementById('syncStatus');
-            if (!el) return;
-            if(status === 'saving') { el.textContent = 'Saving...'; el.className = 'sync-status sync-pending'; }
-            else if(status === 'saved') { el.textContent = 'Saved to Cloud'; el.className = 'sync-status sync-ok'; }
-            else if(status === 'loading') { el.textContent = 'Loading...'; el.className = 'sync-status sync-pending'; }
-            else if(status === 'error') { el.textContent = 'Sync Error'; el.className = 'sync-status sync-pending'; }
-            else { el.textContent = 'Local'; el.className = 'sync-status sync-pending'; }
-        }
-
+        // --- SAVE & RESET FUNCTIONS ---
         function saveData() {
-            if(!GOOGLE_SCRIPT_URL) { alert("URL missing"); return; }
-            updateSyncStatus('saving');
-            const payload = { stores: stores, inventoryData: inventoryData };
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                cache: 'no-cache',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(() => {
-                updateSyncStatus('saved');
-                alert('Data saved to Google Sheet successfully!');
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                updateSyncStatus('error');
-                alert('Failed to save data.');
-            });
+            localStorage.setItem('subham_inventory', JSON.stringify(inventoryData));
+            localStorage.setItem('subham_stores', JSON.stringify(stores));
+            alert('Data Saved Successfully!');
         }
 
         function loadData() {
-            if(!GOOGLE_SCRIPT_URL) { updateSyncStatus('local'); return; }
-            updateSyncStatus('loading');
-            fetch(GOOGLE_SCRIPT_URL)
-            .then(response => response.json())
-            .then(data => {
-                if(data.stores) stores = data.stores;
-                if(data.inventoryData) {
-                    inventoryData = data.inventoryData;
+            const savedInv = localStorage.getItem('subham_inventory');
+            const savedStores = localStorage.getItem('subham_stores');
+            if(savedInv && savedStores) {
+                try {
+                    inventoryData = JSON.parse(savedInv);
+                    stores = JSON.parse(savedStores);
                     initPresentArrays(inventoryData);
+                } catch (e) {
+                    console.error("Failed to load saved data, resetting.", e);
+                    resetData(true); 
                 }
-                render();
-                updateSyncStatus('saved');
-            })
-            .catch(error => {
-                console.error('Error loading data:', error);
-                updateSyncStatus('error');
-                render();
-            });
+            }
         }
 
         function resetData(silent = false) {
             if(!silent) {
-                if(!confirm('Reset ALL Store Stock to 0? Targets will be kept. Changes saved to cloud.')) return;
+                if(!confirm('Are you sure? This will set all Stock values to 0 but keep your Targets.')) return;
             }
+            
             inventoryData.forEach(cat => {
                 if(cat.present) cat.present.fill(0);
-                if(cat.mrpDetails) { cat.mrpDetails.forEach(mrp => { if(mrp.present) mrp.present.fill(0); }); }
+                if(cat.mrpDetails) {
+                    cat.mrpDetails.forEach(mrp => {
+                        if(mrp.present) mrp.present.fill(0);
+                    });
+                }
             });
             saveData(); 
             render();
-            if(!silent) alert('Stock Reset.');
+            if(!silent) alert('Stock Reset to 0.');
         }
 
-        // --- LOGIC & RENDER ---
+        // --- LOGIC ---
         function getSmartLogic(si, baseArr, presentArr) {
             if (!baseArr || !presentArr) return { transfer: null, purchase: 0 };
             if (si >= presentArr.length || si >= baseArr.length) return { transfer: null, purchase: 0 };
@@ -316,18 +441,28 @@
             }
         }
 
+        // --- RENDER ---
         function render() {
             renderHorizontalMatrix('matrixHead', 'tableBody', false);
+            const summaryTbody = document.getElementById('summaryTableBody');
             const selCat = document.getElementById('selCat');
             const selBr = document.getElementById('selBr');
-            let catOpts = ''; let brOpts = '';
+            const chartFilter = document.getElementById('chartFilter');
+            let summaryHtml = '';
+            let catOptsSelect = ''; let catOptsDatalist = ''; let brOpts = '';
             let globalBase = 0, globalPresent = 0;
             inventoryData.forEach((cat, ci) => {
-                catOpts += `<option value="${ci}">${cat.name}</option>`;
+                catOptsSelect += `<option value="${ci}">${cat.name}</option>`;
+                catOptsDatalist += `<option value="${cat.name}">`;
+                let catTotalT = 0, catTotalS = 0;
                 stores.forEach((store, si) => {
+                    catTotalT += cat.base[si] || 0; catTotalS += cat.present[si] || 0;
                     globalBase += cat.base[si] || 0; globalPresent += cat.present[si] || 0;
                     if(cat.mrpDetails) { cat.mrpDetails.forEach(mrp => { globalBase += mrp.base[si] || 0; globalPresent += mrp.present[si] || 0; }); }
                 });
+                const catGap = catTotalS - catTotalT;
+                let actionBadge = catGap < 0 ? `<span class="badge badge-danger">Buy ${Math.abs(catGap)}</span>` : `<span class="badge badge-success">OK</span>`;
+                summaryHtml += `<tr><td style="font-weight:600">${cat.name}</td><td class="mono">${catTotalT}</td><td class="mono">${catTotalS}</td><td>${actionBadge}</td></tr>`;
             });
             stores.forEach((s, si) => brOpts += `<option value="${si}">${s}</option>`);
             const netGap = globalBase - globalPresent;
@@ -336,21 +471,27 @@
             document.getElementById('totalPresent').textContent = Math.round(globalPresent).toLocaleString();
             document.getElementById('purchaseSuggestion').textContent = Math.max(0, Math.round(netGap)).toLocaleString();
             document.getElementById('efficiency').textContent = efficiency + '%';
-            selCat.innerHTML = catOpts; selBr.innerHTML = brOpts;
+            if(summaryTbody) summaryTbody.innerHTML = summaryHtml;
+            selCat.innerHTML = catOptsSelect; selBr.innerHTML = brOpts; chartFilter.innerHTML = catOptsSelect;
+            document.getElementById('catList').innerHTML = catOptsDatalist;
             document.getElementById('manualBranch').innerHTML = '<option value="-1">ALL STORES</option>' + brOpts;
+            
+            // IMPORTANT: Update Target MRP options after render
             updateTargetMrpOptions();
+
+            if (!document.getElementById('tabAnalytics').classList.contains('hidden')) refreshCharts();
         }
 
         function renderHorizontalMatrix(headId, bodyId, isPurchaseMode) {
             const thead = document.getElementById(headId);
             const tbody = document.getElementById(bodyId);
-            let headerHtml1 = '<tr><th rowspan="2">Category</th><th rowspan="2">MRP</th>';
+            let headerHtml1 = '<tr><th rowspan="2" style="min-width: 150px; border-bottom: none;">Category</th><th rowspan="2" style="min-width: 80px; border-bottom: none;">MRP</th>';
             let headerHtml2 = '<tr>';
             stores.forEach(store => {
-                headerHtml1 += `<th colspan="2" class="group-header">${store}</th>`;
-                headerHtml2 += `<th class="sub-header">Tgt</th><th class="sub-header">Stk</th>`;
+                headerHtml1 += `<th colspan="2" class="group-header" style="border-left: 1px solid rgba(255,255,255,0.2); text-align: center;">${store}</th>`;
+                headerHtml2 += `<th class="sub-header" style="width: 60px; text-align: center;">Tgt</th><th class="sub-header" style="width: 60px; text-align: center; border-right: 1px solid var(--border);">Stk</th>`;
             });
-            headerHtml1 += '<th rowspan="2">Action</th></tr>';
+            headerHtml1 += '<th rowspan="2" style="min-width: 160px; border-bottom: none;">AI Suggestion</th></tr>';
             headerHtml2 += '</tr>';
             thead.innerHTML = headerHtml1 + headerHtml2;
             let bodyHtml = '';
@@ -363,23 +504,34 @@
                         stores.forEach((store, si) => {
                             const t = mrp.base[si] || 0; const s = mrp.present[si] || 0; const gap = s - t;
                             const logic = getSmartLogic(si, mrp.base, mrp.present);
-                            if(logic.purchase > 0 || logic.transfer) hasAction = true;
-                            if(logic.purchase > 0) totalRowPurchase += logic.purchase;
-                            rowHtml += `<td><span class="num-target">${t}</span></td>`;
-                            let stockClass = gap > 0 ? 'num-stock stock-surplus' : (gap < 0 ? 'num-stock stock-short' : 'num-stock stock-equal');
-                            rowHtml += `<td onclick="editStock(${ci}, ${mrpIdx}, ${si})"><span class="${stockClass}">${s}</span></td>`;
+                            if(isPurchaseMode && logic.purchase === 0) { rowHtml += `<td></td><td></td>`; } 
+                            else {
+                                if(logic.purchase > 0 || logic.transfer) hasAction = true;
+                                if(logic.purchase > 0) totalRowPurchase += logic.purchase;
+                                rowHtml += `<td><span class="num-target">${t}</span></td>`;
+                                let stockClass = '';
+                                if (gap > 0) stockClass = 'num-stock stock-surplus';
+                                else if (gap < 0) stockClass = 'num-stock stock-short';
+                                else stockClass = 'num-stock stock-equal';
+                                if(isPurchaseMode) { rowHtml += `<td><span class="purchase-matrix-val">${logic.purchase}</span></td>`; } 
+                                else { rowHtml += `<td onclick="editStock(${ci}, ${mrpIdx}, ${si})"><span class="${stockClass}">${s}</span></td>`; }
+                            }
                         });
+                        if(isPurchaseMode && !hasAction) return;
                         let suggestionHtml = '';
-                        let surplusStore = null, maxSurplus = 0; let shortageStore = null, maxShortage = 0;
-                        stores.forEach((store, si) => {
-                            const g = (mrp.present[si] || 0) - (mrp.base[si] || 0);
-                            if(g > 0 && g > maxSurplus) { maxSurplus = g; surplusStore = store; }
-                            if(g < 0 && Math.abs(g) > maxShortage) { maxShortage = Math.abs(g); shortageStore = store; }
-                        });
-                        if (surplusStore && shortageStore) { const qty = Math.min(maxSurplus, maxShortage); suggestionHtml = `<span class="badge suggestion-purchase">${surplusStore} → ${shortageStore} (${qty})</span>`; } 
-                        else if (shortageStore) { suggestionHtml = `<span class="badge badge-danger">Shortage</span>`; } 
-                        else if (surplusStore) { suggestionHtml = `<span class="badge badge-success">Surplus</span>`; } 
-                        else { suggestionHtml = `<span class="badge badge-success">OK</span>`; }
+                        if(isPurchaseMode) { suggestionHtml = `<span class="badge suggestion-purchase">Buy ${totalRowPurchase}</span>`; } 
+                        else {
+                            let surplusStore = null, maxSurplus = 0; let shortageStore = null, maxShortage = 0;
+                            stores.forEach((store, si) => {
+                                const g = (mrp.present[si] || 0) - (mrp.base[si] || 0);
+                                if(g > 0 && g > maxSurplus) { maxSurplus = g; surplusStore = store; }
+                                if(g < 0 && Math.abs(g) > maxShortage) { maxShortage = Math.abs(g); shortageStore = store; }
+                            });
+                            if (surplusStore && shortageStore) { const qty = Math.min(maxSurplus, maxShortage); suggestionHtml = `<span class="badge suggestion-transfer">${surplusStore} → ${shortageStore} (${qty})</span>`; } 
+                            else if (shortageStore) { suggestionHtml = `<span class="badge suggestion-shortage">Shortage (No Stock)</span>`; } 
+                            else if (surplusStore) { suggestionHtml = `<span class="badge suggestion-surplus">Surplus</span>`; } 
+                            else { suggestionHtml = `<span class="badge badge-success">OK</span>`; }
+                        }
                         rowHtml += `<td>${suggestionHtml}</td></tr>`;
                         bodyHtml += rowHtml;
                     });
@@ -387,27 +539,45 @@
 
                 // Total Row
                 let totalHtml = `<tr style="background: rgba(13,148,136,0.05); font-weight: 700;"><td>${cat.name}</td><td><span class="badge badge-warning">TOTAL</span></td>`;
+                let totalHasAction = false; let totalRowPurchase = 0;
                 stores.forEach((store, si) => {
                     const t = cat.base[si] || 0; const s = cat.present[si] || 0; const gap = s - t;
-                    totalHtml += `<td><span class="num-target">${t}</span></td>`;
-                    let stockClass = gap > 0 ? 'num-stock stock-surplus' : (gap < 0 ? 'num-stock stock-short' : 'num-stock stock-equal');
-                    if(cat.mrpDetails && cat.mrpDetails.length > 0) { totalHtml += `<td onclick="openModal(${si})" style="cursor: pointer;"><span class="${stockClass}">${s}</span></td>`; } 
-                    else { totalHtml += `<td onclick="editStock(${ci}, -1, ${si})"><span class="${stockClass}">${s}</span></td>`; }
+                    const logic = getSmartLogic(si, cat.base, cat.present);
+                    if(isPurchaseMode && logic.purchase === 0) { totalHtml += `<td></td><td></td>`; } 
+                    else {
+                        if(logic.purchase > 0 || logic.transfer) totalHasAction = true;
+                        if(logic.purchase > 0) totalRowPurchase += logic.purchase;
+                        totalHtml += `<td><span class="num-target">${t}</span></td>`;
+                        let stockClass = '';
+                        if (gap > 0) stockClass = 'num-stock stock-surplus';
+                        else if (gap < 0) stockClass = 'num-stock stock-short';
+                        else stockClass = 'num-stock stock-equal';
+                        if(isPurchaseMode) { totalHtml += `<td onclick="openPurchaseStoreModal(${si})" style="cursor: pointer;"><span class="purchase-matrix-val">${logic.purchase}</span></td>`; } 
+                        else {
+                            if(cat.mrpDetails && cat.mrpDetails.length > 0) { totalHtml += `<td onclick="openModal(${si})" style="cursor: pointer;"><span class="${stockClass}">${s}</span></td>`; } 
+                            else { totalHtml += `<td onclick="editStock(${ci}, -1, ${si})"><span class="${stockClass}">${s}</span></td>`; }
+                        }
+                    }
                 });
-                let surplusStore = null, maxSurplus = 0; let shortageStore = null, maxShortage = 0;
-                stores.forEach((store, si) => {
-                    const g = (cat.present[si] || 0) - (cat.base[si] || 0);
-                    if(g > 0 && g > maxSurplus) { maxSurplus = g; surplusStore = store; }
-                    if(g < 0 && Math.abs(g) > maxShortage) { maxShortage = Math.abs(g); shortageStore = store; }
-                });
-                let suggestionHtml = '';
-                if (surplusStore && shortageStore) { const qty = Math.min(maxSurplus, maxShortage); suggestionHtml = `<span class="badge suggestion-purchase">${surplusStore} → ${shortageStore} (${qty})</span>`; } 
-                else if (shortageStore) { suggestionHtml = `<span class="badge badge-danger">Shortage</span>`; } 
-                else if (surplusStore) { suggestionHtml = `<span class="badge badge-success">Surplus</span>`; } 
-                else { suggestionHtml = `<span class="badge badge-success">OK</span>`; }
-                totalHtml += `<td>${suggestionHtml}</td>`;
+                if(isPurchaseMode) { if(totalHasAction) totalHtml += `<td><span class="badge suggestion-purchase">Buy ${totalRowPurchase}</span></td>`; else totalHtml += `<td></td>`; } 
+                else {
+                    let surplusStore = null, maxSurplus = 0; let shortageStore = null, maxShortage = 0;
+                    stores.forEach((store, si) => {
+                        const g = (cat.present[si] || 0) - (cat.base[si] || 0);
+                        if(g > 0 && g > maxSurplus) { maxSurplus = g; surplusStore = store; }
+                        if(g < 0 && Math.abs(g) > maxShortage) { maxShortage = Math.abs(g); shortageStore = store; }
+                    });
+                    let suggestionHtml = '';
+                    if (surplusStore && shortageStore) { const qty = Math.min(maxSurplus, maxShortage); suggestionHtml = `<span class="badge suggestion-transfer">${surplusStore} → ${shortageStore} (${qty})</span>`; } 
+                    else if (shortageStore) { suggestionHtml = `<span class="badge suggestion-shortage">Shortage (No Stock)</span>`; } 
+                    else if (surplusStore) { suggestionHtml = `<span class="badge suggestion-surplus">Surplus</span>`; } 
+                    else { suggestionHtml = `<span class="badge badge-success">OK</span>`; }
+                    totalHtml += `<td>${suggestionHtml}</td>`;
+                }
+                if(isPurchaseMode && !totalHasAction) return;
                 bodyHtml += totalHtml;
             });
+            if(isPurchaseMode && bodyHtml === '') { bodyHtml = `<tr><td colspan="${stores.length * 2 + 3}" style="text-align:center; padding: 20px; color:var(--success);">No Purchase Requirements Found</td></tr>`; }
             tbody.innerHTML = bodyHtml;
         }
         
@@ -415,28 +585,42 @@
             let currentVal = 0; let label = "";
             if (mrpIdx === -1) { currentVal = inventoryData[ci].present[si] || 0; label = `${inventoryData[ci].name} (Total) at ${stores[si]}`; } 
             else { currentVal = inventoryData[ci].mrpDetails[mrpIdx].present[si] || 0; label = `${inventoryData[ci].name} (${inventoryData[ci].mrpDetails[mrpIdx].range}) at ${stores[si]}`; }
-            const newValStr = prompt(`Edit Stock:\n${label}\nCurrent: ${currentVal}`, currentVal);
+            const newValStr = prompt(`Enter new stock for:\n${label}\n\nCurrent: ${currentVal}`, currentVal);
             if (newValStr === null || newValStr === "") return; 
             const newVal = parseInt(newValStr);
-            if (isNaN(newVal)) { alert("Invalid"); return; }
+            if (isNaN(newVal)) { alert("Invalid number."); return; }
             if (mrpIdx === -1) { inventoryData[ci].present[si] = newVal; } 
             else { inventoryData[ci].mrpDetails[mrpIdx].present[si] = newVal; recalculateCategoryTotals(ci); }
-            updateSyncStatus('local');
             render();
         }
 
-        // --- ACTIONS ---
+        // --- TABS & CHARTS ---
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.remove('hidden');
             event.target.classList.add('active');
+            if (tabName === 'analytics') refreshCharts();
         }
-        
+        function refreshCharts() {
+            const ci = parseInt(document.getElementById('chartFilter').value) || 0;
+            const cat = inventoryData[ci];
+            const isDark = document.body.classList.contains('dark-mode');
+            if (mainChart) mainChart.destroy(); if (pieChart) pieChart.destroy();
+            if (!cat) return;
+            const txtColor = isDark ? '#f1f5f9' : '#0f172a';
+            const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
+            mainChart = new Chart(document.getElementById('mainChart'), { data: { labels: stores, datasets: [ { type: 'line', label: 'Target', data: cat.base, borderColor: '#f59e0b', borderWidth: 2, pointRadius: 4 }, { type: 'bar', label: 'Stock', data: cat.present, backgroundColor: '#0d9488', borderRadius: 6 } ] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: txtColor } } }, scales: { x: { grid: { color: gridColor }, ticks: { color: txtColor } }, y: { grid: { color: gridColor }, ticks: { color: txtColor } } } } });
+            const stats = { transfer: 0, purchase: 0, ok: 0 };
+            cat.base.forEach((_, si) => { const logic = getSmartLogic(si, cat.base, cat.present); if (logic.transfer) stats.transfer++; if (logic.purchase > 0) stats.purchase++; if (!logic.transfer && logic.purchase === 0) stats.ok++; });
+            pieChart = new Chart(document.getElementById('pieChart'), { type: 'doughnut', data: { labels: ['Transfer', 'Purchase', 'OK'], datasets: [{ data: [stats.transfer, stats.purchase, stats.ok], backgroundColor: ['#2563eb', '#dc2626', '#059669'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: txtColor } } } } });
+        }
+
+        // --- ACTIONS TAB FUNCTIONS ---
         function addBr() {
             const name = document.getElementById('newBr').value.trim().toUpperCase();
-            if(!name) return alert('Enter name');
-            if(stores.includes(name)) return alert('Exists');
+            if(!name) return alert('Enter branch name');
+            if(stores.includes(name)) return alert('Branch exists');
             stores.push(name);
             inventoryData.forEach(cat => {
                 cat.base.push(0); cat.present.push(0);
@@ -444,120 +628,127 @@
             });
             document.getElementById('newBr').value = '';
             render();
+            alert('Branch Added');
         }
         function addCat() {
             const name = document.getElementById('newCat').value.trim().toUpperCase();
-            if(!name) return alert('Enter name');
-            if(inventoryData.find(c => c.name === name)) return alert('Exists');
+            if(!name) return alert('Enter category name');
+            if(inventoryData.find(c => c.name === name)) return alert('Category exists');
             inventoryData.push({ name: name, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] });
             document.getElementById('newCat').value = '';
             render();
+            alert('Category Added');
         }
+
+        // UPDATED: Update MRP options for Set Target
         function updateTargetMrpOptions() {
             const ci = parseInt(document.getElementById('selCat').value);
             const mrpSelect = document.getElementById('selMrp');
             mrpSelect.innerHTML = '<option value="TOTAL">TOTAL</option>';
+            
             if (!isNaN(ci)) {
                 const cat = inventoryData[ci];
-                if (cat.mrpDetails) cat.mrpDetails.forEach(mrp => { const opt = document.createElement('option'); opt.value = mrp.range; opt.textContent = mrp.range; mrpSelect.appendChild(opt); });
+                if (cat.mrpDetails && cat.mrpDetails.length > 0) {
+                    cat.mrpDetails.forEach(mrp => {
+                        const opt = document.createElement('option');
+                        opt.value = mrp.range;
+                        opt.textContent = mrp.range;
+                        mrpSelect.appendChild(opt);
+                    });
+                }
             }
         }
+
+        // UPDATED: Set Target with MRP support
         function setTarget() {
             const ci = parseInt(document.getElementById('selCat').value);
-            const mrpVal = document.getElementById('selMrp').value;
+            const mrpVal = document.getElementById('selMrp').value; // Get MRP value
             const si = parseInt(document.getElementById('selBr').value);
             const val = parseInt(document.getElementById('targetVal').value) || 0;
-            if (isNaN(ci) || isNaN(si)) { alert('Select options'); return; }
+            
+            if (isNaN(ci) || isNaN(si)) { alert('Select Category and Branch'); return; }
+
             const cat = inventoryData[ci];
-            if (mrpVal === 'TOTAL' || !mrpVal) { cat.base[si] = val; }
-            else {
+
+            // If MRP is TOTAL or empty, set main category target
+            if (mrpVal === 'TOTAL' || !mrpVal) {
+                cat.base[si] = val;
+            } else {
+                // Find specific MRP row
                 let mrpRow = cat.mrpDetails.find(r => r.range === mrpVal);
-                if (!mrpRow) { mrpRow = { range: mrpVal, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); }
+                if (!mrpRow) {
+                    // Create if not exists (should exist usually)
+                    mrpRow = { range: mrpVal, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) };
+                    cat.mrpDetails.push(mrpRow);
+                }
                 mrpRow.base[si] = val;
                 recalculateCategoryTotals(ci);
             }
-            updateSyncStatus('local');
             render();
+            alert('Target Set');
         }
 
-        // --- EXPORT & UPLOAD ---
+        // --- PURCHASE REPORT TAB ---
+        function openPurchaseReportTab() { localStorage.setItem('sg_report_data', JSON.stringify({ inventoryData, stores })); window.open(window.location.href.split('#')[0] + '#purchase', '_blank'); }
+        function checkPurchaseReportMode() { if (window.location.hash === '#purchase') { document.getElementById('dashboardView').classList.add('hidden'); document.getElementById('purchaseReportView').classList.remove('hidden'); renderPurchasePage(); } }
+        function renderPurchasePage() { const savedData = JSON.parse(localStorage.getItem('sg_report_data')); if (!savedData) return; inventoryData = savedData.inventoryData; stores = savedData.stores; let chartStats = { purchase: 0, categories: new Set() }; inventoryData.forEach(cat => { const processStats = (baseArr, presentArr) => { stores.forEach((store, si) => { const logic = getSmartLogic(si, baseArr, presentArr); if (logic.purchase > 0) { chartStats.purchase += logic.purchase; chartStats.categories.add(cat.name); } }); }; if (cat.mrpDetails && cat.mrpDetails.length > 0) { cat.mrpDetails.forEach(mrp => processStats(mrp.base, mrp.present)); } else { processStats(cat.base, cat.present); } }); document.getElementById('sumPurchase').innerText = Math.round(chartStats.purchase).toLocaleString(); document.getElementById('sumCats').innerText = chartStats.categories.size; new Chart(document.getElementById('purchaseChart'), { type: 'bar', data: { labels: ['Purchase Required'], datasets: [{ label: 'Qty', data: [chartStats.purchase], backgroundColor: '#dc2626', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } }); renderHorizontalMatrix('purchaseMatrixHead', 'purchaseMatrixBody', true); }
+        function openPurchaseStoreModal(si) { currentModalBranchIndex = si; const storeName = stores[si]; document.getElementById('purchaseModalStore').textContent = `${storeName} - Purchase Breakdown`; const purchaseItems = []; inventoryData.forEach(cat => { const processItem = (itemName, mrpRange, baseArr, presentArr) => { const logic = getSmartLogic(si, baseArr, presentArr); if (logic.purchase > 0) { const t = baseArr[si] || 0; const s = presentArr[si] || 0; const shortage = t - s; purchaseItems.push({ category: itemName, mrp: mrpRange, target: t, stock: s, shortage: shortage, purchase: logic.purchase }); } }; if (cat.mrpDetails && cat.mrpDetails.length > 0) { cat.mrpDetails.forEach(mrp => { processItem(cat.name, mrp.range, mrp.base, mrp.present); }); } else { processItem(cat.name, 'TOTAL', cat.base, cat.present); } }); let tableHtml = ''; purchaseItems.forEach(item => { tableHtml += `<tr><td>${item.category}</td><td>${item.mrp}</td><td class="mono">${item.target}</td><td class="mono">${item.stock}</td><td class="mono" style="color: var(--danger);">${item.shortage}</td><td class="mono" style="font-weight: 700;">${item.purchase}</td></tr>`; }); if(purchaseItems.length === 0) { tableHtml = `<tr><td colspan="6" style="text-align:center;">No purchase requirements for this store.</td></tr>`; } document.getElementById('purchaseModalTableBody').innerHTML = tableHtml; const ctx = document.getElementById('purchaseModalChart').getContext('2d'); if (purchaseModalChartInstance) purchaseModalChartInstance.destroy(); const chartLabels = purchaseItems.map(i => i.category + ' ' + i.mrp); const chartData = purchaseItems.map(i => i.purchase); purchaseModalChartInstance = new Chart(ctx, { type: 'bar', data: { labels: chartLabels, datasets: [{ label: 'Purchase Qty', data: chartData, backgroundColor: '#dc2626' }] }, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, title: { display: true, text: `Purchase Requirements for ${storeName}` } }, scales: { x: { beginAtZero: true, grid: { display: false } }, y: { grid: { display: false } } } } }); document.getElementById('purchaseModal').classList.remove('hidden'); }
+        function closePurchaseModal() { document.getElementById('purchaseModal').classList.add('hidden'); }
+        async function exportStorePurchaseExcel() { if (currentModalBranchIndex === null) return; const si = currentModalBranchIndex; const storeName = stores[si]; const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Purchase Report'); ws.addRow([`Purchase Requirement Report: ${storeName}`]); ws.mergeCells('A1:F1'); ws.getRow(1).font = { bold: true, size: 16, color: { argb: 'FFDC2626' } }; ws.getRow(3).values = ['Category', 'MRP', 'Target', 'Stock', 'Shortage', 'Purchase Qty']; ws.getRow(3).font = { bold: true, color: { argb: 'FFFFFFFF' } }; ws.getRow(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDC2626' } }; ws.columns = [{ width: 25 }, { width: 15 }, { width: 10 }, { width: 10 }, { width: 10 }, { width: 12 }]; let rowIdx = 4; inventoryData.forEach(cat => { const process = (name, range, baseArr, presentArr) => { const logic = getSmartLogic(si, baseArr, presentArr); if (logic.purchase > 0) { const t = baseArr[si] || 0; const s = presentArr[si] || 0; const short = t - s; ws.getRow(rowIdx).values = [name, range, t, s, short, logic.purchase]; rowIdx++; } }; if (cat.mrpDetails && cat.mrpDetails.length > 0) { cat.mrpDetails.forEach(mrp => process(cat.name, mrp.range, mrp.base, mrp.present)); } else { process(cat.name, 'TOTAL', cat.base, cat.present); } }); const buffer = await wb.xlsx.writeBuffer(); saveAs(new Blob([buffer]), `${storeName}_Purchase_Report.xlsx`); }
+        async function exportBranchReport() { if (currentModalBranchIndex === null) return; const si = currentModalBranchIndex; const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet(stores[si]); ws.addRow([`Report for Branch: ${stores[si]}`]); ws.mergeCells('A1:D1'); ws.getRow(1).font = { size: 14, bold: true }; ws.getRow(3).values = ['Category', 'Target', 'Stock', 'Action']; ws.getRow(3).font = { bold: true, color: { argb: 'FFFFFFFF' } }; ws.getRow(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } }; ws.columns = [{ width: 25 }, { width: 10 }, { width: 10 }, { width: 30 }]; let rowIdx = 4; inventoryData.forEach(cat => { const logic = getSmartLogic(si, cat.base, cat.present); const b = cat.base[si] || 0; const p = cat.present[si] || 0; let action = ''; if (logic.transfer) action += `Transfer ${logic.transfer.qty} from ${logic.transfer.from}; `; if (logic.purchase > 0) action += `Purchase ${logic.purchase}`; if (!action) action = 'OK'; ws.getRow(rowIdx).values = [cat.name, b, p, action]; rowIdx++; }); const buffer = await wb.xlsx.writeBuffer(); saveAs(new Blob([buffer]), `${stores[si]}_Report.xlsx`); }
+        async function exportMatrixExcel() { const wb = new ExcelJS.Workbook(); const wsMatrix = wb.addWorksheet('Horizontal Matrix'); const header1 = ['Category', 'MRP']; stores.forEach(s => header1.push(s, '')); header1.push('Suggestion'); wsMatrix.addRow(header1); const header2 = ['', '']; stores.forEach(() => header2.push('Target', 'Stock')); header2.push(''); wsMatrix.addRow(header2); stores.forEach((_, i) => { const colIndex = 3 + (i * 2); wsMatrix.mergeCells(1, colIndex, 1, colIndex + 1); }); ['A1', 'B1', 'K1'].forEach(cell => { wsMatrix.getCell(cell).font = { bold: true }; wsMatrix.getCell(cell).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } }; }); let rowIdx = 3; inventoryData.forEach(cat => { if (cat.mrpDetails && cat.mrpDetails.length > 0) { cat.mrpDetails.forEach(mrp => { const rowData = [cat.name, mrp.range]; let rowSurplus = 0, rowShortage = 0; let surplusStore=null, shortageStore=null; stores.forEach((_, si) => { const t = mrp.base[si] || 0; const s = mrp.present[si] || 0; const g = s - t; rowData.push(t); rowData.push(s); if(g > 0) { rowSurplus += g; surplusStore = stores[si]; } if(g < 0) { rowShortage += Math.abs(g); shortageStore = stores[si]; } }); let sugg = ''; if(rowSurplus > 0 && rowShortage > 0) sugg = `Transfer ${Math.min(rowSurplus, rowShortage)} from ${surplusStore} to ${shortageStore}`; else if(rowShortage > 0) sugg = `Shortage (No Stock)`; else if(rowSurplus > 0) sugg = `Surplus`; else sugg = 'OK'; rowData.push(sugg); wsMatrix.getRow(rowIdx).values = rowData; rowIdx++; }); } const totalData = [cat.name, 'TOTAL']; stores.forEach((_, si) => { totalData.push(cat.base[si] || 0); totalData.push(cat.present[si] || 0); }); totalData.push(''); const row = wsMatrix.getRow(rowIdx); row.values = totalData; row.font = { bold: true }; rowIdx++; }); const buffer = await wb.xlsx.writeBuffer(); saveAs(new Blob([buffer]), 'SubhamGrand_Horizontal_Report.xlsx'); }
+        async function exportPurchaseReportExcel() { const savedData = JSON.parse(localStorage.getItem('sg_report_data')); if(!savedData) return alert('No data found'); const data = savedData.inventoryData; const str = savedData.stores; const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Purchase Matrix'); const header1 = ['Category', 'MRP']; str.forEach(s => header1.push(s, '')); header1.push('Total'); ws.addRow(header1); const header2 = ['', '']; str.forEach(() => header2.push('Target', 'Purchase Qty')); header2.push('Purchase'); ws.addRow(header2); str.forEach((_, i) => { const colIndex = 3 + (i * 2); ws.mergeCells(1, colIndex, 1, colIndex + 1); }); ws.columns = [{ width: 25 }, { width: 12 }]; str.forEach(() => ws.columns.push({ width: 8 }, { width: 12 })); ws.columns.push({ width: 12 }); let rowIdx = 3; data.forEach(cat => { const processRange = (rangeName, baseArr, presentArr) => { let rowData = [cat.name, rangeName]; let totalRowPurchase = 0; let hasPurchase = false; str.forEach((store, si) => { const b = baseArr[si] || 0; const logic = getSmartLogic(si, baseArr, presentArr); rowData.push(b); rowData.push(logic.purchase > 0 ? logic.purchase : '-'); if(logic.purchase > 0) { totalRowPurchase += logic.purchase; hasPurchase = true; } }); rowData.push(totalRowPurchase > 0 ? totalRowPurchase : '-'); if(hasPurchase) { ws.getRow(rowIdx).values = rowData; rowIdx++; } }; if (cat.mrpDetails && cat.mrpDetails.length > 0) { cat.mrpDetails.forEach(mrp => processRange(mrp.range, mrp.base, mrp.present)); } else { processRange("TOTAL", cat.base, cat.present); } }); const buffer = await wb.xlsx.writeBuffer(); saveAs(new Blob([buffer]), 'SubhamGrand_Purchase_Matrix.xlsx'); }
+
+        // --- UPLOAD LOGIC ---
+        async function handleFileUpload(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async (e) => { const data = new Uint8Array(e.target.result); const workbook = new ExcelJS.Workbook(); await workbook.xlsx.load(data); const ws = workbook.worksheets[0]; const headerRow = ws.getRow(1); const storeColMap = []; headerRow.eachCell((cell, colNumber) => { if (colNumber <= 2) return; let val = cell.value; if (cell.result !== undefined) val = cell.result; if (val && typeof val === 'object' && val.richText) val = val.richText.map(t => t.text).join(''); const headerText = val ? val.toString().trim().toUpperCase() : ''; if (headerText) { storeColMap.push({ colIdx: colNumber, storeName: headerText }); } }); if (storeColMap.length === 0) { alert('No store columns found in Excel.'); return; } const oldStores = [...stores]; stores = storeColMap.map(m => m.storeName); inventoryData.forEach(cat => { const newBase = Array(stores.length).fill(0); oldStores.forEach((oldName, oldIdx) => { const newIdx = stores.indexOf(oldName); if (newIdx !== -1 && cat.base[oldIdx] !== undefined) { newBase[newIdx] = cat.base[oldIdx]; } }); cat.base = newBase; cat.present = Array(stores.length).fill(0); if (cat.mrpDetails) { cat.mrpDetails.forEach(mrp => { const newMrpBase = Array(stores.length).fill(0); oldStores.forEach((oldName, oldIdx) => { const newIdx = stores.indexOf(oldName); if (newIdx !== -1 && mrp.base[oldIdx] !== undefined) { newMrpBase[newIdx] = mrp.base[oldIdx]; } }); mrp.base = newMrpBase; mrp.present = Array(stores.length).fill(0); }); } }); const normalizeRange = (str) => { if (!str) return ''; let s = str.toString().trim().toUpperCase(); if (s === 'TOTAL') return 'TOTAL'; let match = s.match(/^(\d+)\s*[-<]+\s*(\d+)\s*(.*)/); if (match) { let suffix = match[3].trim(); return `${match[1]}<${match[2]}${suffix}`; } match = s.match(/^(>|<)\s*(\d+)\s*(.*)/); if (match) { return `${match[1]}${match[2]}${match[3].trim()}`; } const numbers = s.match(/\d+/g); if (numbers && numbers.length >= 2) return `${numbers[0]}<${numbers[1]}`; if (numbers && numbers.length === 1) return `>${numbers[0]}`; return s; }; ws.eachRow((row, rowNumber) => { if (rowNumber === 1) return; const getVal = (idx) => { const cell = row.getCell(idx); if (cell.value === null || cell.value === undefined || cell.value === '') return 0; let rawVal = 0; if (cell.result !== undefined) rawVal = parseFloat(cell.result); else rawVal = parseFloat(cell.value); if (isNaN(rawVal)) return 0; return Math.round(rawVal); }; const getStr = (idx) => { const cell = row.getCell(idx); let val = cell.value; if (cell.result !== undefined) val = cell.result; if (val && typeof val === 'object' && val.richText) val = val.richText.map(t => t.text).join(''); if (cell.type === ExcelJS.ValueType.Number) return cell.value.toString(); return val ? val.toString().trim().toUpperCase() : ''; }; const catName = getStr(1); const rawMrpName = getStr(2); const mrpName = normalizeRange(rawMrpName); if (!catName) return; let catIdx = inventoryData.findIndex(c => c.name === catName); if (catIdx === -1) { inventoryData.push({ name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }); catIdx = inventoryData.length - 1; } const cat = inventoryData[catIdx]; const isTotal = (mrpName === 'TOTAL' || mrpName === ''); storeColMap.forEach((mapItem, index) => { const val = getVal(mapItem.colIdx); if (isTotal) { cat.present[index] = val; } else { let mrpRow = cat.mrpDetails.find(r => r.range === mrpName); if (!mrpRow) { mrpRow = { range: mrpName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); } mrpRow.present[index] = val; } }); }); inventoryData.forEach((c, i) => recalculateCategoryTotals(i)); render(); alert('File Uploaded Successfully! Remember to click SAVE to keep changes.'); }; reader.readAsArrayBuffer(file); }
+
+        function toggleTheme() { document.body.classList.toggle('dark-mode'); render(); }
+        function openModal(si) { currentModalBranchIndex = si; document.getElementById('modalStore').textContent = stores[si]; let html = ''; inventoryData.forEach(cat => { const logic = getSmartLogic(si, cat.base, cat.present); const gap = (cat.present[si] || 0) - (cat.base[si] || 0); const border = gap < 0 ? 'var(--danger)' : 'var(--success)'; html += `<div class="card p-4 mb-2" style="border-left: 4px solid ${border};"><div class="flex justify-between text-xs font-semibold uppercase mb-1" style="color: var(--text-muted);"><span>${cat.name}</span><span>Gap: ${gap > 0 ? '+' : ''}${gap}</span></div><div class="font-bold"><div class="analysis-cell">${logic.transfer ? `<span class="badge badge-info">Trans ${logic.transfer.qty} fr. ${logic.transfer.from}</span>` : ''}${logic.purchase > 0 ? `<span class="badge badge-danger">Buy ${logic.purchase}</span>` : ''}${!logic.transfer && logic.purchase === 0 ? `<span class="badge badge-success">OK</span>` : ''}</div></div>`; }); document.getElementById('modalBody').innerHTML = html; document.getElementById('modal').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
         function openManualModal() { render(); document.getElementById('manualModal').classList.remove('hidden'); }
         function closeManualModal() { document.getElementById('manualModal').classList.add('hidden'); }
         function updateMrpOptions() { const catName = document.getElementById('manualCatInput').value.toUpperCase().trim(); const mrpList = document.getElementById('mrpList'); mrpList.innerHTML = '<option value="TOTAL">TOTAL</option>'; if(!catName) return; const cat = inventoryData.find(c => c.name === catName); if(cat && cat.mrpDetails) { cat.mrpDetails.forEach(mrp => { const option = document.createElement('option'); option.value = mrp.range; mrpList.appendChild(option); }); } }
         document.getElementById('manualCatInput').addEventListener('change', updateMrpOptions);
         document.getElementById('manualCatInput').addEventListener('input', updateMrpOptions);
+
         function saveManualData() { 
             const catName = document.getElementById('manualCatInput').value.toUpperCase().trim(); 
             const mrp = document.getElementById('manualMrp').value.trim(); 
             const si = parseInt(document.getElementById('manualBranch').value); 
             const target = parseInt(document.getElementById('manualTarget').value) || 0; 
             const stock = parseInt(document.getElementById('manualStock').value) || 0; 
-            if (!catName || !mrp || isNaN(si)) { alert('Missing'); return; } 
+            
+            if (!catName || !mrp || isNaN(si)) { alert('Missing fields'); return; } 
+            
             let catIndex = inventoryData.findIndex(c => c.name === catName); 
             if (catIndex === -1) { inventoryData.push({ name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }); catIndex = inventoryData.length - 1; } 
             const cat = inventoryData[catIndex]; 
-            if (si === -1) { if (mrp === 'TOTAL') { for(let i=0; i<stores.length; i++) { cat.base[i] = target; cat.present[i] = stock; } } else { let mrpRow = cat.mrpDetails.find(r => r.range === mrp); if (!mrpRow) { mrpRow = { range: mrp, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); } for(let i=0; i<stores.length; i++) { mrpRow.base[i] = target; mrpRow.present[i] = stock; } recalculateCategoryTotals(catIndex); } } else { if (mrp === 'TOTAL') { cat.base[si] = target; cat.present[si] = stock; } else { let mrpRow = cat.mrpDetails.find(r => r.range === mrp); if (!mrpRow) { mrpRow = { range: mrp, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); } mrpRow.base[si] = target; mrpRow.present[si] = stock; recalculateCategoryTotals(catIndex); } } closeManualModal(); updateSyncStatus('local'); render(); alert('Saved. Click Save to Cloud.'); 
+            
+            if (si === -1) {
+                const confirmed = confirm(`This will set ${stock} stock and ${target} target for "${catName} - ${mrp}" across ALL ${stores.length} stores. Proceed?`);
+                if(!confirmed) return;
+                if (mrp === 'TOTAL') { for(let i=0; i<stores.length; i++) { cat.base[i] = target; cat.present[i] = stock; } }
+                else {
+                    let mrpRow = cat.mrpDetails.find(r => r.range === mrp);
+                    if (!mrpRow) { mrpRow = { range: mrp, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); }
+                    for(let i=0; i<stores.length; i++) { mrpRow.base[i] = target; mrpRow.present[i] = stock; }
+                    recalculateCategoryTotals(catIndex);
+                }
+            } else {
+                if (mrp === 'TOTAL') { cat.base[si] = target; cat.present[si] = stock; }
+                else {
+                    let mrpRow = cat.mrpDetails.find(r => r.range === mrp);
+                    if (!mrpRow) { mrpRow = { range: mrp, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); }
+                    mrpRow.base[si] = target; mrpRow.present[si] = stock;
+                    recalculateCategoryTotals(catIndex);
+                }
+            }
+            closeManualModal(); render(); alert('Entry Saved. Click "Save Data" in header to persist.');
         }
-        function openModal(si) { currentModalBranchIndex = si; document.getElementById('modalStore').textContent = stores[si]; let html = ''; inventoryData.forEach(cat => { const logic = getSmartLogic(si, cat.base, cat.present); const gap = (cat.present[si] || 0) - (cat.base[si] || 0); html += `<div class="card p-4 mb-2" style="border-left: 4px solid ${gap < 0 ? 'var(--danger)' : 'var(--success)'};"><div class="flex justify-between text-xs font-semibold uppercase mb-1" style="color: var(--text-muted);"><span>${cat.name}</span><span>Gap: ${gap > 0 ? '+' : ''}${gap}</span></div><div class="font-bold">${logic.transfer ? `<span class="badge badge-info">Trans ${logic.transfer.qty} fr. ${logic.transfer.from}</span>` : ''}${logic.purchase > 0 ? `<span class="badge badge-danger">Buy ${logic.purchase}</span>` : ''}${!logic.transfer && logic.purchase === 0 ? `<span class="badge badge-success">OK</span>` : ''}</div></div>`; }); document.getElementById('modalBody').innerHTML = html; document.getElementById('modal').classList.remove('hidden'); }
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-        async function exportBranchReport() { if (currentModalBranchIndex === null) return; const si = currentModalBranchIndex; const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet(stores[si]); ws.addRow([`Report: ${stores[si]}`]); ws.addRow([]); ws.getRow(3).values = ['Category', 'Target', 'Stock', 'Action']; const buffer = await wb.xlsx.writeBuffer(); saveAs(new Blob([buffer]), `${stores[si]}_Report.xlsx`); }
-        async function exportMatrixExcel() { const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Report'); const header1 = ['Category', 'MRP']; stores.forEach(s => header1.push(s, '')); ws.addRow(header1); const buffer = await wb.xlsx.writeBuffer(); saveAs(new Blob([buffer]), 'Report.xlsx'); }
-        
-        async function handleFileUpload(event) { 
-            const file = event.target.files[0]; 
-            if (!file) return; 
-            const reader = new FileReader(); 
-            reader.onload = async (e) => { 
-                const data = new Uint8Array(e.target.result); 
-                const workbook = new ExcelJS.Workbook(); 
-                await workbook.xlsx.load(data); 
-                const ws = workbook.worksheets[0]; 
-                const headerRow = ws.getRow(1); 
-                const storeColMap = []; 
-                headerRow.eachCell((cell, colNumber) => { 
-                    if (colNumber <= 2) return; 
-                    let val = cell.value; 
-                    if (cell.result !== undefined) val = cell.result; 
-                    if (val && typeof val === 'object' && val.richText) val = val.richText.map(t => t.text).join(''); 
-                    const headerText = val ? val.toString().trim().toUpperCase() : ''; 
-                    if (headerText) { storeColMap.push({ colIdx: colNumber, storeName: headerText }); } 
-                }); 
-                if (storeColMap.length === 0) { alert('No store columns found in Excel.'); return; } 
-                storeColMap.forEach(map => { if(!stores.includes(map.storeName)) stores.push(map.storeName); });
-                inventoryData.forEach(cat => { while(cat.base.length < stores.length) { cat.base.push(0); cat.present.push(0); } if(cat.mrpDetails) cat.mrpDetails.forEach(mrp => { while(mrp.base.length < stores.length) { mrp.base.push(0); mrp.present.push(0); } }); });
-                const normalizeRange = (str) => { if (!str) return ''; let s = str.toString().trim().toUpperCase(); if (s === 'TOTAL') return 'TOTAL'; let match = s.match(/^(\d+)\s*[-<]+\s*(\d+)\s*(.*)/); if (match) { return `${match[1]}<${match[2]}${match[3].trim()}`; } match = s.match(/^(>|<)\s*(\d+)\s*(.*)/); if (match) { return `${match[1]}${match[2]}${match[3].trim()}`; } const numbers = s.match(/\d+/g); if (numbers && numbers.length >= 2) return `${numbers[0]}<${numbers[1]}`; if (numbers && numbers.length === 1) return `>${numbers[0]}`; return s; }; 
-                ws.eachRow((row, rowNumber) => { 
-                    if (rowNumber === 1) return; 
-                    const getVal = (idx) => { const cell = row.getCell(idx); if (cell.value === null || cell.value === undefined || cell.value === '') return null; let rawVal = 0; if (cell.result !== undefined) rawVal = parseFloat(cell.result); else rawVal = parseFloat(cell.value); if (isNaN(rawVal)) return null; return Math.round(rawVal); }; 
-                    const getStr = (idx) => { const cell = row.getCell(idx); let val = cell.value; if (cell.result !== undefined) val = cell.result; if (val && typeof val === 'object' && val.richText) val = val.richText.map(t => t.text).join(''); if (cell.type === ExcelJS.ValueType.Number) return cell.value.toString(); return val ? val.toString().trim().toUpperCase() : ''; }; 
-                    const catName = getStr(1); 
-                    const rawMrpName = getStr(2); 
-                    const mrpName = normalizeRange(rawMrpName); 
-                    if (!catName) return; 
-                    let catIdx = inventoryData.findIndex(c => c.name === catName); 
-                    if (catIdx === -1) { inventoryData.push({ name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }); catIdx = inventoryData.length - 1; } 
-                    const cat = inventoryData[catIdx]; 
-                    const isTotal = (mrpName === 'TOTAL' || mrpName === ''); 
-                    storeColMap.forEach((mapItem) => { 
-                        const si = stores.indexOf(mapItem.storeName);
-                        const val = getVal(mapItem.colIdx); 
-                        if(val !== null) {
-                            if (isTotal) { cat.present[si] = val; } else { let mrpRow = cat.mrpDetails.find(r => r.range === mrpName); if (!mrpRow) { mrpRow = { range: mrpName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); } mrpRow.present[si] = val; } 
-                        }
-                    }); 
-                }); 
-                inventoryData.forEach((c, i) => recalculateCategoryTotals(i)); 
-                updateSyncStatus('local'); 
-                render(); 
-                alert('File Uploaded. Save to Cloud.'); 
-            }; 
-            reader.readAsArrayBuffer(file); 
-        }
-
-        function toggleTheme() { document.body.classList.toggle('dark-mode'); render(); }
 
         window.onload = function() { 
             loadData(); 
+            checkPurchaseReportMode(); 
             render(); 
         };
     </script>
