@@ -72,16 +72,14 @@
             padding: 4px;
             border-radius: 4px;
             border: 1px solid rgba(0,0,0,0.1);
+            cursor: pointer; 
+            transition: opacity 0.2s;
         }
+        .num-stock:hover { opacity: 0.8; box-shadow: 0 0 0 2px var(--accent); }
         
-        /* COLOR LOGIC UPDATED */
-        /* Excess: Stock > Target = RED */
+        /* COLOR LOGIC */
         .stock-surplus { background-color: #fca5a5; color: #000000; }
-        
-        /* Low: Stock < Target = GREEN */
         .stock-short { background-color: #86efac; color: #000000; }
-        
-        /* Okay: Stock == Target = BLUE */
         .stock-equal { background-color: #93c5fd; color: #000000; }
         
         /* Purchase Matrix Specific */
@@ -96,9 +94,7 @@
             cursor: pointer;
             border: 1px solid #fecaca;
         }
-        .purchase-matrix-val:hover {
-            background-color: #fecaca;
-        }
+        .purchase-matrix-val:hover { background-color: #fecaca; }
         
         /* Suggestion Badges */
         .suggestion-transfer { background-color: #dbeafe; color: #1e3a8a; }
@@ -215,6 +211,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Category</label>
+                        <!-- Changed input to text, datalist will provide names -->
                         <input type="text" id="manualCatInput" list="catList" class="input-field" placeholder="Select or type category" oninput="updateMrpOptions()">
                         <datalist id="catList"></datalist>
                     </div>
@@ -225,7 +222,12 @@
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Branch</label><select id="manualBranch" class="input-field"></select></div>
+                    <div>
+                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Branch</label>
+                        <select id="manualBranch" class="input-field">
+                            <option value="-1">ALL STORES</option>
+                        </select>
+                    </div>
                     <div>
                         <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Target / Stock</label>
                         <div class="flex gap-2">
@@ -234,6 +236,7 @@
                         </div>
                     </div>
                 </div>
+                <p class="text-xs" style="color: var(--text-muted)">Note: Select "ALL STORES" to apply values to every branch.</p>
                 <button onclick="saveManualData()" class="btn btn-success w-full py-3 mt-2">Save Entry</button>
             </div>
             <div class="p-4 text-center" style="border-top: 1px solid var(--border);"><button onclick="closeManualModal()" class="text-xs font-bold uppercase" style="color: var(--text-muted);">Cancel</button></div>
@@ -321,387 +324,46 @@
         
         // --- DATA STRUCTURE (Default) ---
         let inventoryData = [
-            { 
-                name: "BNS HANDLOOM HF", 
-                base: Array(12).fill(0), 
-                present: [], 
-                mrpDetails: [
-                    { range: "0<500", base: [500, 250, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] },
-                    { range: "501<1000", base: [1000, 450, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] },
-                    { range: "1001<1500", base: [1200, 500, 500, 1000, 750, 750, 750, 400, 1200, 750, 750, 750], present: [] },
-                    { range: "1501<2000", base: [500, 250, 250, 400, 300, 350, 350, 250, 500, 350, 350, 300], present: [] },
-                    { range: "2001<3000", base: [500, 250, 250, 350, 300, 350, 300, 250, 500, 350, 350, 300], present: [] },
-                    { range: "3001<4000", base: [300, 150, 150, 200, 200, 200, 200, 150, 300, 200, 200, 150], present: [] },
-                    { range: "4001<6000", base: [200, 100, 100, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] },
-                    { range: "6001<7500", base: [100, 50, 50, 100, 50, 100, 50, 50, 100, 100, 100, 100], present: [] },
-                    { range: ">7500", base: [20, 10, 10, 0, 0, 10, 0, 20, 20, 10, 10, 20], present: [] },
-                    { range: "501<1000(1+1)", base: [800, 500, 500, 500, 500, 400, 1000, 400, 800, 400, 400, 400], present: [] },
-                    { range: "1001<2000(1+1)", base: [500, 250, 250, 400, 300, 300, 500, 300, 500, 300, 300, 400], present: [] }
-                ] 
-            },
-            { 
-                name: "SILK WORK SAREES", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "0<500", base: [175, 87, 87, 125, 125, 150, 175, 0, 175, 150, 150, 150], present: [] },
-                    { range: "501<1000", base: [370, 185, 185, 295, 245, 295, 345, 50, 370, 295, 295, 295], present: [] },
-                    { range: "1001<1500", base: [400, 175, 175, 350, 280, 350, 490, 200, 400, 350, 350, 350], present: [] },
-                    { range: "1501<2000", base: [400, 200, 200, 300, 150, 300, 200, 100, 400, 300, 300, 250], present: [] },
-                    { range: "2001<3000", base: [350, 175, 175, 300, 150, 350, 400, 150, 350, 350, 350, 250], present: [] },
-                    { range: "3001<4000", base: [125, 63, 63, 100, 100, 100, 100, 100, 125, 100, 100, 50], present: [] },
-                    { range: "4001<6000", base: [50, 25, 25, 25, 25, 50, 50, 25, 50, 50, 50, 25], present: [] },
-                    { range: ">6000", base: [20, 10, 10, 0, 0, 0, 0, 0, 20, 0, 0, 0], present: [] },
-                    { range: "501<1000(1+1)", base: [175, 87, 87, 125, 125, 150, 175, 50, 175, 150, 150, 150], present: [] },
-                    { range: "1001<2000(1+1)", base: [115, 58, 58, 90, 75, 90, 105, 50, 115, 90, 90, 90], present: [] }
-                ] 
-            },
-            { 
-                name: "PRINT WORK SAREES", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "0<500", base: [200, 100, 100, 175, 150, 150, 175, 150, 200, 150, 150, 150], present: [] },
-                    { range: "501<1000", base: [265, 133, 133, 210, 210, 210, 210, 100, 265, 210, 210, 210], present: [] },
-                    { range: "1001<1500", base: [150, 75, 75, 120, 120, 120, 175, 100, 150, 120, 120, 120], present: [] },
-                    { range: "1501<2000", base: [100, 50, 50, 70, 70, 70, 70, 50, 100, 70, 70, 70], present: [] },
-                    { range: "2001<3000", base: Array(12).fill(0), present: [] },
-                    { range: "3001<4000", base: Array(12).fill(0), present: [] },
-                    { range: "501<1000(1+1)", base: [150, 75, 75, 115, 115, 115, 150, 120, 150, 115, 115, 115], present: [] },
-                    { range: "1001<2000(1+1)", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] }
-                ] 
-            },
-            { 
-                name: "HANDLOOM COTTON", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "0<500", base: [200, 60, 60, 100, 120, 75, 150, 50, 200, 75, 75, 100], present: [] },
-                    { range: "501<1000", base: [300, 150, 150, 300, 175, 100, 100, 150, 300, 100, 100, 300], present: [] },
-                    { range: "1001<1500", base: [100, 50, 50, 120, 75, 50, 25, 75, 100, 50, 50, 120], present: [] },
-                    { range: "1501<2000", base: [50, 25, 25, 60, 40, 20, 0, 50, 50, 20, 20, 60], present: [] },
-                    { range: "2001<3000", base: [30, 15, 15, 20, 0, 20, 0, 0, 30, 20, 20, 20], present: [] }
-                ] 
-            },
-            { 
-                name: "VENKATAGIRI", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "0<1000", base: [200, 100, 100, 150, 100, 100, 200, 100, 200, 100, 100, 175], present: [] },
-                    { range: "1001<1500", base: [100, 60, 60, 100, 50, 30, 100, 50, 100, 30, 30, 100], present: [] },
-                    { range: "1501<2000", base: [75, 50, 50, 75, 20, 30, 50, 50, 75, 30, 30, 75], present: [] },
-                    { range: "2001<3000", base: [30, 15, 15, 30, 0, 10, 20, 20, 30, 10, 10, 30], present: [] },
-                    { range: ">3000", base: Array(12).fill(0), present: [] }
-                ] 
-            },
-            { 
-                name: "UPPADA (MANGALAGIRI)", 
-                base: [50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50], 
-                present: [],
-                mrpDetails: []
-            },
-            { 
-                name: "UPPADA (CHIRALA)", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "1001<2000", base: [30, 15, 15, 30, 20, 20, 30, 20, 30, 20, 20, 30], present: [] },
-                    { range: "2001<3000", base: [20, 10, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] },
-                    { range: "3001<4000", base: [40, 20, 20, 40, 25, 30, 30, 20, 40, 30, 30, 40], present: [] },
-                    { range: "4001<5000", base: [40, 20, 20, 30, 20, 20, 20, 20, 40, 20, 20, 30], present: [] },
-                    { range: "5001<7000", base: [30, 20, 20, 30, 20, 25, 20, 20, 30, 25, 25, 30], present: [] },
-                    { range: "7001<10000", base: [10, 5, 5, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] }
-                ] 
-            },
-            { 
-                name: "UPPADA (COIMBATORE)", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "4001<5000", base: [20, 10, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] },
-                    { range: "5001<7000", base: [30, 15, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] },
-                    { range: "7001<10000", base: [30, 15, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] },
-                    { range: "10001<15000", base: [10, 5, 5, 0, 0, 0, 0, 10, 10, 0, 0, 10], present: [] }
-                ] 
-            },
-            { 
-                name: "UPPADA (SALEM)", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "7001<10000", base: [30, 0, 30, 30, 30, 30, 30, 20, 30, 30, 30, 30], present: [] },
-                    { range: ">10000", base: [20, 0, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] }
-                ] 
-            },
-            { 
-                name: "UPPADA (NELLORE)", 
-                base: [100, 0, 100, 100, 40, 70, 70, 0, 100, 70, 70, 100], 
-                present: [],
-                mrpDetails: []
-            },
-            { 
-                name: "UPPADA (PRODDATUR)", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "1001<3000", base: [50, 25, 25, 50, 40, 30, 50, 40, 50, 30, 30, 50], present: [] },
-                    { range: "3001<5000", base: [30, 20, 20, 30, 30, 25, 40, 30, 30, 25, 25, 30], present: [] },
-                    { range: "5001<7000", base: [50, 25, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] },
-                    { range: "7001<10000", base: [50, 25, 25, 50, 30, 50, 30, 50, 50, 50, 50, 50], present: [] },
-                    { range: ">10000", base: [10, 5, 5, 10, 0, 0, 10, 15, 10, 0, 0, 15], present: [] }
-                ] 
-            },
-            { 
-                name: "PATTU SAREES", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "0<1000", base: [40, 30, 30, 50, 25, 40, 60, 25, 40, 40, 40, 60], present: [] },
-                    { range: "1001<2000", base: [150, 125, 125, 200, 100, 175, 250, 100, 150, 175, 175, 250], present: [] },
-                    { range: "2001<3000", base: [200, 100, 100, 200, 100, 200, 250, 100, 200, 200, 200, 300], present: [] },
-                    { range: "3001<4000", base: [150, 75, 75, 150, 100, 175, 150, 100, 150, 175, 175, 150], present: [] },
-                    { range: "4001<5000", base: [100, 50, 50, 100, 75, 75, 100, 50, 100, 75, 75, 120], present: [] },
-                    { range: "5001<7000", base: [120, 63, 63, 120, 100, 75, 75, 50, 120, 75, 75, 120], present: [] },
-                    { range: "7001<10000", base: [100, 50, 50, 100, 50, 75, 100, 50, 100, 75, 75, 100], present: [] },
-                    { range: "10001<15000", base: [100, 50, 50, 100, 50, 90, 100, 50, 100, 90, 90, 100], present: [] },
-                    { range: "15001<20000", base: [50, 25, 25, 50, 20, 50, 50, 30, 50, 50, 50, 20], present: [] },
-                    { range: "20001<30000", base: [25, 15, 15, 20, 5, 10, 10, 10, 25, 10, 10, 20], present: [] },
-                    { range: ">30000", base: [10, 5, 5, 10, 0, 0, 0, 0, 10, 0, 0, 10], present: [] }
-                ] 
-            },
-            { 
-                name: "HP EMBOSE", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "2001<3000", base: [30, 20, 20, 30, 20, 20, 30, 0, 30, 20, 20, 30], present: [] },
-                    { range: "3001<4000", base: [20, 10, 10, 20, 10, 20, 25, 10, 20, 20, 20, 20], present: [] },
-                    { range: "4001<5000", base: [20, 10, 10, 25, 10, 15, 30, 15, 20, 15, 15, 20], present: [] },
-                    { range: "5001<7000", base: [40, 15, 15, 30, 20, 30, 40, 15, 40, 30, 30, 30], present: [] },
-                    { range: "7001<10000", base: [20, 10, 10, 20, 5, 15, 40, 10, 20, 15, 15, 20], present: [] },
-                    { range: "10001<15000", base: [10, 5, 5, 10, 5, 10, 15, 10, 10, 10, 10, 15], present: [] },
-                    { range: ">15000", base: Array(12).fill(0), present: [] }
-                ] 
-            },
-            { 
-                name: "COIMBATORE SECO", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "0<1100", base: [200, 75, 75, 150, 100, 120, 200, 50, 200, 120, 120, 150], present: [] },
-                    { range: "1101<2000", base: [200, 100, 100, 200, 150, 200, 200, 100, 200, 200, 200, 200], present: [] },
-                    { range: ">2000", base: [50, 25, 25, 50, 30, 30, 75, 50, 50, 30, 30, 50], present: [] }
-                ] 
-            },
-            { 
-                name: "HL PATTU PAWADAS JUST BORN", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "0<1000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
-                    { range: "1001<2000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
-                    { range: "2001<3000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
-                    { range: "3001<4000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] },
-                    { range: "4001<6000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] },
-                    { range: ">6000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] }
-                ] 
-            },
-            { 
-                name: "HL PATTU PAWADAS 27", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "0<1000", base: [15, 0, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] },
-                    { range: "1001<2000", base: [15, 0, 15, 15, 15, 15, 15, 20, 15, 15, 15, 15], present: [] },
-                    { range: "2001<3000", base: [15, 0, 15, 15, 15, 15, 15, 10, 15, 15, 15, 15], present: [] },
-                    { range: ">3000", base: [10, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] }
-                ] 
-            },
-            { 
-                name: "HL PATTU PAWADAS 32", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "0<2000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] },
-                    { range: "2001<3000", base: [15, 0, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] },
-                    { range: ">3000", base: [10, 0, 10, 10, 10, 10, 10, 0, 10, 10, 10, 10], present: [] }
-                ] 
-            },
-            { 
-                name: "HL PATTU PAWADAS 36", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "1001<2000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] },
-                    { range: "2001<3000", base: [10, 0, 10, 10, 10, 10, 10, 20, 10, 10, 10, 10], present: [] },
-                    { range: "3001<4000", base: [10, 0, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] },
-                    { range: "4001<6000", base: [10, 0, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] },
-                    { range: ">6000", base: [5, 0, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5], present: [] }
-                ] 
-            },
-            { 
-                name: "HL PATTU PAWADAS 45", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "1001<3000", base: [30, 0, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30], present: [] },
-                    { range: "3001<5000", base: [20, 0, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] },
-                    { range: "5001<7000", base: [20, 0, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] },
-                    { range: "7001<10000", base: [10, 0, 10, 10, 10, 10, 10, 15, 10, 10, 10, 10], present: [] },
-                    { range: ">10000", base: [10, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] }
-                ] 
-            },
-            { 
-                name: "IKKAT PAWADAS 24 INCHES", 
-                base: [10, 0, 10, 5, 5, 5, 5, 5, 10, 5, 5, 10], 
-                present: [],
-                mrpDetails: []
-            },
-            { 
-                name: "IKKAT PAWADAS 36 INCHES", 
-                base: [10, 0, 10, 5, 5, 5, 5, 5, 10, 5, 5, 10], 
-                present: [],
-                mrpDetails: []
-            },
-            { 
-                name: "IKKAT PAWADAS 45 INCHES", 
-                base: [15, 0, 15, 10, 10, 10, 10, 10, 10, 10, 10, 15], 
-                present: [],
-                mrpDetails: []
-            },
-            { 
-                name: "GADWAL PURE JARI", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "2001<4000", base: [30, 8, 8, 15, 15, 15, 15, 0, 30, 15, 15, 30], present: [] },
-                    { range: "4001<6000", base: [20, 5, 5, 10, 10, 10, 10, 0, 20, 10, 10, 25], present: [] },
-                    { range: "6001<10000", base: [15, 8, 8, 10, 0, 10, 0, 10, 15, 10, 10, 20], present: [] },
-                    { range: ">10000", base: Array(12).fill(0), present: [] }
-                ] 
-            },
-            { 
-                name: "GADWAL HF JARI", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "0<2000", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] },
-                    { range: ">2001", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] }
-                ] 
-            },
-            { 
-                name: "SURAT PRINTED", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "0<250", base: [500, 150, 150, 300, 300, 300, 300, 200, 500, 300, 300, 300], present: [] },
-                    { range: "251<500", base: [500, 200, 200, 400, 400, 400, 400, 200, 500, 400, 400, 400], present: [] },
-                    { range: "501<750", base: [200, 50, 50, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] },
-                    { range: "751<1000", base: [50, 25, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] },
-                    { range: ">1000", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] }
-                ] 
-            },
-            { 
-                name: "SURAT PRINTED (1+1)", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "251<500", base: Array(12).fill(0), present: [] },
-                    { range: "501<750", base: Array(12).fill(0), present: [] },
-                    { range: "751<1000", base: Array(12).fill(0), present: [] },
-                    { range: ">1000", base: Array(12).fill(0), present: [] }
-                ] 
-            },
-            { 
-                name: "IKKAT", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "<12000", base: [15, 0, 15, 15, 10, 10, 15, 10, 15, 10, 10, 15], present: [] },
-                    { range: ">12000", base: [15, 0, 10, 15, 10, 10, 10, 15, 10, 10, 10, 15], present: [] }
-                ] 
-            },
-            { 
-                name: "COTTON SAREES-BRAND WISE", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "B.K COTTON", base: [150, 75, 75, 150, 100, 100, 150, 100, 150, 100, 100, 100], present: [] },
-                    { range: "KARISHMA COTTON", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] },
-                    { range: "MEENA COTTON", base: [300, 150, 150, 300, 200, 200, 300, 100, 300, 200, 200, 200], present: [] },
-                    { range: "MP COTTON", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] },
-                    { range: "SARVODAYA COTTON", base: [200, 100, 100, 200, 100, 100, 200, 100, 200, 100, 100, 100], present: [] }
-                ] 
-            },
-            { 
-                name: "COTTON SAREES PROMO", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "450 (1+1)", base: Array(12).fill(0), present: [] },
-                    { range: "499 (1+1)", base: Array(12).fill(0), present: [] },
-                    { range: "599 (1+1)", base: Array(12).fill(0), present: [] },
-                    { range: "699 (1+1)", base: Array(12).fill(0), present: [] },
-                    { range: "799 (1+1)", base: Array(12).fill(0), present: [] },
-                    { range: "999 (1+1)", base: Array(12).fill(0), present: [] },
-                    { range: "BUY 3 @ 999", base: Array(12).fill(0), present: [] }
-                ] 
-            },
-            { 
-                name: "COTTON SAREES-OTHERS", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "0<400", base: [400, 200, 200, 400, 200, 200, 400, 0, 400, 200, 200, 200], present: [] },
-                    { range: "401<600", base: [200, 100, 100, 200, 100, 100, 200, 0, 200, 100, 100, 100], present: [] },
-                    { range: ">600", base: [100, 50, 50, 100, 50, 50, 100, 0, 100, 50, 50, 50], present: [] },
-                    { range: "601<1999 (1+1)", base: [400, 200, 200, 400, 200, 200, 400, 200, 400, 200, 200, 200], present: [] }
-                ] 
-            },
-            { 
-                name: "FANCY BLOUSES", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: [
-                    { range: "0<599", base: [80, 0, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] },
-                    { range: "600<1000", base: [80, 0, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] },
-                    { range: ">1000", base: [40, 0, 20, 40, 25, 20, 40, 20, 20, 20, 20, 10], present: [] }
-                ] 
-            },
-            { 
-                name: "HI FANCY CRAPES & GEOS", 
-                base: [250, 75, 75, 150, 150, 150, 200, 100, 250, 150, 150, 100], 
-                present: [],
-                mrpDetails: []
-            },
-            { 
-                name: "SUPERNET PRINTED", 
-                base: [200, 75, 75, 150, 100, 100, 100, 100, 200, 100, 100, 100], 
-                present: [],
-                mrpDetails: []
-            },
-            { 
-                name: "MUNGA KOTA PRINTED", 
-                base: [50, 0, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50], 
-                present: [],
-                mrpDetails: []
-            },
-            { 
-                name: "PATTU BLOUSE WORK", 
-                base: [25, 10, 10, 25, 15, 20, 20, 20, 25, 20, 20, 20], 
-                present: [],
-                mrpDetails: []
-            },
-            { 
-                name: "NARAYANPET PATTU", 
-                base: Array(12).fill(0), 
-                present: [],
-                mrpDetails: []
-            }
+            { name: "BNS HANDLOOM HF", base: Array(12).fill(0), present: [], mrpDetails: [
+                { range: "0<500", base: [500, 250, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] }, { range: "501<1000", base: [1000, 450, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] }, { range: "1001<1500", base: [1200, 500, 500, 1000, 750, 750, 750, 400, 1200, 750, 750, 750], present: [] }, { range: "1501<2000", base: [500, 250, 250, 400, 300, 350, 350, 250, 500, 350, 350, 300], present: [] }, { range: "2001<3000", base: [500, 250, 250, 350, 300, 350, 300, 250, 500, 350, 350, 300], present: [] }, { range: "3001<4000", base: [300, 150, 150, 200, 200, 200, 200, 150, 300, 200, 200, 150], present: [] }, { range: "4001<6000", base: [200, 100, 100, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] }, { range: "6001<7500", base: [100, 50, 50, 100, 50, 100, 50, 50, 100, 100, 100, 100], present: [] }, { range: ">7500", base: [20, 10, 10, 0, 0, 10, 0, 20, 20, 10, 10, 20], present: [] }, { range: "501<1000(1+1)", base: [800, 500, 500, 500, 500, 400, 1000, 400, 800, 400, 400, 400], present: [] }, { range: "1001<2000(1+1)", base: [500, 250, 250, 400, 300, 300, 500, 300, 500, 300, 300, 400], present: [] } ] },
+            { name: "SILK WORK SAREES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [175, 87, 87, 125, 125, 150, 175, 0, 175, 150, 150, 150], present: [] }, { range: "501<1000", base: [370, 185, 185, 295, 245, 295, 345, 50, 370, 295, 295, 295], present: [] }, { range: "1001<1500", base: [400, 175, 175, 350, 280, 350, 490, 200, 400, 350, 350, 350], present: [] }, { range: "1501<2000", base: [400, 200, 200, 300, 150, 300, 200, 100, 400, 300, 300, 250], present: [] }, { range: "2001<3000", base: [350, 175, 175, 300, 150, 350, 400, 150, 350, 350, 350, 250], present: [] }, { range: "3001<4000", base: [125, 63, 63, 100, 100, 100, 100, 100, 125, 100, 100, 50], present: [] }, { range: "4001<6000", base: [50, 25, 25, 25, 25, 50, 50, 25, 50, 50, 50, 25], present: [] }, { range: ">6000", base: [20, 10, 10, 0, 0, 0, 0, 0, 20, 0, 0, 0], present: [] }, { range: "501<1000(1+1)", base: [175, 87, 87, 125, 125, 150, 175, 50, 175, 150, 150, 150], present: [] }, { range: "1001<2000(1+1)", base: [115, 58, 58, 90, 75, 90, 105, 50, 115, 90, 90, 90], present: [] } ] },
+            { name: "PRINT WORK SAREES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [200, 100, 100, 175, 150, 150, 175, 150, 200, 150, 150, 150], present: [] }, { range: "501<1000", base: [265, 133, 133, 210, 210, 210, 210, 100, 265, 210, 210, 210], present: [] }, { range: "1001<1500", base: [150, 75, 75, 120, 120, 120, 175, 100, 150, 120, 120, 120], present: [] }, { range: "1501<2000", base: [100, 50, 50, 70, 70, 70, 70, 50, 100, 70, 70, 70], present: [] }, { range: "2001<3000", base: Array(12).fill(0), present: [] }, { range: "3001<4000", base: Array(12).fill(0), present: [] }, { range: "501<1000(1+1)", base: [150, 75, 75, 115, 115, 115, 150, 120, 150, 115, 115, 115], present: [] }, { range: "1001<2000(1+1)", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] } ] },
+            { name: "HANDLOOM COTTON", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [200, 60, 60, 100, 120, 75, 150, 50, 200, 75, 75, 100], present: [] }, { range: "501<1000", base: [300, 150, 150, 300, 175, 100, 100, 150, 300, 100, 100, 300], present: [] }, { range: "1001<1500", base: [100, 50, 50, 120, 75, 50, 25, 75, 100, 50, 50, 120], present: [] }, { range: "1501<2000", base: [50, 25, 25, 60, 40, 20, 0, 50, 50, 20, 20, 60], present: [] }, { range: "2001<3000", base: [30, 15, 15, 20, 0, 20, 0, 0, 30, 20, 20, 20], present: [] } ] },
+            { name: "VENKATAGIRI", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<1000", base: [200, 100, 100, 150, 100, 100, 200, 100, 200, 100, 100, 175], present: [] }, { range: "1001<1500", base: [100, 60, 60, 100, 50, 30, 100, 50, 100, 30, 30, 100], present: [] }, { range: "1501<2000", base: [75, 50, 50, 75, 20, 30, 50, 50, 75, 30, 30, 75], present: [] }, { range: "2001<3000", base: [30, 15, 15, 30, 0, 10, 20, 20, 30, 10, 10, 30], present: [] }, { range: ">3000", base: Array(12).fill(0), present: [] } ] },
+            { name: "UPPADA (MANGALAGIRI)", base: [50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [], mrpDetails: [] },
+            { name: "UPPADA (CHIRALA)", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "1001<2000", base: [30, 15, 15, 30, 20, 20, 30, 20, 30, 20, 20, 30], present: [] }, { range: "2001<3000", base: [20, 10, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] }, { range: "3001<4000", base: [40, 20, 20, 40, 25, 30, 30, 20, 40, 30, 30, 40], present: [] }, { range: "4001<5000", base: [40, 20, 20, 30, 20, 20, 20, 20, 40, 20, 20, 30], present: [] }, { range: "5001<7000", base: [30, 20, 20, 30, 20, 25, 20, 20, 30, 25, 25, 30], present: [] }, { range: "7001<10000", base: [10, 5, 5, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] } ] },
+            { name: "UPPADA (COIMBATORE)", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "4001<5000", base: [20, 10, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] }, { range: "5001<7000", base: [30, 15, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] }, { range: "7001<10000", base: [30, 15, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] }, { range: "10001<15000", base: [10, 5, 5, 0, 0, 0, 0, 10, 10, 0, 0, 10], present: [] } ] },
+            { name: "UPPADA (SALEM)", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "7001<10000", base: [30, 0, 30, 30, 30, 30, 30, 20, 30, 30, 30, 30], present: [] }, { range: ">10000", base: [20, 0, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] } ] },
+            { name: "UPPADA (NELLORE)", base: [100, 0, 100, 100, 40, 70, 70, 0, 100, 70, 70, 100], present: [], mrpDetails: [] },
+            { name: "UPPADA (PRODDATUR)", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "1001<3000", base: [50, 25, 25, 50, 40, 30, 50, 40, 50, 30, 30, 50], present: [] }, { range: "3001<5000", base: [30, 20, 20, 30, 30, 25, 40, 30, 30, 25, 25, 30], present: [] }, { range: "5001<7000", base: [50, 25, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] }, { range: "7001<10000", base: [50, 25, 25, 50, 30, 50, 30, 50, 50, 50, 50, 50], present: [] }, { range: ">10000", base: [10, 5, 5, 10, 0, 0, 10, 15, 10, 0, 0, 15], present: [] } ] },
+            { name: "PATTU SAREES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<1000", base: [40, 30, 30, 50, 25, 40, 60, 25, 40, 40, 40, 60], present: [] }, { range: "1001<2000", base: [150, 125, 125, 200, 100, 175, 250, 100, 150, 175, 175, 250], present: [] }, { range: "2001<3000", base: [200, 100, 100, 200, 100, 200, 250, 100, 200, 200, 200, 300], present: [] }, { range: "3001<4000", base: [150, 75, 75, 150, 100, 175, 150, 100, 150, 175, 175, 150], present: [] }, { range: "4001<5000", base: [100, 50, 50, 100, 75, 75, 100, 50, 100, 75, 75, 120], present: [] }, { range: "5001<7000", base: [120, 63, 63, 120, 100, 75, 75, 50, 120, 75, 75, 120], present: [] }, { range: "7001<10000", base: [100, 50, 50, 100, 50, 75, 100, 50, 100, 75, 75, 100], present: [] }, { range: "10001<15000", base: [100, 50, 50, 100, 50, 90, 100, 50, 100, 90, 90, 100], present: [] }, { range: "15001<20000", base: [50, 25, 25, 50, 20, 50, 50, 30, 50, 50, 50, 20], present: [] }, { range: "20001<30000", base: [25, 15, 15, 20, 5, 10, 10, 10, 25, 10, 10, 20], present: [] }, { range: ">30000", base: [10, 5, 5, 10, 0, 0, 0, 0, 10, 0, 0, 10], present: [] } ] },
+            { name: "HP EMBOSE", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "2001<3000", base: [30, 20, 20, 30, 20, 20, 30, 0, 30, 20, 20, 30], present: [] }, { range: "3001<4000", base: [20, 10, 10, 20, 10, 20, 25, 10, 20, 20, 20, 20], present: [] }, { range: "4001<5000", base: [20, 10, 10, 25, 10, 15, 30, 15, 20, 15, 15, 20], present: [] }, { range: "5001<7000", base: [40, 15, 15, 30, 20, 30, 40, 15, 40, 30, 30, 30], present: [] }, { range: "7001<10000", base: [20, 10, 10, 20, 5, 15, 40, 10, 20, 15, 15, 20], present: [] }, { range: "10001<15000", base: [10, 5, 5, 10, 5, 10, 15, 10, 10, 10, 10, 15], present: [] }, { range: ">15000", base: Array(12).fill(0), present: [] } ] },
+            { name: "COIMBATORE SECO", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<1100", base: [200, 75, 75, 150, 100, 120, 200, 50, 200, 120, 120, 150], present: [] }, { range: "1101<2000", base: [200, 100, 100, 200, 150, 200, 200, 100, 200, 200, 200, 200], present: [] }, { range: ">2000", base: [50, 25, 25, 50, 30, 30, 75, 50, 50, 30, 30, 50], present: [] } ] },
+            { name: "HL PATTU PAWADAS JUST BORN", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<1000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] }, { range: "1001<2000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] }, { range: "2001<3000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] }, { range: "3001<4000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] }, { range: "4001<6000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] }, { range: ">6000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] } ] },
+            { name: "HL PATTU PAWADAS 27", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<1000", base: [15, 0, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] }, { range: "1001<2000", base: [15, 0, 15, 15, 15, 15, 15, 20, 15, 15, 15, 15], present: [] }, { range: "2001<3000", base: [15, 0, 15, 15, 15, 15, 15, 10, 15, 15, 15, 15], present: [] }, { range: ">3000", base: [10, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] } ] },
+            { name: "HL PATTU PAWADAS 32", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<2000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] }, { range: "2001<3000", base: [15, 0, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] }, { range: ">3000", base: [10, 0, 10, 10, 10, 10, 10, 0, 10, 10, 10, 10], present: [] } ] },
+            { name: "HL PATTU PAWADAS 36", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "1001<2000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] }, { range: "2001<3000", base: [10, 0, 10, 10, 10, 10, 10, 20, 10, 10, 10, 10], present: [] }, { range: "3001<4000", base: [10, 0, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] }, { range: "4001<6000", base: [10, 0, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] }, { range: ">6000", base: [5, 0, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5], present: [] } ] },
+            { name: "HL PATTU PAWADAS 45", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "1001<3000", base: [30, 0, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30], present: [] }, { range: "3001<5000", base: [20, 0, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] }, { range: "5001<7000", base: [20, 0, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] }, { range: "7001<10000", base: [10, 0, 10, 10, 10, 10, 10, 15, 10, 10, 10, 10], present: [] }, { range: ">10000", base: [10, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] } ] },
+            { name: "IKKAT PAWADAS 24 INCHES", base: [10, 0, 10, 5, 5, 5, 5, 5, 10, 5, 5, 10], present: [], mrpDetails: [] },
+            { name: "IKKAT PAWADAS 36 INCHES", base: [10, 0, 10, 5, 5, 5, 5, 5, 10, 5, 5, 10], present: [], mrpDetails: [] },
+            { name: "IKKAT PAWADAS 45 INCHES", base: [15, 0, 15, 10, 10, 10, 10, 10, 10, 10, 10, 15], present: [], mrpDetails: [] },
+            { name: "GADWAL PURE JARI", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "2001<4000", base: [30, 8, 8, 15, 15, 15, 15, 0, 30, 15, 15, 30], present: [] }, { range: "4001<6000", base: [20, 5, 5, 10, 10, 10, 10, 0, 20, 10, 10, 25], present: [] }, { range: "6001<10000", base: [15, 8, 8, 10, 0, 10, 0, 10, 15, 10, 10, 20], present: [] }, { range: ">10000", base: Array(12).fill(0), present: [] } ] },
+            { name: "GADWAL HF JARI", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<2000", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] }, { range: ">2001", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] } ] },
+            { name: "SURAT PRINTED", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<250", base: [500, 150, 150, 300, 300, 300, 300, 200, 500, 300, 300, 300], present: [] }, { range: "251<500", base: [500, 200, 200, 400, 400, 400, 400, 200, 500, 400, 400, 400], present: [] }, { range: "501<750", base: [200, 50, 50, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] }, { range: "751<1000", base: [50, 25, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] }, { range: ">1000", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] } ] },
+            { name: "SURAT PRINTED (1+1)", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "251<500", base: Array(12).fill(0), present: [] }, { range: "501<750", base: Array(12).fill(0), present: [] }, { range: "751<1000", base: Array(12).fill(0), present: [] }, { range: ">1000", base: Array(12).fill(0), present: [] } ] },
+            { name: "IKKAT", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "<12000", base: [15, 0, 15, 15, 10, 10, 15, 10, 15, 10, 10, 15], present: [] }, { range: ">12000", base: [15, 0, 10, 15, 10, 10, 10, 15, 10, 10, 10, 15], present: [] } ] },
+            { name: "COTTON SAREES-BRAND WISE", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "B.K COTTON", base: [150, 75, 75, 150, 100, 100, 150, 100, 150, 100, 100, 100], present: [] }, { range: "KARISHMA COTTON", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] }, { range: "MEENA COTTON", base: [300, 150, 150, 300, 200, 200, 300, 100, 300, 200, 200, 200], present: [] }, { range: "MP COTTON", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] }, { range: "SARVODAYA COTTON", base: [200, 100, 100, 200, 100, 100, 200, 100, 200, 100, 100, 100], present: [] } ] },
+            { name: "COTTON SAREES PROMO", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "450 (1+1)", base: Array(12).fill(0), present: [] }, { range: "499 (1+1)", base: Array(12).fill(0), present: [] }, { range: "599 (1+1)", base: Array(12).fill(0), present: [] }, { range: "699 (1+1)", base: Array(12).fill(0), present: [] }, { range: "799 (1+1)", base: Array(12).fill(0), present: [] }, { range: "999 (1+1)", base: Array(12).fill(0), present: [] }, { range: "BUY 3 @ 999", base: Array(12).fill(0), present: [] } ] },
+            { name: "COTTON SAREES-OTHERS", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<400", base: [400, 200, 200, 400, 200, 200, 400, 0, 400, 200, 200, 200], present: [] }, { range: "401<600", base: [200, 100, 100, 200, 100, 100, 200, 0, 200, 100, 100, 100], present: [] }, { range: ">600", base: [100, 50, 50, 100, 50, 50, 100, 0, 100, 50, 50, 50], present: [] }, { range: "601<1999 (1+1)", base: [400, 200, 200, 400, 200, 200, 400, 200, 400, 200, 200, 200], present: [] } ] },
+            { name: "FANCY BLOUSES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<599", base: [80, 0, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] }, { range: "600<1000", base: [80, 0, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] }, { range: ">1000", base: [40, 0, 20, 40, 25, 20, 40, 20, 20, 20, 20, 10], present: [] } ] },
+            { name: "HI FANCY CRAPES & GEOS", base: [250, 75, 75, 150, 150, 150, 200, 100, 250, 150, 150, 100], present: [], mrpDetails: [] },
+            { name: "SUPERNET PRINTED", base: [200, 75, 75, 150, 100, 100, 100, 100, 200, 100, 100, 100], present: [], mrpDetails: [] },
+            { name: "MUNGA KOTA PRINTED", base: [50, 0, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [], mrpDetails: [] },
+            { name: "PATTU BLOUSE WORK", base: [25, 10, 10, 25, 15, 20, 20, 20, 25, 20, 20, 20], present: [], mrpDetails: [] },
+            { name: "NARAYANPET PATTU", base: Array(12).fill(0), present: [], mrpDetails: [] }
         ];
 
-        // Initialize 'present' arrays with ZERO
+        // Initialize 'present' arrays
         inventoryData.forEach(cat => {
             cat.present = Array(stores.length).fill(0);
             if(cat.mrpDetails && cat.mrpDetails.length > 0) {
@@ -719,32 +381,22 @@
         function getSmartLogic(si, baseArr, presentArr) {
             if (!baseArr || !presentArr) return { transfer: null, purchase: 0 };
             if (si >= presentArr.length || si >= baseArr.length) return { transfer: null, purchase: 0 };
-
             const gap = (presentArr[si] || 0) - (baseArr[si] || 0);
             if (gap >= 0) return { transfer: null, purchase: 0 };
-            
             const shortageQty = Math.abs(gap);
-            let bestDonor = null;
-            let maxSurplus = 0;
-
+            let bestDonor = null; let maxSurplus = 0;
             for (let i = 0; i < stores.length; i++) {
                 if (i === si) continue;
                 if (i >= presentArr.length || i >= baseArr.length) continue;
                 const surplus = (presentArr[i] || 0) - (baseArr[i] || 0);
                 if (surplus > maxSurplus) { maxSurplus = surplus; bestDonor = i; }
             }
-
-            let transferObj = null;
-            let purchaseQty = 0;
-
+            let transferObj = null; let purchaseQty = 0;
             if (bestDonor !== null && maxSurplus > 0) {
                 const transferQty = Math.min(shortageQty, maxSurplus);
                 transferObj = { qty: transferQty, from: stores[bestDonor] };
                 purchaseQty = shortageQty - transferQty;
-            } else {
-                purchaseQty = shortageQty;
-            }
-
+            } else { purchaseQty = shortageQty; }
             return { transfer: transferObj, purchase: purchaseQty };
         }
 
@@ -752,10 +404,7 @@
             const cat = inventoryData[ci]; if (!cat) return;
             if (!cat.base || cat.base.length !== stores.length) cat.base = Array(stores.length).fill(0);
             if (!cat.present || cat.present.length !== stores.length) cat.present = Array(stores.length).fill(0);
-
-            cat.base.fill(0); 
-            cat.present.fill(0);
-
+            cat.base.fill(0); cat.present.fill(0);
             if (cat.mrpDetails && cat.mrpDetails.length > 0) {
                 cat.mrpDetails.forEach(row => {
                     if (row.base && row.present) {
@@ -769,56 +418,49 @@
         // --- RENDER ---
         function render() {
             renderHorizontalMatrix('matrixHead', 'tableBody', false);
-            
             const summaryTbody = document.getElementById('summaryTableBody');
             const selCat = document.getElementById('selCat');
             const selBr = document.getElementById('selBr');
             const chartFilter = document.getElementById('chartFilter');
-            
             let summaryHtml = '';
-            let catOpts = '';
+            
+            // Create two sets of options: one with Index value (for Selects) and one with Name value (for Manual Input)
+            let catOptsSelect = ''; 
+            let catOptsDatalist = ''; 
             let brOpts = '';
             let globalBase = 0, globalPresent = 0;
-
+            
             inventoryData.forEach((cat, ci) => {
-                catOpts += `<option value="${ci}">${cat.name}</option>`;
+                // For dropdowns (Actions, Charts) - Value is INDEX
+                catOptsSelect += `<option value="${ci}">${cat.name}</option>`;
+                // For datalist (Manual Entry) - Value is NAME
+                catOptsDatalist += `<option value="${cat.name}">`;
                 
                 let catTotalT = 0, catTotalS = 0;
                 stores.forEach((store, si) => {
-                    catTotalT += cat.base[si] || 0;
-                    catTotalS += cat.present[si] || 0;
-                    globalBase += cat.base[si] || 0;
-                    globalPresent += cat.present[si] || 0;
-                    if(cat.mrpDetails) {
-                        cat.mrpDetails.forEach(mrp => {
-                            globalBase += mrp.base[si] || 0;
-                            globalPresent += mrp.present[si] || 0;
-                        });
-                    }
+                    catTotalT += cat.base[si] || 0; catTotalS += cat.present[si] || 0;
+                    globalBase += cat.base[si] || 0; globalPresent += cat.present[si] || 0;
+                    if(cat.mrpDetails) { cat.mrpDetails.forEach(mrp => { globalBase += mrp.base[si] || 0; globalPresent += mrp.present[si] || 0; }); }
                 });
-
                 const catGap = catTotalS - catTotalT;
                 let actionBadge = catGap < 0 ? `<span class="badge badge-danger">Buy ${Math.abs(catGap)}</span>` : `<span class="badge badge-success">OK</span>`;
                 summaryHtml += `<tr><td style="font-weight:600">${cat.name}</td><td class="mono">${catTotalT}</td><td class="mono">${catTotalS}</td><td>${actionBadge}</td></tr>`;
             });
-
             stores.forEach((s, si) => brOpts += `<option value="${si}">${s}</option>`);
             
             const netGap = globalBase - globalPresent;
             const efficiency = globalBase > 0 ? Math.round((globalPresent / globalBase) * 100) : 0;
-            
             document.getElementById('totalBase').textContent = Math.round(globalBase).toLocaleString();
             document.getElementById('totalPresent').textContent = Math.round(globalPresent).toLocaleString();
             document.getElementById('purchaseSuggestion').textContent = Math.max(0, Math.round(netGap)).toLocaleString();
             document.getElementById('efficiency').textContent = efficiency + '%';
-            
             if(summaryTbody) summaryTbody.innerHTML = summaryHtml;
             
-            selCat.innerHTML = catOpts;
-            selBr.innerHTML = brOpts;
-            chartFilter.innerHTML = catOpts;
-            document.getElementById('catList').innerHTML = catOpts;
-            document.getElementById('manualBranch').innerHTML = brOpts;
+            // Apply Options
+            selCat.innerHTML = catOptsSelect; // Actions Tab (uses index)
+            chartFilter.innerHTML = catOptsSelect; // Analytics (uses index)
+            document.getElementById('catList').innerHTML = catOptsDatalist; // Manual Modal (uses name)
+            document.getElementById('manualBranch').innerHTML = '<option value="-1">ALL STORES</option>' + brOpts;
             
             if (!document.getElementById('tabAnalytics').classList.contains('hidden')) refreshCharts();
         }
@@ -826,163 +468,115 @@
         function renderHorizontalMatrix(headId, bodyId, isPurchaseMode) {
             const thead = document.getElementById(headId);
             const tbody = document.getElementById(bodyId);
-            
             let headerHtml1 = '<tr><th rowspan="2" style="min-width: 150px; border-bottom: none;">Category</th><th rowspan="2" style="min-width: 80px; border-bottom: none;">MRP</th>';
             let headerHtml2 = '<tr>';
-            
             stores.forEach(store => {
                 headerHtml1 += `<th colspan="2" class="group-header" style="border-left: 1px solid rgba(255,255,255,0.2); text-align: center;">${store}</th>`;
                 headerHtml2 += `<th class="sub-header" style="width: 60px; text-align: center;">Tgt</th><th class="sub-header" style="width: 60px; text-align: center; border-right: 1px solid var(--border);">Stk</th>`;
             });
             headerHtml1 += '<th rowspan="2" style="min-width: 160px; border-bottom: none;">AI Suggestion</th></tr>';
             headerHtml2 += '</tr>';
-            
             thead.innerHTML = headerHtml1 + headerHtml2;
-
             let bodyHtml = '';
             
-            inventoryData.forEach((cat) => {
+            inventoryData.forEach((cat, ci) => {
                 if (cat.mrpDetails && cat.mrpDetails.length > 0) {
-                    cat.mrpDetails.forEach(mrp => {
-                        let rowHtml = `<tr>
-                            <td style="color: var(--text-muted); font-weight: 400; font-size: 11px;">${cat.name}</td>
-                            <td><span class="badge badge-info">${mrp.range}</span></td>`;
-                        
-                        let hasAction = false;
-                        let totalRowPurchase = 0;
-                        
+                    cat.mrpDetails.forEach((mrp, mrpIdx) => {
+                        let rowHtml = `<tr><td style="color: var(--text-muted); font-weight: 400; font-size: 11px;">${cat.name}</td><td><span class="badge badge-info">${mrp.range}</span></td>`;
+                        let hasAction = false; let totalRowPurchase = 0;
                         stores.forEach((store, si) => {
-                            const t = mrp.base[si] || 0;
-                            const s = mrp.present[si] || 0;
-                            const gap = s - t;
+                            const t = mrp.base[si] || 0; const s = mrp.present[si] || 0; const gap = s - t;
                             const logic = getSmartLogic(si, mrp.base, mrp.present);
-                            
-                            if(isPurchaseMode && logic.purchase === 0) {
-                                rowHtml += `<td></td><td></td>`;
-                            } else {
+                            if(isPurchaseMode && logic.purchase === 0) { rowHtml += `<td></td><td></td>`; } 
+                            else {
                                 if(logic.purchase > 0 || logic.transfer) hasAction = true;
                                 if(logic.purchase > 0) totalRowPurchase += logic.purchase;
-                                
                                 rowHtml += `<td><span class="num-target">${t}</span></td>`;
-                                
                                 let stockClass = '';
-                                // Updated Logic: Red=Excess, Green=Low, Blue=Equal
-                                if (gap > 0) stockClass = 'num-stock stock-surplus'; // Red
-                                else if (gap < 0) stockClass = 'num-stock stock-short'; // Green
-                                else stockClass = 'num-stock stock-equal'; // Blue
+                                if (gap > 0) stockClass = 'num-stock stock-surplus';
+                                else if (gap < 0) stockClass = 'num-stock stock-short';
+                                else stockClass = 'num-stock stock-equal';
                                 
-                                if(isPurchaseMode) {
-                                    rowHtml += `<td><span class="purchase-matrix-val">${logic.purchase}</span></td>`;
-                                } else {
-                                    rowHtml += `<td><span class="${stockClass}">${s}</span></td>`;
-                                }
+                                if(isPurchaseMode) { rowHtml += `<td><span class="purchase-matrix-val">${logic.purchase}</span></td>`; } 
+                                else { rowHtml += `<td onclick="editStock(${ci}, ${mrpIdx}, ${si})"><span class="${stockClass}">${s}</span></td>`; }
                             }
                         });
-                        
                         if(isPurchaseMode && !hasAction) return;
-                        
                         let suggestionHtml = '';
-                        if(isPurchaseMode) {
-                            suggestionHtml = `<span class="badge suggestion-purchase">Buy ${totalRowPurchase}</span>`;
-                        } else {
-                            let surplusStore = null, maxSurplus = 0;
-                            let shortageStore = null, maxShortage = 0;
-                            
+                        if(isPurchaseMode) { suggestionHtml = `<span class="badge suggestion-purchase">Buy ${totalRowPurchase}</span>`; } 
+                        else {
+                            let surplusStore = null, maxSurplus = 0; let shortageStore = null, maxShortage = 0;
                             stores.forEach((store, si) => {
                                 const g = (mrp.present[si] || 0) - (mrp.base[si] || 0);
                                 if(g > 0 && g > maxSurplus) { maxSurplus = g; surplusStore = store; }
                                 if(g < 0 && Math.abs(g) > maxShortage) { maxShortage = Math.abs(g); shortageStore = store; }
                             });
-
-                            if (surplusStore && shortageStore) {
-                                const qty = Math.min(maxSurplus, maxShortage);
-                                suggestionHtml = `<span class="badge suggestion-transfer">${surplusStore} → ${shortageStore} (${qty})</span>`;
-                            } else if (shortageStore) {
-                                suggestionHtml = `<span class="badge suggestion-shortage">Shortage (No Stock)</span>`;
-                            } else if (surplusStore) {
-                                suggestionHtml = `<span class="badge suggestion-surplus">Surplus</span>`;
-                            } else {
-                                suggestionHtml = `<span class="badge badge-success">OK</span>`;
-                            }
+                            if (surplusStore && shortageStore) { const qty = Math.min(maxSurplus, maxShortage); suggestionHtml = `<span class="badge suggestion-transfer">${surplusStore} → ${shortageStore} (${qty})</span>`; } 
+                            else if (shortageStore) { suggestionHtml = `<span class="badge suggestion-shortage">Shortage (No Stock)</span>`; } 
+                            else if (surplusStore) { suggestionHtml = `<span class="badge suggestion-surplus">Surplus</span>`; } 
+                            else { suggestionHtml = `<span class="badge badge-success">OK</span>`; }
                         }
-                        
                         rowHtml += `<td>${suggestionHtml}</td></tr>`;
                         bodyHtml += rowHtml;
                     });
                 }
 
                 // Total Row
-                let totalHtml = `<tr style="background: rgba(13,148,136,0.05); font-weight: 700;">
-                    <td>${cat.name}</td>
-                    <td><span class="badge badge-warning">TOTAL</span></td>`;
-                
-                let totalHasAction = false;
-                let totalRowPurchase = 0;
-                
+                let totalHtml = `<tr style="background: rgba(13,148,136,0.05); font-weight: 700;"><td>${cat.name}</td><td><span class="badge badge-warning">TOTAL</span></td>`;
+                let totalHasAction = false; let totalRowPurchase = 0;
                 stores.forEach((store, si) => {
-                    const t = cat.base[si] || 0;
-                    const s = cat.present[si] || 0;
-                    const gap = s - t;
+                    const t = cat.base[si] || 0; const s = cat.present[si] || 0; const gap = s - t;
                     const logic = getSmartLogic(si, cat.base, cat.present);
-                    
-                    if(isPurchaseMode && logic.purchase === 0) {
-                         totalHtml += `<td></td><td></td>`;
-                    } else {
+                    if(isPurchaseMode && logic.purchase === 0) { totalHtml += `<td></td><td></td>`; } 
+                    else {
                         if(logic.purchase > 0 || logic.transfer) totalHasAction = true;
                         if(logic.purchase > 0) totalRowPurchase += logic.purchase;
-                        
                         totalHtml += `<td><span class="num-target">${t}</span></td>`;
-                        
                         let stockClass = '';
                         if (gap > 0) stockClass = 'num-stock stock-surplus';
                         else if (gap < 0) stockClass = 'num-stock stock-short';
                         else stockClass = 'num-stock stock-equal';
                         
-                        if(isPurchaseMode) {
-                             totalHtml += `<td onclick="openPurchaseStoreModal(${si})" style="cursor: pointer;"><span class="purchase-matrix-val">${logic.purchase}</span></td>`;
-                        } else {
-                             totalHtml += `<td onclick="openModal(${si})" style="cursor: pointer;"><span class="${stockClass}">${s}</span></td>`;
+                        if(isPurchaseMode) { totalHtml += `<td onclick="openPurchaseStoreModal(${si})" style="cursor: pointer;"><span class="purchase-matrix-val">${logic.purchase}</span></td>`; } 
+                        else {
+                            if(cat.mrpDetails && cat.mrpDetails.length > 0) { totalHtml += `<td onclick="openModal(${si})" style="cursor: pointer;"><span class="${stockClass}">${s}</span></td>`; } 
+                            else { totalHtml += `<td onclick="editStock(${ci}, -1, ${si})"><span class="${stockClass}">${s}</span></td>`; }
                         }
                     }
                 });
-
-                if(isPurchaseMode) {
-                     if(totalHasAction) totalHtml += `<td><span class="badge suggestion-purchase">Buy ${totalRowPurchase}</span></td>`;
-                     else totalHtml += `<td></td>`;
-                } else {
-                    let surplusStore = null, maxSurplus = 0;
-                    let shortageStore = null, maxShortage = 0;
-                    
+                if(isPurchaseMode) { if(totalHasAction) totalHtml += `<td><span class="badge suggestion-purchase">Buy ${totalRowPurchase}</span></td>`; else totalHtml += `<td></td>`; } 
+                else {
+                    let surplusStore = null, maxSurplus = 0; let shortageStore = null, maxShortage = 0;
                     stores.forEach((store, si) => {
                         const g = (cat.present[si] || 0) - (cat.base[si] || 0);
                         if(g > 0 && g > maxSurplus) { maxSurplus = g; surplusStore = store; }
                         if(g < 0 && Math.abs(g) > maxShortage) { maxShortage = Math.abs(g); shortageStore = store; }
                     });
-
                     let suggestionHtml = '';
-                    if (surplusStore && shortageStore) {
-                        const qty = Math.min(maxSurplus, maxShortage);
-                        suggestionHtml = `<span class="badge suggestion-transfer">${surplusStore} → ${shortageStore} (${qty})</span>`;
-                    } else if (shortageStore) {
-                        suggestionHtml = `<span class="badge suggestion-shortage">Shortage (No Stock)</span>`;
-                    } else if (surplusStore) {
-                        suggestionHtml = `<span class="badge suggestion-surplus">Surplus</span>`;
-                    } else {
-                        suggestionHtml = `<span class="badge badge-success">OK</span>`;
-                    }
+                    if (surplusStore && shortageStore) { const qty = Math.min(maxSurplus, maxShortage); suggestionHtml = `<span class="badge suggestion-transfer">${surplusStore} → ${shortageStore} (${qty})</span>`; } 
+                    else if (shortageStore) { suggestionHtml = `<span class="badge suggestion-shortage">Shortage (No Stock)</span>`; } 
+                    else if (surplusStore) { suggestionHtml = `<span class="badge suggestion-surplus">Surplus</span>`; } 
+                    else { suggestionHtml = `<span class="badge badge-success">OK</span>`; }
                     totalHtml += `<td>${suggestionHtml}</td>`;
                 }
-
                 if(isPurchaseMode && !totalHasAction) return;
-                
                 bodyHtml += totalHtml;
             });
-            
-            if(isPurchaseMode && bodyHtml === '') {
-                bodyHtml = `<tr><td colspan="${stores.length * 2 + 3}" style="text-align:center; padding: 20px; color:var(--success);">No Purchase Requirements Found</td></tr>`;
-            }
-
+            if(isPurchaseMode && bodyHtml === '') { bodyHtml = `<tr><td colspan="${stores.length * 2 + 3}" style="text-align:center; padding: 20px; color:var(--success);">No Purchase Requirements Found</td></tr>`; }
             tbody.innerHTML = bodyHtml;
+        }
+        
+        function editStock(ci, mrpIdx, si) {
+            let currentVal = 0; let label = "";
+            if (mrpIdx === -1) { currentVal = inventoryData[ci].present[si] || 0; label = `${inventoryData[ci].name} (Total) at ${stores[si]}`; } 
+            else { currentVal = inventoryData[ci].mrpDetails[mrpIdx].present[si] || 0; label = `${inventoryData[ci].name} (${inventoryData[ci].mrpDetails[mrpIdx].range}) at ${stores[si]}`; }
+            const newValStr = prompt(`Enter new stock for:\n${label}\n\nCurrent: ${currentVal}`, currentVal);
+            if (newValStr === null || newValStr === "") return; 
+            const newVal = parseInt(newValStr);
+            if (isNaN(newVal)) { alert("Invalid number."); return; }
+            if (mrpIdx === -1) { inventoryData[ci].present[si] = newVal; } 
+            else { inventoryData[ci].mrpDetails[mrpIdx].present[si] = newVal; recalculateCategoryTotals(ci); }
+            render();
         }
 
         // --- TABS & CHARTS ---
@@ -993,7 +587,6 @@
             event.target.classList.add('active');
             if (tabName === 'analytics') refreshCharts();
         }
-
         function refreshCharts() {
             const ci = parseInt(document.getElementById('chartFilter').value) || 0;
             const cat = inventoryData[ci];
@@ -1002,560 +595,105 @@
             if (!cat) return;
             const txtColor = isDark ? '#f1f5f9' : '#0f172a';
             const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
-            
-            mainChart = new Chart(document.getElementById('mainChart'), {
-                data: { labels: stores, datasets: [ { type: 'line', label: 'Target', data: cat.base, borderColor: '#f59e0b', borderWidth: 2, pointRadius: 4 }, { type: 'bar', label: 'Stock', data: cat.present, backgroundColor: '#0d9488', borderRadius: 6 } ] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: txtColor } } }, scales: { x: { grid: { color: gridColor }, ticks: { color: txtColor } }, y: { grid: { color: gridColor }, ticks: { color: txtColor } } } }
-            });
-            
+            mainChart = new Chart(document.getElementById('mainChart'), { data: { labels: stores, datasets: [ { type: 'line', label: 'Target', data: cat.base, borderColor: '#f59e0b', borderWidth: 2, pointRadius: 4 }, { type: 'bar', label: 'Stock', data: cat.present, backgroundColor: '#0d9488', borderRadius: 6 } ] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: txtColor } } }, scales: { x: { grid: { color: gridColor }, ticks: { color: txtColor } }, y: { grid: { color: gridColor }, ticks: { color: txtColor } } } } });
             const stats = { transfer: 0, purchase: 0, ok: 0 };
-            cat.base.forEach((_, si) => {
-                const logic = getSmartLogic(si, cat.base, cat.present);
-                if (logic.transfer) stats.transfer++; if (logic.purchase > 0) stats.purchase++; if (!logic.transfer && logic.purchase === 0) stats.ok++;
+            cat.base.forEach((_, si) => { const logic = getSmartLogic(si, cat.base, cat.present); if (logic.transfer) stats.transfer++; if (logic.purchase > 0) stats.purchase++; if (!logic.transfer && logic.purchase === 0) stats.ok++; });
+            pieChart = new Chart(document.getElementById('pieChart'), { type: 'doughnut', data: { labels: ['Transfer', 'Purchase', 'OK'], datasets: [{ data: [stats.transfer, stats.purchase, stats.ok], backgroundColor: ['#2563eb', '#dc2626', '#059669'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: txtColor } } } } });
+        }
+
+        // --- ACTIONS TAB FUNCTIONS ---
+        function addBr() {
+            const name = document.getElementById('newBr').value.trim().toUpperCase();
+            if(!name) return alert('Enter branch name');
+            if(stores.includes(name)) return alert('Branch exists');
+            stores.push(name);
+            inventoryData.forEach(cat => {
+                cat.base.push(0); cat.present.push(0);
+                if(cat.mrpDetails) cat.mrpDetails.forEach(mrp => { mrp.base.push(0); mrp.present.push(0); });
             });
-            pieChart = new Chart(document.getElementById('pieChart'), {
-                type: 'doughnut',
-                data: { labels: ['Transfer', 'Purchase', 'OK'], datasets: [{ data: [stats.transfer, stats.purchase, stats.ok], backgroundColor: ['#2563eb', '#dc2626', '#059669'], borderWidth: 0 }] },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: txtColor } } } }
-            });
+            document.getElementById('newBr').value = '';
+            render();
+            alert('Branch Added');
+        }
+        function addCat() {
+            const name = document.getElementById('newCat').value.trim().toUpperCase();
+            if(!name) return alert('Enter category name');
+            if(inventoryData.find(c => c.name === name)) return alert('Category exists');
+            inventoryData.push({ name: name, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] });
+            document.getElementById('newCat').value = '';
+            render();
+            alert('Category Added');
+        }
+        function setTarget() {
+            const ci = parseInt(document.getElementById('selCat').value);
+            const si = parseInt(document.getElementById('selBr').value);
+            const val = parseInt(document.getElementById('targetVal').value) || 0;
+            if (isNaN(ci) || isNaN(si)) { alert('Select Category and Branch'); return; }
+            inventoryData[ci].base[si] = val;
+            render();
+            alert('Target Set');
         }
 
         // --- PURCHASE REPORT TAB ---
-        function openPurchaseReportTab() {
-            localStorage.setItem('sg_report_data', JSON.stringify({ inventoryData, stores }));
-            window.open(window.location.href.split('#')[0] + '#purchase', '_blank');
-        }
+        function openPurchaseReportTab() { localStorage.setItem('sg_report_data', JSON.stringify({ inventoryData, stores })); window.open(window.location.href.split('#')[0] + '#purchase', '_blank'); }
+        function checkPurchaseReportMode() { if (window.location.hash === '#purchase') { document.getElementById('dashboardView').classList.add('hidden'); document.getElementById('purchaseReportView').classList.remove('hidden'); renderPurchasePage(); } }
+        function renderPurchasePage() { const savedData = JSON.parse(localStorage.getItem('sg_report_data')); if (!savedData) return; inventoryData = savedData.inventoryData; stores = savedData.stores; let chartStats = { purchase: 0, categories: new Set() }; inventoryData.forEach(cat => { const processStats = (baseArr, presentArr) => { stores.forEach((store, si) => { const logic = getSmartLogic(si, baseArr, presentArr); if (logic.purchase > 0) { chartStats.purchase += logic.purchase; chartStats.categories.add(cat.name); } }); }; if (cat.mrpDetails && cat.mrpDetails.length > 0) { cat.mrpDetails.forEach(mrp => processStats(mrp.base, mrp.present)); } else { processStats(cat.base, cat.present); } }); document.getElementById('sumPurchase').innerText = Math.round(chartStats.purchase).toLocaleString(); document.getElementById('sumCats').innerText = chartStats.categories.size; new Chart(document.getElementById('purchaseChart'), { type: 'bar', data: { labels: ['Purchase Required'], datasets: [{ label: 'Qty', data: [chartStats.purchase], backgroundColor: '#dc2626', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } }); renderHorizontalMatrix('purchaseMatrixHead', 'purchaseMatrixBody', true); }
+        function openPurchaseStoreModal(si) { currentModalBranchIndex = si; const storeName = stores[si]; document.getElementById('purchaseModalStore').textContent = `${storeName} - Purchase Breakdown`; const purchaseItems = []; inventoryData.forEach(cat => { const processItem = (itemName, mrpRange, baseArr, presentArr) => { const logic = getSmartLogic(si, baseArr, presentArr); if (logic.purchase > 0) { const t = baseArr[si] || 0; const s = presentArr[si] || 0; const shortage = t - s; purchaseItems.push({ category: itemName, mrp: mrpRange, target: t, stock: s, shortage: shortage, purchase: logic.purchase }); } }; if (cat.mrpDetails && cat.mrpDetails.length > 0) { cat.mrpDetails.forEach(mrp => { processItem(cat.name, mrp.range, mrp.base, mrp.present); }); } else { processItem(cat.name, 'TOTAL', cat.base, cat.present); } }); let tableHtml = ''; purchaseItems.forEach(item => { tableHtml += `<tr><td>${item.category}</td><td>${item.mrp}</td><td class="mono">${item.target}</td><td class="mono">${item.stock}</td><td class="mono" style="color: var(--danger);">${item.shortage}</td><td class="mono" style="font-weight: 700;">${item.purchase}</td></tr>`; }); if(purchaseItems.length === 0) { tableHtml = `<tr><td colspan="6" style="text-align:center;">No purchase requirements for this store.</td></tr>`; } document.getElementById('purchaseModalTableBody').innerHTML = tableHtml; const ctx = document.getElementById('purchaseModalChart').getContext('2d'); if (purchaseModalChartInstance) purchaseModalChartInstance.destroy(); const chartLabels = purchaseItems.map(i => i.category + ' ' + i.mrp); const chartData = purchaseItems.map(i => i.purchase); purchaseModalChartInstance = new Chart(ctx, { type: 'bar', data: { labels: chartLabels, datasets: [{ label: 'Purchase Qty', data: chartData, backgroundColor: '#dc2626' }] }, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, title: { display: true, text: `Purchase Requirements for ${storeName}` } }, scales: { x: { beginAtZero: true, grid: { display: false } }, y: { grid: { display: false } } } } }); document.getElementById('purchaseModal').classList.remove('hidden'); }
+        function closePurchaseModal() { document.getElementById('purchaseModal').classList.add('hidden'); }
+        async function exportStorePurchaseExcel() { if (currentModalBranchIndex === null) return; const si = currentModalBranchIndex; const storeName = stores[si]; const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Purchase Report'); ws.addRow([`Purchase Requirement Report: ${storeName}`]); ws.mergeCells('A1:F1'); ws.getRow(1).font = { bold: true, size: 16, color: { argb: 'FFDC2626' } }; ws.getRow(3).values = ['Category', 'MRP', 'Target', 'Stock', 'Shortage', 'Purchase Qty']; ws.getRow(3).font = { bold: true, color: { argb: 'FFFFFFFF' } }; ws.getRow(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDC2626' } }; ws.columns = [{ width: 25 }, { width: 15 }, { width: 10 }, { width: 10 }, { width: 10 }, { width: 12 }]; let rowIdx = 4; inventoryData.forEach(cat => { const process = (name, range, baseArr, presentArr) => { const logic = getSmartLogic(si, baseArr, presentArr); if (logic.purchase > 0) { const t = baseArr[si] || 0; const s = presentArr[si] || 0; const short = t - s; ws.getRow(rowIdx).values = [name, range, t, s, short, logic.purchase]; rowIdx++; } }; if (cat.mrpDetails && cat.mrpDetails.length > 0) { cat.mrpDetails.forEach(mrp => process(cat.name, mrp.range, mrp.base, mrp.present)); } else { process(cat.name, 'TOTAL', cat.base, cat.present); } }); const buffer = await wb.xlsx.writeBuffer(); saveAs(new Blob([buffer]), `${storeName}_Purchase_Report.xlsx`); }
+        async function exportBranchReport() { if (currentModalBranchIndex === null) return; const si = currentModalBranchIndex; const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet(stores[si]); ws.addRow([`Report for Branch: ${stores[si]}`]); ws.mergeCells('A1:D1'); ws.getRow(1).font = { size: 14, bold: true }; ws.getRow(3).values = ['Category', 'Target', 'Stock', 'Action']; ws.getRow(3).font = { bold: true, color: { argb: 'FFFFFFFF' } }; ws.getRow(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } }; ws.columns = [{ width: 25 }, { width: 10 }, { width: 10 }, { width: 30 }]; let rowIdx = 4; inventoryData.forEach(cat => { const logic = getSmartLogic(si, cat.base, cat.present); const b = cat.base[si] || 0; const p = cat.present[si] || 0; let action = ''; if (logic.transfer) action += `Transfer ${logic.transfer.qty} from ${logic.transfer.from}; `; if (logic.purchase > 0) action += `Purchase ${logic.purchase}`; if (!action) action = 'OK'; ws.getRow(rowIdx).values = [cat.name, b, p, action]; rowIdx++; }); const buffer = await wb.xlsx.writeBuffer(); saveAs(new Blob([buffer]), `${stores[si]}_Report.xlsx`); }
+        async function exportMatrixExcel() { const wb = new ExcelJS.Workbook(); const wsMatrix = wb.addWorksheet('Horizontal Matrix'); const header1 = ['Category', 'MRP']; stores.forEach(s => header1.push(s, '')); header1.push('Suggestion'); wsMatrix.addRow(header1); const header2 = ['', '']; stores.forEach(() => header2.push('Target', 'Stock')); header2.push(''); wsMatrix.addRow(header2); stores.forEach((_, i) => { const colIndex = 3 + (i * 2); wsMatrix.mergeCells(1, colIndex, 1, colIndex + 1); }); ['A1', 'B1', 'K1'].forEach(cell => { wsMatrix.getCell(cell).font = { bold: true }; wsMatrix.getCell(cell).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } }; }); let rowIdx = 3; inventoryData.forEach(cat => { if (cat.mrpDetails && cat.mrpDetails.length > 0) { cat.mrpDetails.forEach(mrp => { const rowData = [cat.name, mrp.range]; let rowSurplus = 0, rowShortage = 0; let surplusStore=null, shortageStore=null; stores.forEach((_, si) => { const t = mrp.base[si] || 0; const s = mrp.present[si] || 0; const g = s - t; rowData.push(t); rowData.push(s); if(g > 0) { rowSurplus += g; surplusStore = stores[si]; } if(g < 0) { rowShortage += Math.abs(g); shortageStore = stores[si]; } }); let sugg = ''; if(rowSurplus > 0 && rowShortage > 0) sugg = `Transfer ${Math.min(rowSurplus, rowShortage)} from ${surplusStore} to ${shortageStore}`; else if(rowShortage > 0) sugg = `Shortage (No Stock)`; else if(rowSurplus > 0) sugg = `Surplus`; else sugg = 'OK'; rowData.push(sugg); wsMatrix.getRow(rowIdx).values = rowData; rowIdx++; }); } const totalData = [cat.name, 'TOTAL']; stores.forEach((_, si) => { totalData.push(cat.base[si] || 0); totalData.push(cat.present[si] || 0); }); totalData.push(''); const row = wsMatrix.getRow(rowIdx); row.values = totalData; row.font = { bold: true }; rowIdx++; }); const buffer = await wb.xlsx.writeBuffer(); saveAs(new Blob([buffer]), 'SubhamGrand_Horizontal_Report.xlsx'); }
+        async function exportPurchaseReportExcel() { const savedData = JSON.parse(localStorage.getItem('sg_report_data')); if(!savedData) return alert('No data found'); const data = savedData.inventoryData; const str = savedData.stores; const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Purchase Matrix'); const header1 = ['Category', 'MRP']; str.forEach(s => header1.push(s, '')); header1.push('Total'); ws.addRow(header1); const header2 = ['', '']; str.forEach(() => header2.push('Target', 'Purchase Qty')); header2.push('Purchase'); ws.addRow(header2); str.forEach((_, i) => { const colIndex = 3 + (i * 2); ws.mergeCells(1, colIndex, 1, colIndex + 1); }); ws.columns = [{ width: 25 }, { width: 12 }]; str.forEach(() => ws.columns.push({ width: 8 }, { width: 12 })); ws.columns.push({ width: 12 }); let rowIdx = 3; data.forEach(cat => { const processRange = (rangeName, baseArr, presentArr) => { let rowData = [cat.name, rangeName]; let totalRowPurchase = 0; let hasPurchase = false; str.forEach((store, si) => { const b = baseArr[si] || 0; const logic = getSmartLogic(si, baseArr, presentArr); rowData.push(b); rowData.push(logic.purchase > 0 ? logic.purchase : '-'); if(logic.purchase > 0) { totalRowPurchase += logic.purchase; hasPurchase = true; } }); rowData.push(totalRowPurchase > 0 ? totalRowPurchase : '-'); if(hasPurchase) { ws.getRow(rowIdx).values = rowData; rowIdx++; } }; if (cat.mrpDetails && cat.mrpDetails.length > 0) { cat.mrpDetails.forEach(mrp => processRange(mrp.range, mrp.base, mrp.present)); } else { processRange("TOTAL", cat.base, cat.present); } }); const buffer = await wb.xlsx.writeBuffer(); saveAs(new Blob([buffer]), 'SubhamGrand_Purchase_Matrix.xlsx'); }
 
-        function checkPurchaseReportMode() {
-            if (window.location.hash === '#purchase') {
-                document.getElementById('dashboardView').classList.add('hidden');
-                document.getElementById('purchaseReportView').classList.remove('hidden');
-                renderPurchasePage();
-            }
-        }
-
-        function renderPurchasePage() {
-            const savedData = JSON.parse(localStorage.getItem('sg_report_data'));
-            if (!savedData) return;
-            inventoryData = savedData.inventoryData;
-            stores = savedData.stores;
-
-            let chartStats = { purchase: 0, categories: new Set() };
-            
-             inventoryData.forEach(cat => {
-                const processStats = (baseArr, presentArr) => {
-                    stores.forEach((store, si) => {
-                        const logic = getSmartLogic(si, baseArr, presentArr);
-                        if (logic.purchase > 0) {
-                            chartStats.purchase += logic.purchase;
-                            chartStats.categories.add(cat.name);
-                        }
-                    });
-                };
-                 if (cat.mrpDetails && cat.mrpDetails.length > 0) {
-                    cat.mrpDetails.forEach(mrp => processStats(mrp.base, mrp.present));
-                } else {
-                    processStats(cat.base, cat.present);
-                }
-            });
-
-            document.getElementById('sumPurchase').innerText = Math.round(chartStats.purchase).toLocaleString();
-            document.getElementById('sumCats').innerText = chartStats.categories.size;
-            
-            new Chart(document.getElementById('purchaseChart'), {
-                type: 'bar',
-                data: { labels: ['Purchase Required'], datasets: [{ label: 'Qty', data: [chartStats.purchase], backgroundColor: '#dc2626', borderRadius: 4 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-            });
-
-            renderHorizontalMatrix('purchaseMatrixHead', 'purchaseMatrixBody', true);
-        }
-
-        // --- PURCHASE STORE MODAL LOGIC ---
-        function openPurchaseStoreModal(si) {
-            currentModalBranchIndex = si;
-            const storeName = stores[si];
-            document.getElementById('purchaseModalStore').textContent = `${storeName} - Purchase Breakdown`;
-            
-            const purchaseItems = [];
-            
-            inventoryData.forEach(cat => {
-                const processItem = (itemName, mrpRange, baseArr, presentArr) => {
-                    const logic = getSmartLogic(si, baseArr, presentArr);
-                    if (logic.purchase > 0) {
-                        const t = baseArr[si] || 0;
-                        const s = presentArr[si] || 0;
-                        const shortage = t - s;
-                        purchaseItems.push({
-                            category: itemName,
-                            mrp: mrpRange,
-                            target: t,
-                            stock: s,
-                            shortage: shortage,
-                            purchase: logic.purchase
-                        });
-                    }
-                };
-
-                if (cat.mrpDetails && cat.mrpDetails.length > 0) {
-                    cat.mrpDetails.forEach(mrp => {
-                        processItem(cat.name, mrp.range, mrp.base, mrp.present);
-                    });
-                } else {
-                    processItem(cat.name, 'TOTAL', cat.base, cat.present);
-                }
-            });
-
-            let tableHtml = '';
-            purchaseItems.forEach(item => {
-                tableHtml += `<tr>
-                    <td>${item.category}</td>
-                    <td>${item.mrp}</td>
-                    <td class="mono">${item.target}</td>
-                    <td class="mono">${item.stock}</td>
-                    <td class="mono" style="color: var(--danger);">${item.shortage}</td>
-                    <td class="mono" style="font-weight: 700;">${item.purchase}</td>
-                </tr>`;
-            });
-            
-            if(purchaseItems.length === 0) {
-                tableHtml = `<tr><td colspan="6" style="text-align:center;">No purchase requirements for this store.</td></tr>`;
-            }
-            document.getElementById('purchaseModalTableBody').innerHTML = tableHtml;
-
-            const ctx = document.getElementById('purchaseModalChart').getContext('2d');
-            if (purchaseModalChartInstance) purchaseModalChartInstance.destroy();
-
-            const chartLabels = purchaseItems.map(i => i.category + ' ' + i.mrp);
-            const chartData = purchaseItems.map(i => i.purchase);
-
-            purchaseModalChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: chartLabels,
-                    datasets: [{
-                        label: 'Purchase Qty',
-                        data: chartData,
-                        backgroundColor: '#dc2626'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y',
-                    plugins: {
-                        legend: { display: false },
-                        title: { display: true, text: `Purchase Requirements for ${storeName}` }
-                    },
-                    scales: {
-                        x: { beginAtZero: true, grid: { display: false } },
-                        y: { grid: { display: false } }
-                    }
-                }
-            });
-
-            document.getElementById('purchaseModal').classList.remove('hidden');
-        }
-
-        function closePurchaseModal() {
-            document.getElementById('purchaseModal').classList.add('hidden');
-        }
-
-        // --- EXPORT STORE PURCHASE EXCEL ---
-        async function exportStorePurchaseExcel() {
-            if (currentModalBranchIndex === null) return;
-            const si = currentModalBranchIndex;
-            const storeName = stores[si];
-
-            const wb = new ExcelJS.Workbook();
-            const ws = wb.addWorksheet('Purchase Report');
-
-            ws.addRow([`Purchase Requirement Report: ${storeName}`]);
-            ws.mergeCells('A1:F1');
-            ws.getRow(1).font = { bold: true, size: 16, color: { argb: 'FFDC2626' } };
-
-            ws.getRow(3).values = ['Category', 'MRP', 'Target', 'Stock', 'Shortage', 'Purchase Qty'];
-            ws.getRow(3).font = { bold: true, color: { argb: 'FFFFFFFF' } };
-            ws.getRow(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDC2626' } };
-            ws.columns = [
-                { width: 25 }, { width: 15 }, { width: 10 }, { width: 10 }, { width: 10 }, { width: 12 }
-            ];
-
-            let rowIdx = 4;
-
-            inventoryData.forEach(cat => {
-                const process = (name, range, baseArr, presentArr) => {
-                    const logic = getSmartLogic(si, baseArr, presentArr);
-                    if (logic.purchase > 0) {
-                        const t = baseArr[si] || 0;
-                        const s = presentArr[si] || 0;
-                        const short = t - s;
-                        ws.getRow(rowIdx).values = [name, range, t, s, short, logic.purchase];
-                        rowIdx++;
-                    }
-                };
-
-                if (cat.mrpDetails && cat.mrpDetails.length > 0) {
-                    cat.mrpDetails.forEach(mrp => process(cat.name, mrp.range, mrp.base, mrp.present));
-                } else {
-                    process(cat.name, 'TOTAL', cat.base, cat.present);
-                }
-            });
-
-            const buffer = await wb.xlsx.writeBuffer();
-            saveAs(new Blob([buffer]), `${storeName}_Purchase_Report.xlsx`);
-        }
-
-        // --- EXISTING EXPORT FUNCTIONS ---
-        async function exportBranchReport() {
-            if (currentModalBranchIndex === null) return;
-            const si = currentModalBranchIndex;
-            const wb = new ExcelJS.Workbook();
-            const ws = wb.addWorksheet(stores[si]);
-            
-            ws.addRow([`Report for Branch: ${stores[si]}`]);
-            ws.mergeCells('A1:D1');
-            ws.getRow(1).font = { size: 14, bold: true };
-            
-            ws.getRow(3).values = ['Category', 'Target', 'Stock', 'Action'];
-            ws.getRow(3).font = { bold: true, color: { argb: 'FFFFFFFF' } };
-            ws.getRow(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } };
-            ws.columns = [{ width: 25 }, { width: 10 }, { width: 10 }, { width: 30 }];
-            
-            let rowIdx = 4;
-            inventoryData.forEach(cat => {
-                const logic = getSmartLogic(si, cat.base, cat.present);
-                const b = cat.base[si] || 0;
-                const p = cat.present[si] || 0;
-                let action = '';
-                if (logic.transfer) action += `Transfer ${logic.transfer.qty} from ${logic.transfer.from}; `;
-                if (logic.purchase > 0) action += `Purchase ${logic.purchase}`;
-                if (!action) action = 'OK';
-                
-                ws.getRow(rowIdx).values = [cat.name, b, p, action];
-                rowIdx++;
-            });
-            
-            const buffer = await wb.xlsx.writeBuffer();
-            saveAs(new Blob([buffer]), `${stores[si]}_Report.xlsx`);
-        }
-
-        async function exportMatrixExcel() {
-            const wb = new ExcelJS.Workbook();
-            const wsMatrix = wb.addWorksheet('Horizontal Matrix');
-            
-            const header1 = ['Category', 'MRP'];
-            stores.forEach(s => header1.push(s, '')); 
-            header1.push('Suggestion');
-            wsMatrix.addRow(header1);
-            
-            const header2 = ['', ''];
-            stores.forEach(() => header2.push('Target', 'Stock'));
-            header2.push('');
-            wsMatrix.addRow(header2);
-            
-            stores.forEach((_, i) => {
-                const colIndex = 3 + (i * 2);
-                wsMatrix.mergeCells(1, colIndex, 1, colIndex + 1);
-            });
-            
-            ['A1', 'B1', 'K1'].forEach(cell => { wsMatrix.getCell(cell).font = { bold: true }; wsMatrix.getCell(cell).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F172A' } }; });
-            
-            let rowIdx = 3;
-            inventoryData.forEach(cat => {
-                if (cat.mrpDetails && cat.mrpDetails.length > 0) {
-                    cat.mrpDetails.forEach(mrp => {
-                        const rowData = [cat.name, mrp.range];
-                        let rowSurplus = 0, rowShortage = 0;
-                        let surplusStore=null, shortageStore=null;
-                        
-                        stores.forEach((_, si) => {
-                            const t = mrp.base[si] || 0;
-                            const s = mrp.present[si] || 0;
-                            const g = s - t;
-                            rowData.push(t);
-                            rowData.push(s);
-                            if(g > 0) { rowSurplus += g; surplusStore = stores[si]; }
-                            if(g < 0) { rowShortage += Math.abs(g); shortageStore = stores[si]; }
-                        });
-                        
-                        let sugg = '';
-                        if(rowSurplus > 0 && rowShortage > 0) sugg = `Transfer ${Math.min(rowSurplus, rowShortage)} from ${surplusStore} to ${shortageStore}`;
-                        else if(rowShortage > 0) sugg = `Shortage (No Stock)`;
-                        else if(rowSurplus > 0) sugg = `Surplus`;
-                        else sugg = 'OK';
-                        
-                        rowData.push(sugg);
-                        wsMatrix.getRow(rowIdx).values = rowData;
-                        rowIdx++;
-                    });
-                }
-
-                const totalData = [cat.name, 'TOTAL'];
-                 stores.forEach((_, si) => {
-                    totalData.push(cat.base[si] || 0);
-                    totalData.push(cat.present[si] || 0);
-                });
-                totalData.push('');
-                const row = wsMatrix.getRow(rowIdx);
-                row.values = totalData;
-                row.font = { bold: true };
-                rowIdx++;
-            });
-
-            const buffer = await wb.xlsx.writeBuffer();
-            saveAs(new Blob([buffer]), 'SubhamGrand_Horizontal_Report.xlsx');
-        }
-
-        async function exportPurchaseReportExcel() {
-            const savedData = JSON.parse(localStorage.getItem('sg_report_data'));
-            if(!savedData) return alert('No data found');
-            
-            const data = savedData.inventoryData;
-            const str = savedData.stores;
-            
-            const wb = new ExcelJS.Workbook();
-            const ws = wb.addWorksheet('Purchase Matrix');
-            
-            const header1 = ['Category', 'MRP'];
-            str.forEach(s => header1.push(s, '')); 
-            header1.push('Total');
-            ws.addRow(header1);
-            
-            const header2 = ['', ''];
-            str.forEach(() => header2.push('Target', 'Purchase Qty'));
-            header2.push('Purchase');
-            ws.addRow(header2);
-            
-            str.forEach((_, i) => {
-                const colIndex = 3 + (i * 2);
-                ws.mergeCells(1, colIndex, 1, colIndex + 1);
-            });
-            
-            ws.columns = [{ width: 25 }, { width: 12 }];
-            str.forEach(() => ws.columns.push({ width: 8 }, { width: 12 }));
-            ws.columns.push({ width: 12 });
-
-            let rowIdx = 3;
-            
-            data.forEach(cat => {
-                const processRange = (rangeName, baseArr, presentArr) => {
-                    let rowData = [cat.name, rangeName];
-                    let totalRowPurchase = 0;
-                    let hasPurchase = false;
-                    
-                    str.forEach((store, si) => {
-                        const b = baseArr[si] || 0;
-                        const logic = getSmartLogic(si, baseArr, presentArr);
-                        
-                        rowData.push(b);
-                        rowData.push(logic.purchase > 0 ? logic.purchase : '-');
-                        if(logic.purchase > 0) {
-                            totalRowPurchase += logic.purchase;
-                            hasPurchase = true;
-                        }
-                    });
-                    
-                    rowData.push(totalRowPurchase > 0 ? totalRowPurchase : '-');
-                    
-                    if(hasPurchase) {
-                        ws.getRow(rowIdx).values = rowData;
-                        rowIdx++;
-                    }
-                };
-                
-                if (cat.mrpDetails && cat.mrpDetails.length > 0) {
-                    cat.mrpDetails.forEach(mrp => processRange(mrp.range, mrp.base, mrp.present));
-                } else {
-                    processRange("TOTAL", cat.base, cat.present);
-                }
-            });
-            
-            const buffer = await wb.xlsx.writeBuffer();
-            saveAs(new Blob([buffer]), 'SubhamGrand_Purchase_Matrix.xlsx');
-        }
-
-        // --- UPLOAD LOGIC (FIXED: Handles Suffixes like 1+1) ---
-        async function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const data = new Uint8Array(e.target.result);
-                const workbook = new ExcelJS.Workbook();
-                await workbook.xlsx.load(data);
-                const ws = workbook.worksheets[0];
-                
-                const headerRow = ws.getRow(1);
-                const storeColMap = []; 
-                
-                headerRow.eachCell((cell, colNumber) => {
-                    if (colNumber <= 2) return; 
-                    
-                    let val = cell.value;
-                    if (cell.result !== undefined) val = cell.result;
-                    if (val && typeof val === 'object' && val.richText) val = val.richText.map(t => t.text).join('');
-                    
-                    const headerText = val ? val.toString().trim().toUpperCase() : '';
-                    
-                    if (headerText) {
-                        storeColMap.push({ colIdx: colNumber, storeName: headerText });
-                    }
-                });
-
-                if (storeColMap.length === 0) {
-                    alert('No store columns found in Excel.'); return;
-                }
-
-                const oldStores = [...stores];
-                stores = storeColMap.map(m => m.storeName);
-
-                inventoryData.forEach(cat => {
-                    const newBase = Array(stores.length).fill(0);
-                    
-                    oldStores.forEach((oldName, oldIdx) => {
-                        const newIdx = stores.indexOf(oldName);
-                        if (newIdx !== -1 && cat.base[oldIdx] !== undefined) {
-                            newBase[newIdx] = cat.base[oldIdx];
-                        }
-                    });
-                    
-                    cat.base = newBase;
-                    cat.present = Array(stores.length).fill(0);
-
-                    if (cat.mrpDetails) {
-                        cat.mrpDetails.forEach(mrp => {
-                            const newMrpBase = Array(stores.length).fill(0);
-                            oldStores.forEach((oldName, oldIdx) => {
-                                const newIdx = stores.indexOf(oldName);
-                                if (newIdx !== -1 && mrp.base[oldIdx] !== undefined) {
-                                    newMrpBase[newIdx] = mrp.base[oldIdx];
-                                }
-                            });
-                            mrp.base = newMrpBase;
-                            mrp.present = Array(stores.length).fill(0);
-                        });
-                    }
-                });
-
-                // IMPROVED NORMALIZATION LOGIC
-                const normalizeRange = (str) => {
-                    if (!str) return '';
-                    let s = str.toString().trim().toUpperCase();
-                    if (s === 'TOTAL') return 'TOTAL';
-                    
-                    // 1. Handle Range with Suffix (e.g., "501-1000(1+1)" or "0-500 (1+1)")
-                    // Matches: StartNumber, Separator, EndNumber, Optional Suffix
-                    let match = s.match(/^(\d+)\s*[-<]+\s*(\d+)\s*(.*)/);
-                    if (match) {
-                        let suffix = match[3].trim(); // Capture "(1+1)" or similar
-                        return `${match[1]}<${match[2]}${suffix}`; 
-                    }
-                    
-                    // 2. Handle Greater Than/Less Than (e.g., ">7500")
-                    match = s.match(/^(>|<)\s*(\d+)\s*(.*)/);
-                    if (match) {
-                        return `${match[1]}${match[2]}${match[3].trim()}`;
-                    }
-                    
-                    // 3. Fallback
-                    const numbers = s.match(/\d+/g);
-                    if (numbers && numbers.length >= 2) return `${numbers[0]}<${numbers[1]}`;
-                    if (numbers && numbers.length === 1) return `>${numbers[0]}`;
-                    
-                    return s;
-                };
-
-                ws.eachRow((row, rowNumber) => {
-                    if (rowNumber === 1) return; 
-
-                    const getVal = (idx) => {
-                        const cell = row.getCell(idx);
-                        if (cell.value === null || cell.value === undefined || cell.value === '') return 0;
-                        let rawVal = 0;
-                        if (cell.result !== undefined) rawVal = parseFloat(cell.result);
-                        else rawVal = parseFloat(cell.value);
-                        
-                        if (isNaN(rawVal)) return 0;
-                        return Math.round(rawVal);
-                    };
-                    
-                    const getStr = (idx) => {
-                         const cell = row.getCell(idx);
-                         let val = cell.value;
-                         if (cell.result !== undefined) val = cell.result;
-                         if (val && typeof val === 'object' && val.richText) val = val.richText.map(t => t.text).join('');
-                         if (cell.type === ExcelJS.ValueType.Number) return cell.value.toString();
-                         return val ? val.toString().trim().toUpperCase() : '';
-                    };
-
-                    const catName = getStr(1); 
-                    const rawMrpName = getStr(2); 
-                    const mrpName = normalizeRange(rawMrpName);
-                    
-                    if (!catName) return;
-
-                    let catIdx = inventoryData.findIndex(c => c.name === catName);
-                    if (catIdx === -1) {
-                        inventoryData.push({ 
-                            name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] 
-                        });
-                        catIdx = inventoryData.length - 1;
-                    }
-                    const cat = inventoryData[catIdx];
-
-                    const isTotal = (mrpName === 'TOTAL' || mrpName === '');
-                    
-                    storeColMap.forEach((mapItem, index) => {
-                        const val = getVal(mapItem.colIdx);
-
-                        if (isTotal) {
-                            cat.present[index] = val;
-                        } else {
-                            let mrpRow = cat.mrpDetails.find(r => r.range === mrpName);
-                            if (!mrpRow) {
-                                mrpRow = { range: mrpName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) };
-                                cat.mrpDetails.push(mrpRow);
-                            }
-                            mrpRow.present[index] = val;
-                        }
-                    });
-                });
-
-                inventoryData.forEach((c, i) => recalculateCategoryTotals(i));
-                render();
-                alert('Upload Successful! Ranges and suffixes processed correctly.');
-            };
-            reader.readAsArrayBuffer(file);
-        }
+        // --- UPLOAD LOGIC ---
+        async function handleFileUpload(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async (e) => { const data = new Uint8Array(e.target.result); const workbook = new ExcelJS.Workbook(); await workbook.xlsx.load(data); const ws = workbook.worksheets[0]; const headerRow = ws.getRow(1); const storeColMap = []; headerRow.eachCell((cell, colNumber) => { if (colNumber <= 2) return; let val = cell.value; if (cell.result !== undefined) val = cell.result; if (val && typeof val === 'object' && val.richText) val = val.richText.map(t => t.text).join(''); const headerText = val ? val.toString().trim().toUpperCase() : ''; if (headerText) { storeColMap.push({ colIdx: colNumber, storeName: headerText }); } }); if (storeColMap.length === 0) { alert('No store columns found in Excel.'); return; } const oldStores = [...stores]; stores = storeColMap.map(m => m.storeName); inventoryData.forEach(cat => { const newBase = Array(stores.length).fill(0); oldStores.forEach((oldName, oldIdx) => { const newIdx = stores.indexOf(oldName); if (newIdx !== -1 && cat.base[oldIdx] !== undefined) { newBase[newIdx] = cat.base[oldIdx]; } }); cat.base = newBase; cat.present = Array(stores.length).fill(0); if (cat.mrpDetails) { cat.mrpDetails.forEach(mrp => { const newMrpBase = Array(stores.length).fill(0); oldStores.forEach((oldName, oldIdx) => { const newIdx = stores.indexOf(oldName); if (newIdx !== -1 && mrp.base[oldIdx] !== undefined) { newMrpBase[newIdx] = mrp.base[oldIdx]; } }); mrp.base = newMrpBase; mrp.present = Array(stores.length).fill(0); }); } }); const normalizeRange = (str) => { if (!str) return ''; let s = str.toString().trim().toUpperCase(); if (s === 'TOTAL') return 'TOTAL'; let match = s.match(/^(\d+)\s*[-<]+\s*(\d+)\s*(.*)/); if (match) { let suffix = match[3].trim(); return `${match[1]}<${match[2]}${suffix}`; } match = s.match(/^(>|<)\s*(\d+)\s*(.*)/); if (match) { return `${match[1]}${match[2]}${match[3].trim()}`; } const numbers = s.match(/\d+/g); if (numbers && numbers.length >= 2) return `${numbers[0]}<${numbers[1]}`; if (numbers && numbers.length === 1) return `>${numbers[0]}`; return s; }; ws.eachRow((row, rowNumber) => { if (rowNumber === 1) return; const getVal = (idx) => { const cell = row.getCell(idx); if (cell.value === null || cell.value === undefined || cell.value === '') return 0; let rawVal = 0; if (cell.result !== undefined) rawVal = parseFloat(cell.result); else rawVal = parseFloat(cell.value); if (isNaN(rawVal)) return 0; return Math.round(rawVal); }; const getStr = (idx) => { const cell = row.getCell(idx); let val = cell.value; if (cell.result !== undefined) val = cell.result; if (val && typeof val === 'object' && val.richText) val = val.richText.map(t => t.text).join(''); if (cell.type === ExcelJS.ValueType.Number) return cell.value.toString(); return val ? val.toString().trim().toUpperCase() : ''; }; const catName = getStr(1); const rawMrpName = getStr(2); const mrpName = normalizeRange(rawMrpName); if (!catName) return; let catIdx = inventoryData.findIndex(c => c.name === catName); if (catIdx === -1) { inventoryData.push({ name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }); catIdx = inventoryData.length - 1; } const cat = inventoryData[catIdx]; const isTotal = (mrpName === 'TOTAL' || mrpName === ''); storeColMap.forEach((mapItem, index) => { const val = getVal(mapItem.colIdx); if (isTotal) { cat.present[index] = val; } else { let mrpRow = cat.mrpDetails.find(r => r.range === mrpName); if (!mrpRow) { mrpRow = { range: mrpName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); } mrpRow.present[index] = val; } }); }); inventoryData.forEach((c, i) => recalculateCategoryTotals(i)); render(); alert('Upload Successful!'); }; reader.readAsArrayBuffer(file); }
 
         function toggleTheme() { document.body.classList.toggle('dark-mode'); render(); }
-        
         function openModal(si) { currentModalBranchIndex = si; document.getElementById('modalStore').textContent = stores[si]; let html = ''; inventoryData.forEach(cat => { const logic = getSmartLogic(si, cat.base, cat.present); const gap = (cat.present[si] || 0) - (cat.base[si] || 0); const border = gap < 0 ? 'var(--danger)' : 'var(--success)'; html += `<div class="card p-4 mb-2" style="border-left: 4px solid ${border};"><div class="flex justify-between text-xs font-semibold uppercase mb-1" style="color: var(--text-muted);"><span>${cat.name}</span><span>Gap: ${gap > 0 ? '+' : ''}${gap}</span></div><div class="font-bold"><div class="analysis-cell">${logic.transfer ? `<span class="badge badge-info">Trans ${logic.transfer.qty} fr. ${logic.transfer.from}</span>` : ''}${logic.purchase > 0 ? `<span class="badge badge-danger">Buy ${logic.purchase}</span>` : ''}${!logic.transfer && logic.purchase === 0 ? `<span class="badge badge-success">OK</span>` : ''}</div></div>`; }); document.getElementById('modalBody').innerHTML = html; document.getElementById('modal').classList.remove('hidden'); }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-        
         function openManualModal() { render(); document.getElementById('manualModal').classList.remove('hidden'); }
         function closeManualModal() { document.getElementById('manualModal').classList.add('hidden'); }
-        
-        function updateMrpOptions() {
-            const catName = document.getElementById('manualCatInput').value.toUpperCase().trim();
-            const mrpList = document.getElementById('mrpList');
-            mrpList.innerHTML = '<option value="TOTAL">TOTAL</option>';
-            if(!catName) return;
-            const cat = inventoryData.find(c => c.name === catName);
-            if(cat && cat.mrpDetails) {
-                cat.mrpDetails.forEach(mrp => {
-                    const option = document.createElement('option');
-                    option.value = mrp.range;
-                    mrpList.appendChild(option);
-                });
-            }
-        }
+        function updateMrpOptions() { const catName = document.getElementById('manualCatInput').value.toUpperCase().trim(); const mrpList = document.getElementById('mrpList'); mrpList.innerHTML = '<option value="TOTAL">TOTAL</option>'; if(!catName) return; const cat = inventoryData.find(c => c.name === catName); if(cat && cat.mrpDetails) { cat.mrpDetails.forEach(mrp => { const option = document.createElement('option'); option.value = mrp.range; mrpList.appendChild(option); }); } }
         document.getElementById('manualCatInput').addEventListener('change', updateMrpOptions);
         document.getElementById('manualCatInput').addEventListener('input', updateMrpOptions);
 
-        function saveManualData() { const catName = document.getElementById('manualCatInput').value.toUpperCase().trim(); const mrp = document.getElementById('manualMrp').value.trim(); const si = parseInt(document.getElementById('manualBranch').value); const target = parseInt(document.getElementById('manualTarget').value) || 0; const stock = parseInt(document.getElementById('manualStock').value) || 0; if (!catName || !mrp || isNaN(si)) { alert('Missing fields'); return; } let catIndex = inventoryData.findIndex(c => c.name === catName); if (catIndex === -1) { inventoryData.push({ name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }); catIndex = inventoryData.length - 1; } const cat = inventoryData[catIndex]; let mrpRow = cat.mrpDetails.find(r => r.range === mrp); if (!mrpRow) { mrpRow = { range: mrp, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); } mrpRow.base[si] = target; mrpRow.present[si] = stock; recalculateCategoryTotals(catIndex); closeManualModal(); render(); alert('Saved'); }
+        function saveManualData() { 
+            const catName = document.getElementById('manualCatInput').value.toUpperCase().trim(); 
+            const mrp = document.getElementById('manualMrp').value.trim(); 
+            const si = parseInt(document.getElementById('manualBranch').value); 
+            const target = parseInt(document.getElementById('manualTarget').value) || 0; 
+            const stock = parseInt(document.getElementById('manualStock').value) || 0; 
+            
+            if (!catName || !mrp || isNaN(si)) { alert('Missing fields'); return; } 
+            
+            let catIndex = inventoryData.findIndex(c => c.name === catName); 
+            if (catIndex === -1) { inventoryData.push({ name: catName, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0), mrpDetails: [] }); catIndex = inventoryData.length - 1; } 
+            const cat = inventoryData[catIndex]; 
+            
+            if (si === -1) {
+                const confirmed = confirm(`This will set ${stock} stock and ${target} target for "${catName} - ${mrp}" across ALL ${stores.length} stores. Proceed?`);
+                if(!confirmed) return;
+                
+                if (mrp === 'TOTAL') {
+                    for(let i=0; i<stores.length; i++) { cat.base[i] = target; cat.present[i] = stock; }
+                } else {
+                    let mrpRow = cat.mrpDetails.find(r => r.range === mrp);
+                    if (!mrpRow) { mrpRow = { range: mrp, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); }
+                    for(let i=0; i<stores.length; i++) { mrpRow.base[i] = target; mrpRow.present[i] = stock; }
+                    recalculateCategoryTotals(catIndex);
+                }
+            } else {
+                if (mrp === 'TOTAL') {
+                    cat.base[si] = target; cat.present[si] = stock;
+                } else {
+                    let mrpRow = cat.mrpDetails.find(r => r.range === mrp);
+                    if (!mrpRow) { mrpRow = { range: mrp, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) }; cat.mrpDetails.push(mrpRow); }
+                    mrpRow.base[si] = target; mrpRow.present[si] = stock;
+                    recalculateCategoryTotals(catIndex);
+                }
+            }
+            closeManualModal(); render(); alert('Saved'); 
+        }
 
         window.onload = function() { checkPurchaseReportMode(); render(); };
     </script>
