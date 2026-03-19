@@ -55,12 +55,8 @@
         td:first-child { border-left: none; text-align: left; padding-left: 16px; font-weight: 600; }
         
         /* Number Styles */
-        .num-target {
-            background-color: #f3f4f6; color: #374151; font-family: 'Space Mono', monospace; font-weight: 600; display: block; padding: 4px; border-radius: 4px;
-        }
-        .num-stock {
-            font-family: 'Space Mono', monospace; font-weight: 700; display: block; padding: 4px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: opacity 0.2s;
-        }
+        .num-target { background-color: #f3f4f6; color: #374151; font-family: 'Space Mono', monospace; font-weight: 600; display: block; padding: 4px; border-radius: 4px; }
+        .num-stock { font-family: 'Space Mono', monospace; font-weight: 700; display: block; padding: 4px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: opacity 0.2s; }
         .num-stock:hover { opacity: 0.8; box-shadow: 0 0 0 2px var(--accent); }
         
         /* COLOR LOGIC */
@@ -69,9 +65,7 @@
         .stock-equal { background-color: #93c5fd; color: #000000; }
         
         /* Purchase Matrix Specific */
-        .purchase-matrix-val {
-            background-color: #fee2e2; color: #991b1b; font-family: 'Space Mono', monospace; font-weight: 700; display: block; padding: 4px; border-radius: 4px; cursor: pointer; border: 1px solid #fecaca;
-        }
+        .purchase-matrix-val { background-color: #fee2e2; color: #991b1b; font-family: 'Space Mono', monospace; font-weight: 700; display: block; padding: 4px; border-radius: 4px; cursor: pointer; border: 1px solid #fecaca; }
         .purchase-matrix-val:hover { background-color: #fecaca; }
         
         /* Suggestion Badges */
@@ -120,7 +114,7 @@
                     <button onclick="document.getElementById('uploadInput').click()" class="btn btn-primary">Upload Stock</button>
                     <input type="file" id="uploadInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleFileUpload(event)">
                     
-                    <!-- NEW BUTTONS ADDED HERE -->
+                    <!-- Save & Reset Buttons -->
                     <button onclick="saveData()" class="btn btn-success">Save Data</button>
                     <button onclick="resetData()" class="btn btn-danger">Reset Stock</button>
                     
@@ -179,11 +173,29 @@
             </div>
         </div>
 
+        <!-- ACTIONS TAB -->
         <div id="tabActions" class="tab-content hidden">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6" style="max-width: 1600px; margin: 0 auto;">
                 <div class="card p-6"><h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Add Branch</h3><div class="flex gap-2"><input type="text" id="newBr" placeholder="Name" class="input-field"><button onclick="addBr()" class="btn btn-primary">Add</button></div></div>
                 <div class="card p-6"><h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Add Category</h3><div class="flex gap-2"><input type="text" id="newCat" placeholder="Name" class="input-field"><button onclick="addCat()" class="btn btn-primary">Add</button></div></div>
-                <div class="card p-6"><h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Set Target</h3><div class="flex gap-2"><select id="selCat" class="input-field text-xs"></select><select id="selBr" class="input-field text-xs"></select><input type="number" id="targetVal" placeholder="Qty" class="input-field w-20"><button onclick="setTarget()" class="btn btn-secondary">Set</button></div></div>
+                
+                <!-- SET TARGET CARD UPDATED -->
+                <div class="card p-6">
+                    <h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Set Target</h3>
+                    <div class="flex flex-col gap-2">
+                        <div class="flex gap-2">
+                            <select id="selCat" class="input-field text-xs" onchange="updateTargetMrpOptions()"></select>
+                            <select id="selMrp" class="input-field text-xs">
+                                <option value="TOTAL">TOTAL</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-2">
+                            <select id="selBr" class="input-field text-xs"></select>
+                            <input type="number" id="targetVal" placeholder="Qty" class="input-field w-24">
+                            <button onclick="setTarget()" class="btn btn-secondary">Set</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -365,11 +377,10 @@
                 try {
                     inventoryData = JSON.parse(savedInv);
                     stores = JSON.parse(savedStores);
-                    // Ensure present arrays exist
                     initPresentArrays(inventoryData);
                 } catch (e) {
                     console.error("Failed to load saved data, resetting.", e);
-                    resetData(true); // Silent reset
+                    resetData(true); 
                 }
             }
         }
@@ -380,16 +391,14 @@
             }
             
             inventoryData.forEach(cat => {
-                // Reset main present
                 if(cat.present) cat.present.fill(0);
-                // Reset mrp details present
                 if(cat.mrpDetails) {
                     cat.mrpDetails.forEach(mrp => {
                         if(mrp.present) mrp.present.fill(0);
                     });
                 }
             });
-            saveData(); // Save reset state
+            saveData(); 
             render();
             if(!silent) alert('Stock Reset to 0.');
         }
@@ -466,6 +475,10 @@
             selCat.innerHTML = catOptsSelect; selBr.innerHTML = brOpts; chartFilter.innerHTML = catOptsSelect;
             document.getElementById('catList').innerHTML = catOptsDatalist;
             document.getElementById('manualBranch').innerHTML = '<option value="-1">ALL STORES</option>' + brOpts;
+            
+            // IMPORTANT: Update Target MRP options after render
+            updateTargetMrpOptions();
+
             if (!document.getElementById('tabAnalytics').classList.contains('hidden')) refreshCharts();
         }
 
@@ -626,12 +639,51 @@
             render();
             alert('Category Added');
         }
+
+        // UPDATED: Update MRP options for Set Target
+        function updateTargetMrpOptions() {
+            const ci = parseInt(document.getElementById('selCat').value);
+            const mrpSelect = document.getElementById('selMrp');
+            mrpSelect.innerHTML = '<option value="TOTAL">TOTAL</option>';
+            
+            if (!isNaN(ci)) {
+                const cat = inventoryData[ci];
+                if (cat.mrpDetails && cat.mrpDetails.length > 0) {
+                    cat.mrpDetails.forEach(mrp => {
+                        const opt = document.createElement('option');
+                        opt.value = mrp.range;
+                        opt.textContent = mrp.range;
+                        mrpSelect.appendChild(opt);
+                    });
+                }
+            }
+        }
+
+        // UPDATED: Set Target with MRP support
         function setTarget() {
             const ci = parseInt(document.getElementById('selCat').value);
+            const mrpVal = document.getElementById('selMrp').value; // Get MRP value
             const si = parseInt(document.getElementById('selBr').value);
             const val = parseInt(document.getElementById('targetVal').value) || 0;
+            
             if (isNaN(ci) || isNaN(si)) { alert('Select Category and Branch'); return; }
-            inventoryData[ci].base[si] = val;
+
+            const cat = inventoryData[ci];
+
+            // If MRP is TOTAL or empty, set main category target
+            if (mrpVal === 'TOTAL' || !mrpVal) {
+                cat.base[si] = val;
+            } else {
+                // Find specific MRP row
+                let mrpRow = cat.mrpDetails.find(r => r.range === mrpVal);
+                if (!mrpRow) {
+                    // Create if not exists (should exist usually)
+                    mrpRow = { range: mrpVal, base: Array(stores.length).fill(0), present: Array(stores.length).fill(0) };
+                    cat.mrpDetails.push(mrpRow);
+                }
+                mrpRow.base[si] = val;
+                recalculateCategoryTotals(ci);
+            }
             render();
             alert('Target Set');
         }
@@ -695,7 +747,7 @@
         }
 
         window.onload = function() { 
-            loadData(); // Load saved data first
+            loadData(); 
             checkPurchaseReportMode(); 
             render(); 
         };
