@@ -67,21 +67,11 @@
         .purchase-list-item { display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap: 16px; padding: 16px; border-bottom: 1px solid var(--border); align-items: center; }
         .purchase-list-item:hover { background: var(--bg); }
         
-        .badge { display: inline-flex; padding: 4px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; margin-right: 4px; border: 1px solid transparent; text-align: center; }
+        .badge { display: inline-flex; padding: 4px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; margin-right: 4px; border: 1px solid transparent; }
         .badge-danger { background: rgba(220,38,38,0.1); color: var(--danger); border-color: var(--danger); }
         .badge-success { background: rgba(5,150,105,0.1); color: var(--success); border-color: var(--success); }
         .badge-info { background: rgba(37,99,235,0.1); color: var(--info); border-color: var(--info); }
         .badge-warning { background: rgba(245,158,11,0.1); color: var(--warning); border-color: var(--warning); }
-        
-        /* NEW: Specific style for Transfer Recommendations */
-        .badge-transfer { 
-            background: rgba(37,99,235,0.15); 
-            color: var(--info); 
-            border: 1px solid rgba(37,99,235,0.3);
-            font-size: 9px; 
-            padding: 3px 6px; 
-            white-space: nowrap;
-        }
     </style>
 </head>
 <body>
@@ -125,7 +115,7 @@
             <div class="card"><div class="table-container" style="border:none;"><table id="horizontalTable"><thead id="matrixHead"></thead><tbody id="tableBody"></tbody></table></div></div>
         </div>
 
-        <!-- TAB: ANALYTICS -->
+        <!-- TAB: ANALYTICS (RESTORED) -->
         <div id="tabAnalytics" class="tab-content hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6" style="max-width: 1600px; margin: 0 auto;">
                 <div class="card p-6">
@@ -143,7 +133,7 @@
             </div>
         </div>
 
-        <!-- TAB: ACTIONS -->
+        <!-- TAB: ACTIONS (RESTORED) -->
         <div id="tabActions" class="tab-content hidden">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6" style="max-width: 1600px; margin: 0 auto;">
                 <div class="card p-6">
@@ -203,7 +193,7 @@
         </div>
     </div>
 
-    <!-- MANUAL MODAL -->
+    <!-- MANUAL MODAL (RESTORED) -->
     <div id="manualModal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="p-6" style="background: var(--accent); color: #fff;"><h2 class="text-lg font-bold">Manual Data Entry</h2></div>
@@ -252,6 +242,7 @@
         // --- CONFIG & DATA (FULL) ---
         let stores = ["SG", "SGHYD", "SGRJY", "SGTNL", "SIRIELR", "SGTNK", "SGTUNI", "SIRICPT", "SIRIVJY", "SIRIKKD", "SIRITPT", "VS"];
         
+        // Full Data Template
         const defaultInventoryTemplate = [
             { name: "BNS HANDLOOM HF", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [500, 250, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] }, { range: "501<1000", base: [1000, 450, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] }, { range: "1001<1500", base: [1200, 500, 500, 1000, 750, 750, 750, 400, 1200, 750, 750, 750], present: [] }, { range: "1501<2000", base: [500, 250, 250, 400, 300, 350, 350, 250, 500, 350, 350, 300], present: [] }, { range: "2001<3000", base: [500, 250, 250, 350, 300, 350, 300, 250, 500, 350, 350, 300], present: [] }, { range: "3001<4000", base: [300, 150, 150, 200, 200, 200, 200, 150, 300, 200, 200, 150], present: [] }, { range: "4001<6000", base: [200, 100, 100, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] }, { range: "6001<7500", base: [100, 50, 50, 100, 50, 100, 50, 50, 100, 100, 100, 100], present: [] }, { range: ">7500", base: [20, 10, 10, 0, 0, 10, 0, 20, 20, 10, 10, 20], present: [] }, { range: "501<1000(1+1)", base: [800, 500, 500, 500, 500, 400, 1000, 400, 800, 400, 400, 400], present: [] }, { range: "1001<2000(1+1)", base: [500, 250, 250, 400, 300, 300, 500, 300, 500, 300, 300, 400], present: [] } ] },
             { name: "SILK WORK SAREES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [175, 87, 87, 125, 125, 150, 175, 0, 175, 150, 150, 150], present: [] }, { range: "501<1000", base: [370, 185, 185, 295, 245, 295, 345, 50, 370, 295, 295, 295], present: [] }, { range: "1001<1500", base: [400, 175, 175, 350, 280, 350, 490, 200, 400, 350, 350, 350], present: [] }, { range: "1501<2000", base: [400, 200, 200, 300, 150, 300, 200, 100, 400, 300, 300, 250], present: [] }, { range: "2001<3000", base: [350, 175, 175, 300, 150, 350, 400, 150, 350, 350, 350, 250], present: [] }, { range: "3001<4000", base: [125, 63, 63, 100, 100, 100, 100, 100, 125, 100, 100, 50], present: [] }, { range: "4001<6000", base: [50, 25, 25, 25, 25, 50, 50, 25, 50, 50, 50, 25], present: [] }, { range: ">6000", base: [20, 10, 10, 0, 0, 0, 0, 0, 20, 0, 0, 0], present: [] }, { range: "501<1000(1+1)", base: [175, 87, 87, 125, 125, 150, 175, 50, 175, 150, 150, 150], present: [] }, { range: "1001<2000(1+1)", base: [115, 58, 58, 90, 75, 90, 105, 50, 115, 90, 90, 90], present: [] } ] },
@@ -330,94 +321,10 @@
             if (!document.getElementById('tabAnalytics').classList.contains('hidden')) refreshCharts(); 
         }
         
-        // --- UPDATED MATRIX RENDERER WITH TRANSFER SUGGESTIONS ---
-        function renderMatrix(hId, bId, isP, tId) { 
-            const th = document.getElementById(hId), tb = document.getElementById(bId); 
-            let h1 = `<tr><th rowspan="2">Category</th><th rowspan="2">MRP</th>`; 
-            let h2 = '<tr>'; 
-            stores.forEach(s => { h1 += `<th colspan="2" class="group-header">${s}</th>`; h2 += `<th class="sub-header">T</th><th class="sub-header" style="border-right:1px solid var(--border)">S</th>`; }); 
-            h1 += '<th rowspan="2">Action</th></tr>'; 
-            h2 += '</tr>'; 
-            th.innerHTML = h1 + h2; 
-            let body = ''; 
-            
-            inventoryData.forEach((c, ci) => { 
-                if (c.mrpDetails && c.mrpDetails.length > 0) { 
-                    c.mrpDetails.forEach((m, mi) => { 
-                        let row = `<tr><td style="font-size:11px;color:var(--text-muted)">${c.name}</td><td><span class="badge badge-info">${m.range}</span></td>`; 
-                        let hasData = !isP; 
-                        stores.forEach((_, si) => { 
-                            const t = m.base[si]||0, s = m.present[si]||0, l = getSmartLogic(si, m.base, m.present); 
-                            if(isP && l.purchase===0) { row += `<td></td><td></td>`; } 
-                            else { 
-                                if(isP) hasData = true; 
-                                row += `<td><span class="num-target">${t}</span></td>`; 
-                                const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); 
-                                if(isP) { row += `<td><span class="purchase-matrix-val">${l.purchase}</span></td>`; } 
-                                else { row += `<td onclick="editStock(${ci},${mi},${si})"><span class="${cls}">${s}</span></td>`; }
-                            } 
-                        }); 
-                        
-                        // Action Column Logic
-                        let actionHtml = '';
-                        if(!isP) {
-                            const logic = getSmartLogic(si, m.base, m.present); // Use last store context or generic?
-                            // Better: Calculate action for the whole row? 
-                            // Prompt says "Store to Store Transfer Recommendations".
-                            // Let's show the first transfer available for this MRP row.
-                            let foundTransfer = null;
-                            stores.forEach((_, si) => {
-                                const l = getSmartLogic(si, m.base, m.present);
-                                if(l.transfer && !foundTransfer) foundTransfer = l.transfer;
-                            });
-                            
-                            if(foundTransfer) {
-                                actionHtml = `<span class="badge badge-transfer">Trans ${foundTransfer.qty} fr. ${foundTransfer.from}</span>`;
-                            }
-                        }
-                        
-                        if(isP && !hasData) return; 
-                        body += row + `<td>${actionHtml}</td></tr>`; 
-                    }); 
-                }
-                
-                // TOTAL ROW
-                let tr = `<tr style="background:rgba(13,148,136,0.05)"><td style="font-weight:700">${c.name}</td><td><span class="badge badge-warning">TOTAL</span></td>`; 
-                let hasData = !isP; 
-                stores.forEach((_, si) => { 
-                    const t = c.base[si]||0, s = c.present[si]||0, l = getSmartLogic(si, c.base, c.present); 
-                    if(isP && l.purchase===0) { tr += `<td></td><td></td>`; } 
-                    else { 
-                        if(isP) hasData = true; 
-                        tr += `<td><span class="num-target">${t}</span></td>`; 
-                        const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); 
-                        if(isP) { tr += `<td onclick="openModal(${si})" style="cursor:pointer"><span class="purchase-matrix-val">${l.purchase}</span></td>`; } 
-                        else { tr += `<td onclick="openModal(${si})" style="cursor:pointer"><span class="${cls}">${s}</span></td>`; }
-                    } 
-                }); 
-                
-                // Action Column Logic for Total
-                let totalActionHtml = '';
-                if(!isP) {
-                    let foundTransfer = null;
-                    stores.forEach((_, si) => {
-                        const l = getSmartLogic(si, c.base, c.present);
-                        if(l.transfer && !foundTransfer) foundTransfer = l.transfer;
-                    });
-                    if(foundTransfer) {
-                        totalActionHtml = `<span class="badge badge-transfer">Trans ${foundTransfer.qty} fr. ${foundTransfer.from}</span>`;
-                    }
-                }
-                
-                if(isP && !hasData) return; 
-                body += tr + `<td>${totalActionHtml}</td></tr>`; 
-            }); 
-            tb.innerHTML = body; 
-        }
-        
+        function renderMatrix(hId, bId, isP, tId) { const th = document.getElementById(hId), tb = document.getElementById(bId); let h1 = `<tr><th rowspan="2">Category</th><th rowspan="2">MRP</th>`; let h2 = '<tr>'; stores.forEach(s => { h1 += `<th colspan="2" class="group-header">${s}</th>`; h2 += `<th class="sub-header">T</th><th class="sub-header" style="border-right:1px solid var(--border)">S</th>`; }); h1 += '<th rowspan="2">Action</th></tr>'; h2 += '</tr>'; th.innerHTML = h1 + h2; let body = ''; inventoryData.forEach((c, ci) => { if (c.mrpDetails && c.mrpDetails.length > 0) { c.mrpDetails.forEach((m, mi) => { let row = `<tr><td style="font-size:11px;color:var(--text-muted)">${c.name}</td><td><span class="badge badge-info">${m.range}</span></td>`; let hasData = !isP; stores.forEach((_, si) => { const t = m.base[si]||0, s = m.present[si]||0, l = getSmartLogic(si, m.base, m.present); if(isP && l.purchase===0) { row += `<td></td><td></td>`; } else { if(isP) hasData = true; row += `<td><span class="num-target">${t}</span></td>`; const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); row += isP ? `<td><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td onclick="editStock(${ci},${mi},${si})"><span class="num-stock ${cls}">${s}</span></td>`; } }); if(isP && !hasData) return; body += row + `<td></td></tr>`; }); } let tr = `<tr style="background:rgba(13,148,136,0.05)"><td style="font-weight:700">${c.name}</td><td><span class="badge badge-warning">TOTAL</span></td>`; let hasData = !isP; stores.forEach((_, si) => { const t = c.base[si]||0, s = c.present[si]||0, l = getSmartLogic(si, c.base, c.present); if(isP && l.purchase===0) { tr += `<td></td><td></td>`; } else { if(isP) hasData = true; tr += `<td><span class="num-target">${t}</span></td>`; const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); tr += isP ? `<td onclick="openModal(${si})" style="cursor:pointer"><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td onclick="openModal(${si})" style="cursor:pointer"><span class="num-stock ${cls}">${s}</span></td>`; } }); if(isP && !hasData) return; body += tr + `<td></td></tr>`; }); tb.innerHTML = body; }
         function editStock(ci, mi, si) { const val = mi === -1 ? (inventoryData[ci].present[si]||0) : (inventoryData[ci].mrpDetails[mi].present[si]||0); const n = prompt("New Stock:", val); if(n===null) return; const num = parseInt(n); if(isNaN(num)) return; if(mi===-1) inventoryData[ci].present[si] = num; else { inventoryData[ci].mrpDetails[mi].present[si] = num; recalcTotals(ci); } render(); }
 
-        // --- ANALYTICS & CHARTS ---
+        // --- ANALYTICS & CHARTS (RESTORED) ---
         function refreshCharts() { 
             const ci = parseInt(document.getElementById('chartFilter').value) || 0; 
             const cat = inventoryData[ci]; 
@@ -517,7 +424,7 @@
             saveAs(new Blob([buf]), 'Smart_Purchase_List.xlsx');
         }
 
-        // --- ACTIONS & OPTIONS ---
+        // --- ACTIONS & OPTIONS (RESTORED) ---
         function switchTab(t) { document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden')); document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active')); document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('hidden'); event.target.classList.add('active'); if(t==='analytics') refreshCharts(); }
         function openModal(si) { currentModalBranchIndex = si; const nm = stores[si]; const labels = [], tgts = [], stks = []; let tT=0, tS=0; let rows = ''; inventoryData.forEach(c => { const t = c.base[si]||0, s = c.present[si]||0; if(t>0 || s>0) { tT+=t; tS+=s; labels.push(c.name.substring(0,10)); tgts.push(t); stks.push(s); const g = s-t; const l = getSmartLogic(si, c.base, c.present); let b = ''; if(l.transfer) b = `<span class="badge badge-info">Trans ${l.transfer.qty} fr. ${l.transfer.from}</span>`; else if(l.purchase>0) b = `<span class="badge badge-danger">Buy ${l.purchase}</span>`; else if(g>0) b = `<span class="badge badge-warning">Surplus</span>`; else b = `<span class="badge badge-success">OK</span>`; rows += `<div class="card p-3 mb-2" style="border-left:4px solid ${g<0?'var(--danger)':'var(--success)'}"><div class="flex justify-between text-xs uppercase mb-1" style="color:var(--text-muted)"><span>${c.name}</span><span>Gap: ${g>0?'+':''}${g}</span></div><div class="flex justify-between items-center"><div class="mono text-xs">T: ${t} | S: ${s}</div><div>${b}</div></div></div>`; } }); document.getElementById('modalBody').innerHTML = `<div style="height:250px;margin-bottom:20px;position:relative"><canvas id="branchModalChart"></canvas></div><div class="grid grid-cols-2 gap-4 mb-4 text-center"><div class="p-3 rounded" style="background:var(--bg)"><p class="text-xs uppercase" style="color:var(--text-muted)">Total Target</p><p class="text-xl font-bold mono">${tT}</p></div><div class="p-3 rounded" style="background:var(--info);color:white"><p class="text-xs uppercase opacity-80">Total Stock</p><p class="text-xl font-bold mono">${tS}</p></div></div><h3 class="font-bold text-sm mb-2 uppercase" style="color:var(--text-muted)">Category Breakdown</h3><div>${rows}</div>`; document.getElementById('modalStore').textContent = `${nm} Analysis`; document.getElementById('modal').classList.remove('hidden'); const ctx = document.getElementById('branchModalChart').getContext('2d'); if(branchModalChart) branchModalChart.destroy(); branchModalChart = new Chart(ctx, { type:'bar', data:{labels, datasets:[{label:'Target', data:tgts, backgroundColor:'#f59e0b'}, {label:'Stock', data:stks, backgroundColor:'#0d9488'}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}, scales:{x:{display:true, grid:{display:false}}, y:{beginAtZero:true}} } }); }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
