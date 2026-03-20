@@ -11,33 +11,30 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #f1f5f9; --bg-secondary: #ffffff; --text: #0f172a; --text-muted: #64748b;
+            --bg: #f8fafc; --bg-secondary: #ffffff; --text: #0f172a; --text-muted: #64748b;
             --accent: #0d9488; --accent-light: #14b8a6; --danger: #dc2626; --warning: #f59e0b;
-            --success: #059669; --info: #2563eb; --border: #e2e8f0;
+            --success: #059669; --info: #2563eb; --border: #e2e8f0; --card-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
         .dark-mode {
-            --bg: #0f172a; --bg-secondary: #1e293b; --text: #f1f5f9; --text-muted: #94a3b8;
+            --bg: #0b1120; --bg-secondary: #1e293b; --text: #f1f5f9; --text-muted: #94a3b8;
             --accent: #14b8a6; --accent-light: #2dd4bf; --danger: #f87171; --warning: #fbbf24;
-            --success: #34d399; --info: #60a5fa; --border: #334155;
+            --success: #34d399; --info: #60a5fa; --border: #334155; --card-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; min-height: 100vh; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; min-height: 100vh; transition: background 0.3s, color 0.3s; }
         .mono { font-family: 'Space Mono', monospace; }
         .container { max-width: 100%; margin: 0 auto; padding: 24px; }
-        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--card-shadow); transition: background 0.3s, border 0.3s; }
         
         .tab-bar { display: flex; gap: 4px; background: var(--bg-secondary); padding: 4px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .tab-btn.active { background: var(--accent); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; white-space: nowrap; }
-        .btn-primary { background: var(--accent); color: #fff; }
-        .btn-danger { background: var(--danger); color: #fff; }
-        .btn-success { background: var(--success); color: #fff; }
-        .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
-        .btn-info { background: var(--info); color: #fff; }
+        .btn-primary { background: var(--accent); color: #fff; } .btn-danger { background: var(--danger); color: #fff; } .btn-success { background: var(--success); color: #fff; }
+        .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); } .btn-info { background: var(--info); color: #fff; }
         
-        .input-field { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; background: var(--bg); color: var(--text); }
+        .input-field { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; background: var(--bg); color: var(--text); transition: border 0.2s; }
         .input-field:focus { outline: none; border-color: var(--accent); }
         
         .table-container { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
@@ -51,37 +48,36 @@
         td { padding: 8px 4px; font-size: 12px; border-bottom: 1px solid var(--border); border-left: 1px solid var(--border); text-align: center; vertical-align: middle; }
         td:first-child { border-left: none; text-align: left; padding-left: 16px; font-weight: 600; }
         
-        .num-target { background-color: #f3f4f6; color: #374151; font-family: 'Space Mono', monospace; font-weight: 600; display: block; padding: 4px; border-radius: 4px; }
-        .num-stock { font-family: 'Space Mono', monospace; font-weight: 700; display: block; padding: 4px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: opacity 0.2s; }
-        .num-stock:hover { opacity: 0.8; box-shadow: 0 0 0 2px var(--accent); }
+        .num-target { background-color: var(--bg); color: var(--text-muted); font-family: 'Space Mono', monospace; font-weight: 600; display: block; padding: 4px; border-radius: 4px; border: 1px solid var(--border); }
+        .num-stock { font-family: 'Space Mono', monospace; font-weight: 700; display: block; padding: 4px; border-radius: 4px; border: 1px solid transparent; cursor: pointer; transition: opacity 0.2s, transform 0.1s; }
+        .num-stock:hover { opacity: 0.9; transform: scale(1.05); }
         
-        .stock-surplus { background-color: #fca5a5; color: #000000; }
-        .stock-short { background-color: #86efac; color: #000000; }
-        .stock-equal { background-color: #93c5fd; color: #000000; }
+        .stock-surplus { background-color: #fca5a5; color: #000000; border-color: #f87171; }
+        .stock-short { background-color: #86efac; color: #000000; border-color: #4ade80; }
+        .stock-equal { background-color: #93c5fd; color: #000000; border-color: #60a5fa; }
         
         .purchase-matrix-val { background-color: #fee2e2; color: #991b1b; font-family: 'Space Mono', monospace; font-weight: 700; display: block; padding: 4px; border-radius: 4px; cursor: pointer; border: 1px solid #fecaca; }
         
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 24px; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 24px; }
         .modal-content { background: var(--bg-secondary); border-radius: 16px; max-width: 600px; width: 100%; max-height: 90vh; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
         .modal-lg { max-width: 900px; }
         .hidden { display: none !important; }
         
-        .purchase-header { background: linear-gradient(135deg, var(--danger), #b91c1c); color: white; padding: 24px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+        /* Purchase Report Specific Styles */
+        .purchase-header { background: linear-gradient(135deg, var(--danger), #b91c1c); color: white; padding: 24px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .purchase-list-item { display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap: 16px; padding: 16px; border-bottom: 1px solid var(--border); align-items: center; }
+        .purchase-list-item:hover { background: var(--bg); }
         
-        .mini-table { width: 100%; min-width: auto; font-size: 12px; }
-        .mini-table th { font-size: 10px; padding: 8px; text-align: left; }
-        .mini-table td { font-size: 12px; padding: 8px; text-align: left; border: none; }
-        
-        .badge { display: inline-flex; padding: 4px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; margin-right: 4px; }
-        .badge-danger { background: rgba(220,38,38,0.1); color: var(--danger); }
-        .badge-success { background: rgba(5,150,105,0.1); color: var(--success); }
-        .badge-info { background: rgba(37,99,235,0.1); color: var(--info); }
-        .badge-warning { background: rgba(245,158,11,0.1); color: var(--warning); }
+        .badge { display: inline-flex; padding: 4px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; margin-right: 4px; border: 1px solid transparent; }
+        .badge-danger { background: rgba(220,38,38,0.1); color: var(--danger); border-color: var(--danger); }
+        .badge-success { background: rgba(5,150,105,0.1); color: var(--success); border-color: var(--success); }
+        .badge-info { background: rgba(37,99,235,0.1); color: var(--info); border-color: var(--info); }
+        .badge-warning { background: rgba(245,158,11,0.1); color: var(--warning); border-color: var(--warning); }
     </style>
 </head>
 <body>
 
-    <!-- DASHBOARD VIEW -->
+    <!-- MAIN DASHBOARD VIEW -->
     <div id="dashboardView" class="container">
         <header class="card p-6 mb-6">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
@@ -91,12 +87,12 @@
                 </div>
                 <div class="flex flex-wrap gap-2 no-print">
                     <button onclick="toggleTheme()" class="btn btn-secondary">Theme</button>
-                    <button onclick="openPurchaseReportTab()" class="btn btn-danger">Purchase Report</button>
+                    <button onclick="openPurchaseReport()" class="btn btn-danger">Purchase Report</button>
                     <button onclick="document.getElementById('uploadInput').click()" class="btn btn-primary">Upload Stock</button>
                     <input type="file" id="uploadInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleFileUpload(event)">
                     <button onclick="saveData()" class="btn btn-success">Save Data</button>
                     <button onclick="resetData()" class="btn btn-danger">Reset Stock</button>
-                    <button onclick="exportMatrixExcel()" class="btn btn-info">Export Matrix (Color)</button>
+                    <button onclick="exportMatrixExcel()" class="btn btn-info">Export Matrix</button>
                     <button onclick="openManualModal()" class="btn btn-secondary">Manual</button>
                 </div>
             </div>
@@ -118,107 +114,113 @@
         <div id="tabMatrix" class="tab-content">
             <div class="card"><div class="table-container" style="border:none;"><table id="horizontalTable"><thead id="matrixHead"></thead><tbody id="tableBody"></tbody></table></div></div>
         </div>
+        <div id="tabAnalytics" class="tab-content hidden"><!-- Analytics Content --></div>
+        <div id="tabActions" class="tab-content hidden"><!-- Actions Content --></div>
+    </div>
 
-        <!-- UPDATED ANALYTICS TAB -->
-        <div id="tabAnalytics" class="tab-content hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6" style="max-width: 1600px; margin: 0 auto;">
-                
-                <!-- Store Leaderboard -->
-                <div class="card p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <div><h3 class="font-bold">Store Performance</h3><p class="text-xs text-muted">Ranked by Stock Fulfillment %</p></div>
-                        <span class="badge badge-success">Live</span>
-                    </div>
-                    <div style="position:relative; height:350px;"><canvas id="storeLeaderboardChart"></canvas></div>
+    <!-- PURCHASE REPORT VIEW -->
+    <div id="purchaseReportView" class="container hidden">
+        <div class="purchase-header">
+            <div>
+                <h1 class="text-2xl font-bold">Purchase Requirement Report</h1>
+                <p class="text-sm opacity-80">Sorted by Critical Shortage</p>
+            </div>
+            <div class="flex gap-2 no-print">
+                <button onclick="exportSmartPurchaseExcel()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Export List</button>
+                <button onclick="closePurchaseReport()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Close Report</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div class="card p-6 lg:col-span-2">
+                <h3 class="font-bold mb-4">Top 5 Critical Categories</h3>
+                <div style="height: 250px; position: relative;"><canvas id="purchaseSummaryChart"></canvas></div>
+            </div>
+            <div class="card p-6 flex flex-col justify-center">
+                <div class="text-center mb-6">
+                    <p class="text-xs uppercase" style="color:var(--text-muted)">Total Items to Purchase</p>
+                    <p class="text-4xl font-bold mono text-red-600" id="reportTotalPurchase">0</p>
                 </div>
-
-                <!-- Category Deep Dive -->
-                <div class="card p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <div><h3 class="font-bold">Category Deep Dive</h3><p class="text-xs text-muted">Target vs Stock Analysis</p></div>
-                        <select id="chartFilter" onchange="refreshCharts()" class="input-field" style="width:auto"></select>
-                    </div>
-                    <div style="position:relative; height:350px;"><canvas id="categoryDeepDiveChart"></canvas></div>
-                </div>
-
-                <!-- Critical Shortages -->
-                <div class="card p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <div><h3 class="font-bold text-red-600">Critical Shortages</h3><p class="text-xs text-muted">Top 5 Categories needing Purchase</p></div>
-                        <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    </div>
-                    <div style="position:relative; height:250px;"><canvas id="shortageChart"></canvas></div>
-                </div>
-
-                <!-- Dead Stock / Surplus -->
-                <div class="card p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <div><h3 class="font-bold text-green-600">Dead Stock Potential</h3><p class="text-xs text-muted">Top 5 Categories with Surplus</p></div>
-                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 11h.01"></path></svg>
-                    </div>
-                    <div style="position:relative; height:250px;"><canvas id="surplusChart"></canvas></div>
+                <div class="text-center">
+                    <p class="text-xs uppercase" style="color:var(--text-muted)">Stores Affected</p>
+                    <p class="text-2xl font-bold mono" id="reportStoresAffected">0</p>
                 </div>
             </div>
         </div>
 
-        <div id="tabActions" class="tab-content hidden">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" style="max-width: 1600px; margin: 0 auto;">
-                <div class="card p-6"><h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Add Branch</h3><div class="flex gap-2"><input type="text" id="newBr" placeholder="Name" class="input-field"><button onclick="addBr()" class="btn btn-primary">Add</button></div></div>
-                <div class="card p-6"><h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Add Category</h3><div class="flex gap-2"><input type="text" id="newCat" placeholder="Name" class="input-field"><button onclick="addCat()" class="btn btn-primary">Add</button></div></div>
-                <div class="card p-6">
-                    <h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Set Target</h3>
-                    <div class="flex flex-col gap-2">
-                        <div class="flex gap-2"><select id="selCat" class="input-field text-xs" onchange="updateTargetMrpOptions()"></select><select id="selMrp" class="input-field text-xs"><option value="TOTAL">TOTAL</option></select></div>
-                        <div class="flex gap-2"><select id="selBr" class="input-field text-xs"></select><input type="number" id="targetVal" placeholder="Qty" class="input-field w-24"><button onclick="setTarget()" class="btn btn-secondary">Set</button></div>
-                    </div>
-                </div>
+        <div class="card">
+            <div class="p-4 border-b" style="border-color: var(--border);">
+                <h3 class="font-bold">Detailed Purchase List</h3>
+                <p class="text-xs" style="color:var(--text-muted)">Items below need immediate purchase.</p>
             </div>
+            <div id="purchaseListContainer"></div>
         </div>
     </div>
 
-    <!-- MODALS (Same as before) -->
-    <div id="manualModal" class="modal-overlay hidden"><!-- Same Content --></div>
-    <div id="modal" class="modal-overlay hidden"><!-- Same Content --></div>
-    <div id="purchaseModal" class="modal-overlay hidden"><!-- Same Content --></div>
-    <div id="purchaseReportView" class="container hidden"><!-- Same Content --></div>
+    <!-- MANUAL MODAL -->
+    <div id="manualModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="p-6" style="background: var(--accent); color: #fff;"><h2 class="text-lg font-bold">Manual Data Entry</h2></div>
+            <div class="p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Category</label><input type="text" id="manualCatInput" list="catList" class="input-field" placeholder="Select or type" oninput="updateMrpOptions()"><datalist id="catList"></datalist></div>
+                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">MRP Range</label><input type="text" id="manualMrp" list="mrpList" class="input-field" placeholder="Select MRP"><datalist id="mrpList"></datalist></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Branch</label><select id="manualBranch" class="input-field"><option value="-1">ALL STORES</option></select></div>
+                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Target / Stock</label><div class="flex gap-2"><input type="number" id="manualTarget" class="input-field" placeholder="Tgt"><input type="number" id="manualStock" class="input-field" placeholder="Stk"></div></div>
+                </div>
+                <button onclick="saveManualData()" class="btn btn-success w-full py-3 mt-2">Save Entry</button>
+            </div>
+            <div class="p-4 text-center" style="border-top: 1px solid var(--border);"><button onclick="closeManualModal()" class="text-xs font-bold uppercase" style="color: var(--text-muted);">Cancel</button></div>
+        </div>
+    </div>
+
+    <!-- BRANCH MODAL -->
+    <div id="modal" class="modal-overlay hidden">
+        <div class="modal-content modal-lg">
+            <div class="p-6 flex justify-between items-center" style="background: var(--accent); color: #fff;"><h2 id="modalStore" class="text-lg font-bold"></h2><button onclick="closeModal()" class="text-2xl opacity-80 hover:opacity-100">&times;</button></div>
+            <div id="modalBody" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto"></div>
+            <div class="p-4 flex gap-2" style="border-top: 1px solid var(--border);"><button onclick="exportBranchReport()" class="btn btn-info w-full no-print">Export</button><button onclick="closeModal()" class="btn btn-secondary w-full no-print">Close</button></div>
+        </div>
+    </div>
 
     <script>
         // --- CONFIG & DATA (FULL) ---
         let stores = ["SG", "SGHYD", "SGRJY", "SGTNL", "SIRIELR", "SGTNK", "SGTUNI", "SIRICPT", "SIRIVJY", "SIRIKKD", "SIRITPT", "VS"];
         
-        // Full Data Template (Full list used)
         const defaultInventoryTemplate = [
-            { name: "BNS HANDLOOM HF", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [500, 250, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] }, { range: "501<1000", base: [1000, 450, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] } ] },
-            { name: "SILK WORK SAREES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [175, 87, 87, 125, 125, 150, 175, 0, 175, 150, 150, 150], present: [] } ] },
-            { name: "PRINT WORK SAREES", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "HANDLOOM COTTON", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "VENKATAGIRI", base: Array(12).fill(0), present: [], mrpDetails: [] },
+            { name: "BNS HANDLOOM HF", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [500, 250, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] }, { range: "501<1000", base: [1000, 450, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] }, { range: "1001<1500", base: [1200, 500, 500, 1000, 750, 750, 750, 400, 1200, 750, 750, 750], present: [] }, { range: "1501<2000", base: [500, 250, 250, 400, 300, 350, 350, 250, 500, 350, 350, 300], present: [] }, { range: "2001<3000", base: [500, 250, 250, 350, 300, 350, 300, 250, 500, 350, 350, 300], present: [] }, { range: "3001<4000", base: [300, 150, 150, 200, 200, 200, 200, 150, 300, 200, 200, 150], present: [] }, { range: "4001<6000", base: [200, 100, 100, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] }, { range: "6001<7500", base: [100, 50, 50, 100, 50, 100, 50, 50, 100, 100, 100, 100], present: [] }, { range: ">7500", base: [20, 10, 10, 0, 0, 10, 0, 20, 20, 10, 10, 20], present: [] }, { range: "501<1000(1+1)", base: [800, 500, 500, 500, 500, 400, 1000, 400, 800, 400, 400, 400], present: [] }, { range: "1001<2000(1+1)", base: [500, 250, 250, 400, 300, 300, 500, 300, 500, 300, 300, 400], present: [] } ] },
+            { name: "SILK WORK SAREES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [175, 87, 87, 125, 125, 150, 175, 0, 175, 150, 150, 150], present: [] }, { range: "501<1000", base: [370, 185, 185, 295, 245, 295, 345, 50, 370, 295, 295, 295], present: [] }, { range: "1001<1500", base: [400, 175, 175, 350, 280, 350, 490, 200, 400, 350, 350, 350], present: [] }, { range: "1501<2000", base: [400, 200, 200, 300, 150, 300, 200, 100, 400, 300, 300, 250], present: [] }, { range: "2001<3000", base: [350, 175, 175, 300, 150, 350, 400, 150, 350, 350, 350, 250], present: [] }, { range: "3001<4000", base: [125, 63, 63, 100, 100, 100, 100, 100, 125, 100, 100, 50], present: [] }, { range: "4001<6000", base: [50, 25, 25, 25, 25, 50, 50, 25, 50, 50, 50, 25], present: [] }, { range: ">6000", base: [20, 10, 10, 0, 0, 0, 0, 0, 20, 0, 0, 0], present: [] }, { range: "501<1000(1+1)", base: [175, 87, 87, 125, 125, 150, 175, 50, 175, 150, 150, 150], present: [] }, { range: "1001<2000(1+1)", base: [115, 58, 58, 90, 75, 90, 105, 50, 115, 90, 90, 90], present: [] } ] },
+            { name: "PRINT WORK SAREES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [200, 100, 100, 175, 150, 150, 175, 150, 200, 150, 150, 150], present: [] }, { range: "501<1000", base: [265, 133, 133, 210, 210, 210, 210, 100, 265, 210, 210, 210], present: [] }, { range: "1001<1500", base: [150, 75, 75, 120, 120, 120, 175, 100, 150, 120, 120, 120], present: [] }, { range: "1501<2000", base: [100, 50, 50, 70, 70, 70, 70, 50, 100, 70, 70, 70], present: [] }, { range: "501<1000(1+1)", base: [150, 75, 75, 115, 115, 115, 150, 120, 150, 115, 115, 115], present: [] }, { range: "1001<2000(1+1)", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] } ] },
+            { name: "HANDLOOM COTTON", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [200, 60, 60, 100, 120, 75, 150, 50, 200, 75, 75, 100], present: [] }, { range: "501<1000", base: [300, 150, 150, 300, 175, 100, 100, 150, 300, 100, 100, 300], present: [] }, { range: "1001<1500", base: [100, 50, 50, 120, 75, 50, 25, 75, 100, 50, 50, 120], present: [] }, { range: "1501<2000", base: [50, 25, 25, 60, 40, 20, 0, 50, 50, 20, 20, 60], present: [] }, { range: "2001<3000", base: [30, 15, 15, 20, 0, 20, 0, 0, 30, 20, 20, 20], present: [] } ] },
+            { name: "VENKATAGIRI", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<1000", base: [200, 100, 100, 150, 100, 100, 200, 100, 200, 100, 100, 175], present: [] }, { range: "1001<1500", base: [100, 60, 60, 100, 50, 30, 100, 50, 100, 30, 30, 100], present: [] }, { range: "1501<2000", base: [75, 50, 50, 75, 20, 30, 50, 50, 75, 30, 30, 75], present: [] }, { range: "2001<3000", base: [30, 15, 15, 30, 0, 10, 20, 20, 30, 10, 10, 30], present: [] } ] },
             { name: "UPPADA (MANGALAGIRI)", base: [50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [], mrpDetails: [] },
-            { name: "UPPADA (CHIRALA)", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "UPPADA (COIMBATORE)", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "UPPADA (SALEM)", base: Array(12).fill(0), present: [], mrpDetails: [] },
+            { name: "UPPADA (CHIRALA)", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "1001<2000", base: [30, 15, 15, 30, 20, 20, 30, 20, 30, 20, 20, 30], present: [] }, { range: "2001<3000", base: [20, 10, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] }, { range: "3001<4000", base: [40, 20, 20, 40, 25, 30, 30, 20, 40, 30, 30, 40], present: [] }, { range: "4001<5000", base: [40, 20, 20, 30, 20, 20, 20, 20, 40, 20, 20, 30], present: [] }, { range: "5001<7000", base: [30, 20, 20, 30, 20, 25, 20, 20, 30, 25, 25, 30], present: [] }, { range: "7001<10000", base: [10, 5, 5, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] } ] },
+            { name: "UPPADA (COIMBATORE)", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "4001<5000", base: [20, 10, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] }, { range: "5001<7000", base: [30, 15, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] }, { range: "7001<10000", base: [30, 15, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] }, { range: "10001<15000", base: [10, 5, 5, 0, 0, 0, 0, 10, 10, 0, 0, 10], present: [] } ] },
+            { name: "UPPADA (SALEM)", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "7001<10000", base: [30, 0, 30, 30, 30, 30, 30, 20, 30, 30, 30, 30], present: [] }, { range: ">10000", base: [20, 0, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] } ] },
             { name: "UPPADA (NELLORE)", base: [100, 0, 100, 100, 40, 70, 70, 0, 100, 70, 70, 100], present: [], mrpDetails: [] },
-            { name: "UPPADA (PRODDATUR)", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "PATTU SAREES", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "HP EMBOSE", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "COIMBATORE SECO", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "HL PATTU PAWADAS JUST BORN", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "HL PATTU PAWADAS 27", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "HL PATTU PAWADAS 32", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "HL PATTU PAWADAS 36", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "HL PATTU PAWADAS 45", base: Array(12).fill(0), present: [], mrpDetails: [] },
+            { name: "UPPADA (PRODDATUR)", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "1001<3000", base: [50, 25, 25, 50, 40, 30, 50, 40, 50, 30, 30, 50], present: [] }, { range: "3001<5000", base: [30, 20, 20, 30, 30, 25, 40, 30, 30, 25, 25, 30], present: [] }, { range: "5001<7000", base: [50, 25, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] }, { range: "7001<10000", base: [50, 25, 25, 50, 30, 50, 30, 50, 50, 50, 50, 50], present: [] }, { range: ">10000", base: [10, 5, 5, 10, 0, 0, 10, 15, 10, 0, 0, 15], present: [] } ] },
+            { name: "PATTU SAREES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<1000", base: [40, 30, 30, 50, 25, 40, 60, 25, 40, 40, 40, 60], present: [] }, { range: "1001<2000", base: [150, 125, 125, 200, 100, 175, 250, 100, 150, 175, 175, 250], present: [] }, { range: "2001<3000", base: [200, 100, 100, 200, 100, 200, 250, 100, 200, 200, 200, 300], present: [] }, { range: "3001<4000", base: [150, 75, 75, 150, 100, 175, 150, 100, 150, 175, 175, 150], present: [] }, { range: "4001<5000", base: [100, 50, 50, 100, 75, 75, 100, 50, 100, 75, 75, 120], present: [] }, { range: "5001<7000", base: [120, 63, 63, 120, 100, 75, 75, 50, 120, 75, 75, 120], present: [] }, { range: "7001<10000", base: [100, 50, 50, 100, 50, 75, 100, 50, 100, 75, 75, 100], present: [] }, { range: "10001<15000", base: [100, 50, 50, 100, 50, 90, 100, 50, 100, 90, 90, 100], present: [] }, { range: "15001<20000", base: [50, 25, 25, 50, 20, 50, 50, 30, 50, 50, 50, 20], present: [] }, { range: "20001<30000", base: [25, 15, 15, 20, 5, 10, 10, 10, 25, 10, 10, 20], present: [] }, { range: ">30000", base: [10, 5, 5, 10, 0, 0, 0, 0, 10, 0, 0, 10], present: [] } ] },
+            { name: "HP EMBOSE", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "2001<3000", base: [30, 20, 20, 30, 20, 20, 30, 0, 30, 20, 20, 30], present: [] }, { range: "3001<4000", base: [20, 10, 10, 20, 10, 20, 25, 10, 20, 20, 20, 20], present: [] }, { range: "4001<5000", base: [20, 10, 10, 25, 10, 15, 30, 15, 20, 15, 15, 20], present: [] }, { range: "5001<7000", base: [40, 15, 15, 30, 20, 30, 40, 15, 40, 30, 30, 30], present: [] }, { range: "7001<10000", base: [20, 10, 10, 20, 5, 15, 40, 10, 20, 15, 15, 20], present: [] }, { range: "10001<15000", base: [10, 5, 5, 10, 5, 10, 15, 10, 10, 10, 10, 15], present: [] } ] },
+            { name: "COIMBATORE SECO", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<1100", base: [200, 75, 75, 150, 100, 120, 200, 50, 200, 120, 120, 150], present: [] }, { range: "1101<2000", base: [200, 100, 100, 200, 150, 200, 200, 100, 200, 200, 200, 200], present: [] }, { range: ">2000", base: [50, 25, 25, 50, 30, 30, 75, 50, 50, 30, 30, 50], present: [] } ] },
+            { name: "HL PATTU PAWADAS JUST BORN", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<1000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] }, { range: "1001<2000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] }, { range: "2001<3000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] }, { range: "3001<4000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] }, { range: "4001<6000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] }, { range: ">6000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] } ] },
+            { name: "HL PATTU PAWADAS 27", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<1000", base: [15, 0, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] }, { range: "1001<2000", base: [15, 0, 15, 15, 15, 15, 15, 20, 15, 15, 15, 15], present: [] }, { range: "2001<3000", base: [15, 0, 15, 15, 15, 15, 15, 10, 15, 15, 15, 15], present: [] }, { range: ">3000", base: [10, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] } ] },
+            { name: "HL PATTU PAWADAS 32", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<2000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] }, { range: "2001<3000", base: [15, 0, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] }, { range: ">3000", base: [10, 0, 10, 10, 10, 10, 10, 0, 10, 10, 10, 10], present: [] } ] },
+            { name: "HL PATTU PAWADAS 36", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "1001<2000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] }, { range: "2001<3000", base: [10, 0, 10, 10, 10, 10, 10, 20, 10, 10, 10, 10], present: [] }, { range: "3001<4000", base: [10, 0, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] }, { range: "4001<6000", base: [10, 0, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] }, { range: ">6000", base: [5, 0, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5], present: [] } ] },
+            { name: "HL PATTU PAWADAS 45", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "1001<3000", base: [30, 0, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30], present: [] }, { range: "3001<5000", base: [20, 0, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] }, { range: "5001<7000", base: [20, 0, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] }, { range: "7001<10000", base: [10, 0, 10, 10, 10, 10, 10, 15, 10, 10, 10, 10], present: [] }, { range: ">10000", base: [10, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] } ] },
             { name: "IKKAT PAWADAS 24 INCHES", base: [10, 0, 10, 5, 5, 5, 5, 5, 10, 5, 5, 10], present: [], mrpDetails: [] },
             { name: "IKKAT PAWADAS 36 INCHES", base: [10, 0, 10, 5, 5, 5, 5, 5, 10, 5, 5, 10], present: [], mrpDetails: [] },
             { name: "IKKAT PAWADAS 45 INCHES", base: [15, 0, 15, 10, 10, 10, 10, 10, 10, 10, 10, 15], present: [], mrpDetails: [] },
-            { name: "GADWAL PURE JARI", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "GADWAL HF JARI", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "SURAT PRINTED", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "SURAT PRINTED (1+1)", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "IKKAT", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "COTTON SAREES-BRAND WISE", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "COTTON SAREES PROMO", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "COTTON SAREES-OTHERS", base: Array(12).fill(0), present: [], mrpDetails: [] },
-            { name: "FANCY BLOUSES", base: Array(12).fill(0), present: [], mrpDetails: [] },
+            { name: "GADWAL PURE JARI", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "2001<4000", base: [30, 8, 8, 15, 15, 15, 15, 0, 30, 15, 15, 30], present: [] }, { range: "4001<6000", base: [20, 5, 5, 10, 10, 10, 10, 0, 20, 10, 10, 25], present: [] }, { range: "6001<10000", base: [15, 8, 8, 10, 0, 10, 0, 10, 15, 10, 10, 20], present: [] } ] },
+            { name: "GADWAL HF JARI", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<2000", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] }, { range: ">2001", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] } ] },
+            { name: "SURAT PRINTED", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<250", base: [500, 150, 150, 300, 300, 300, 300, 200, 500, 300, 300, 300], present: [] }, { range: "251<500", base: [500, 200, 200, 400, 400, 400, 400, 200, 500, 400, 400, 400], present: [] }, { range: "501<750", base: [200, 50, 50, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] }, { range: "751<1000", base: [50, 25, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] }, { range: ">1000", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] } ] },
+            { name: "SURAT PRINTED (1+1)", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "251<500", base: Array(12).fill(0), present: [] }, { range: "501<750", base: Array(12).fill(0), present: [] }, { range: "751<1000", base: Array(12).fill(0), present: [] }, { range: ">1000", base: Array(12).fill(0), present: [] } ] },
+            { name: "IKKAT", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "<12000", base: [15, 0, 15, 15, 10, 10, 15, 10, 15, 10, 10, 15], present: [] }, { range: ">12000", base: [15, 0, 10, 15, 10, 10, 10, 15, 10, 10, 10, 15], present: [] } ] },
+            { name: "COTTON SAREES-BRAND WISE", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "B.K COTTON", base: [150, 75, 75, 150, 100, 100, 150, 100, 150, 100, 100, 100], present: [] }, { range: "KARISHMA COTTON", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] }, { range: "MEENA COTTON", base: [300, 150, 150, 300, 200, 200, 300, 100, 300, 200, 200, 200], present: [] }, { range: "MP COTTON", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] }, { range: "SARVODAYA COTTON", base: [200, 100, 100, 200, 100, 100, 200, 100, 200, 100, 100, 100], present: [] } ] },
+            { name: "COTTON SAREES PROMO", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "450 (1+1)", base: Array(12).fill(0), present: [] }, { range: "499 (1+1)", base: Array(12).fill(0), present: [] }, { range: "599 (1+1)", base: Array(12).fill(0), present: [] }, { range: "699 (1+1)", base: Array(12).fill(0), present: [] }, { range: "799 (1+1)", base: Array(12).fill(0), present: [] }, { range: "999 (1+1)", base: Array(12).fill(0), present: [] }, { range: "BUY 3 @ 999", base: Array(12).fill(0), present: [] } ] },
+            { name: "COTTON SAREES-OTHERS", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<400", base: [400, 200, 200, 400, 200, 200, 400, 0, 400, 200, 200, 200], present: [] }, { range: "401<600", base: [200, 100, 100, 200, 100, 100, 200, 0, 200, 100, 100, 100], present: [] }, { range: ">600", base: [100, 50, 50, 100, 50, 50, 100, 0, 100, 50, 50, 50], present: [] }, { range: "601<1999 (1+1)", base: [400, 200, 200, 400, 200, 200, 400, 200, 400, 200, 200, 200], present: [] } ] },
+            { name: "FANCY BLOUSES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<599", base: [80, 0, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] }, { range: "600<1000", base: [80, 0, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] }, { range: ">1000", base: [40, 0, 20, 40, 25, 20, 40, 20, 20, 20, 20, 10], present: [] } ] },
             { name: "HI FANCY CRAPES & GEOS", base: [250, 75, 75, 150, 150, 150, 200, 100, 250, 150, 150, 100], present: [], mrpDetails: [] },
             { name: "SUPERNET PRINTED", base: [200, 75, 75, 150, 100, 100, 100, 100, 200, 100, 100, 100], present: [], mrpDetails: [] },
             { name: "MUNGA KOTA PRINTED", base: [50, 0, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [], mrpDetails: [] },
@@ -230,246 +232,210 @@
         function initPresentArrays(data) { data.forEach(c => { if(!c.present || c.present.length !== stores.length) c.present = Array(stores.length).fill(0); if(c.mrpDetails) c.mrpDetails.forEach(m => { if(!m.present || m.present.length !== stores.length) m.present = Array(stores.length).fill(0); }); }); }
         initPresentArrays(inventoryData);
 
-        let mainChart = null; let pieChart = null; let currentModalBranchIndex = null; let purchaseModalChartInstance = null; let branchModalChart = null;
-        // New Chart Instances
-        let leaderboardChart = null; let shortageChart = null; let surplusChart = null;
+        let mainChart = null; let leaderboardChart = null; let shortageChart = null; let surplusChart = null;
+        let currentModalBranchIndex = null; let branchModalChart = null; let purchaseSummaryChart = null;
 
-        // --- CORE FUNCTIONS (Same as previous) ---
+        // --- CORE FUNCTIONS ---
         function saveData() { localStorage.setItem('subham_inventory', JSON.stringify(inventoryData)); localStorage.setItem('subham_stores', JSON.stringify(stores)); alert('Saved!'); }
         function loadData() { const sI = localStorage.getItem('subham_inventory'); const sS = localStorage.getItem('subham_stores'); if(sI && sS) { try { inventoryData = JSON.parse(sI); stores = JSON.parse(sS); initPresentArrays(inventoryData); } catch(e){} } }
         function resetData(s) { if(!s) if(!confirm('Reset ALL Stock to 0?')) return; inventoryData.forEach(c => { if(c.present) c.present.fill(0); if(c.mrpDetails) c.mrpDetails.forEach(m => { if(m.present) m.present.fill(0); }); }); saveData(); render(); if(!s) alert('Done.'); }
         function getSmartLogic(si, base, pres) { if (!base || !pres || si >= base.length || si >= pres.length) return { transfer: null, purchase: 0 }; const gap = (pres[si] || 0) - (base[si] || 0); if (gap >= 0) return { transfer: null, purchase: 0 }; const need = Math.abs(gap); let donor = null, max = 0; for (let i = 0; i < stores.length; i++) { if (i === si) continue; const sur = (pres[i] || 0) - (base[i] || 0); if (sur > max) { max = sur; donor = i; } } let tObj = null, pQty = 0; if (donor !== null && max > 0) { const tQ = Math.min(need, max); tObj = { qty: tQ, from: stores[donor] }; pQty = need - tQ; } else { pQty = need; } return { transfer: tObj, purchase: pQty }; }
         function recalcTotals(ci) { const c = inventoryData[ci]; if(!c) return; if (!c.base || c.base.length !== stores.length) c.base = Array(stores.length).fill(0); if (!c.present || c.present.length !== stores.length) c.present = Array(stores.length).fill(0); c.base.fill(0); c.present.fill(0); if (c.mrpDetails && c.mrpDetails.length > 0) { c.mrpDetails.forEach(r => { r.base.forEach((v, i) => c.base[i] += v || 0); r.present.forEach((v, i) => c.present[i] += v || 0); }); } }
-        function render() { renderMatrix('matrixHead', 'tableBody', false, 'horizontalTable'); let selC = document.getElementById('selCat'), selB = document.getElementById('selBr'); let opts = '', brOpts = '', gT = 0, gS = 0; let sumHtml = ''; inventoryData.forEach((c, i) => { opts += `<option value="${i}">${c.name}</option>`; let cT=0, cS=0; stores.forEach((_, s) => { gT += c.base[s]||0; gS += c.present[s]||0; cT+=c.base[s]||0; cS+=c.present[s]||0; if(c.mrpDetails) c.mrpDetails.forEach(m => { gT+=m.base[s]||0; gS+=m.present[s]||0; cT+=m.base[s]||0; cS+=m.present[s]||0; }); }); const g = cS - cT; let b = g < 0 ? `<span class="badge badge-danger">Buy ${Math.abs(g)}</span>` : `<span class="badge badge-success">OK</span>`; sumHtml += `<tr><td style="font-weight:600">${c.name}</td><td class="mono">${cT}</td><td class="mono">${cS}</td><td>${b}</td></tr>`; }); stores.forEach((s, i) => brOpts += `<option value="${i}">${s}</option>`); const gap = gT - gS; const eff = gT > 0 ? Math.round((gS/gT)*100) : 0; document.getElementById('totalBase').textContent = gT.toLocaleString(); document.getElementById('totalPresent').textContent = gS.toLocaleString(); document.getElementById('purchaseSuggestion').textContent = Math.max(0, gap).toLocaleString(); document.getElementById('efficiency').textContent = eff + '%'; document.getElementById('summaryTableBody').innerHTML = sumHtml; selC.innerHTML = opts; selB.innerHTML = brOpts; document.getElementById('manualBranch').innerHTML = '<option value="-1">ALL</option>' + brOpts; updateTargetMrpOptions(); if (!document.getElementById('tabAnalytics').classList.contains('hidden')) refreshCharts(); }
-        function renderMatrix(hId, bId, isP, tId) { const th = document.getElementById(hId), tb = document.getElementById(bId); let h1 = `<tr><th rowspan="2">Category</th><th rowspan="2">MRP</th>`; let h2 = '<tr>'; stores.forEach(s => { h1 += `<th colspan="2" class="group-header">${s}</th>`; h2 += `<th class="sub-header">T</th><th class="sub-header" style="border-right:1px solid var(--border)">S</th>`; }); h1 += '<th rowspan="2">Action</th></tr>'; h2 += '</tr>'; th.innerHTML = h1 + h2; let body = ''; inventoryData.forEach((c, ci) => { if (c.mrpDetails && c.mrpDetails.length > 0) { c.mrpDetails.forEach((m, mi) => { let row = `<tr><td style="font-size:11px;color:var(--text-muted)">${c.name}</td><td><span class="badge badge-info">${m.range}</span></td>`; let hasData = !isP; stores.forEach((_, si) => { const t = m.base[si]||0, s = m.present[si]||0, l = getSmartLogic(si, m.base, m.present); if(isP && l.purchase===0) { row += `<td></td><td></td>`; } else { if(isP) hasData = true; row += `<td><span class="num-target">${t}</span></td>`; const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); row += isP ? `<td><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td onclick="editStock(${ci},${mi},${si})"><span class="num-stock ${cls}">${s}</span></td>`; } }); if(isP && !hasData) return; body += row + `<td></td></tr>`; }); } let tr = `<tr style="background:rgba(13,148,136,0.05)"><td style="font-weight:700">${c.name}</td><td><span class="badge badge-warning">TOTAL</span></td>`; let hasData = !isP; stores.forEach((_, si) => { const t = c.base[si]||0, s = c.present[si]||0, l = getSmartLogic(si, c.base, c.present); if(isP && l.purchase===0) { tr += `<td></td><td></td>`; } else { if(isP) hasData = true; tr += `<td><span class="num-target">${t}</span></td>`; const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); tr += isP ? `<td onclick="openPurchaseStoreModal(${si})" style="cursor:pointer"><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td onclick="openModal(${si})" style="cursor:pointer"><span class="num-stock ${cls}">${s}</span></td>`; } }); if(isP && !hasData) return; body += tr + `<td></td></tr>`; }); tb.innerHTML = body; }
+        
+        function render() { 
+            renderMatrix('matrixHead', 'tableBody', false, 'horizontalTable'); 
+            let selC = document.getElementById('selCat'), selB = document.getElementById('selBr'); 
+            let opts = '', brOpts = '', gT = 0, gS = 0; 
+            inventoryData.forEach((c, i) => { 
+                opts += `<option value="${i}">${c.name}</option>`; 
+                let cT=0, cS=0; 
+                stores.forEach((_, s) => { 
+                    gT += c.base[s]||0; gS += c.present[s]||0; 
+                    cT+=c.base[s]||0; cS+=c.present[s]||0; 
+                    if(c.mrpDetails) c.mrpDetails.forEach(m => { gT+=m.base[s]||0; gS+=m.present[s]||0; cT+=m.base[s]||0; cS+=m.present[s]||0; }); 
+                }); 
+            }); 
+            stores.forEach((s, i) => brOpts += `<option value="${i}">${s}</option>`); 
+            const gap = gT - gS; const eff = gT > 0 ? Math.round((gS/gT)*100) : 0; 
+            document.getElementById('totalBase').textContent = gT.toLocaleString(); 
+            document.getElementById('totalPresent').textContent = gS.toLocaleString(); 
+            document.getElementById('purchaseSuggestion').textContent = Math.max(0, gap).toLocaleString(); 
+            document.getElementById('efficiency').textContent = eff + '%'; 
+            selC.innerHTML = opts; selB.innerHTML = brOpts; 
+            document.getElementById('manualBranch').innerHTML = '<option value="-1">ALL</option>' + brOpts; 
+            updateTargetMrpOptions(); // Ensure options update
+            if (!document.getElementById('tabAnalytics').classList.contains('hidden')) refreshCharts(); 
+        }
+        
+        function renderMatrix(hId, bId, isP, tId) { const th = document.getElementById(hId), tb = document.getElementById(bId); let h1 = `<tr><th rowspan="2">Category</th><th rowspan="2">MRP</th>`; let h2 = '<tr>'; stores.forEach(s => { h1 += `<th colspan="2" class="group-header">${s}</th>`; h2 += `<th class="sub-header">T</th><th class="sub-header" style="border-right:1px solid var(--border)">S</th>`; }); h1 += '<th rowspan="2">Action</th></tr>'; h2 += '</tr>'; th.innerHTML = h1 + h2; let body = ''; inventoryData.forEach((c, ci) => { if (c.mrpDetails && c.mrpDetails.length > 0) { c.mrpDetails.forEach((m, mi) => { let row = `<tr><td style="font-size:11px;color:var(--text-muted)">${c.name}</td><td><span class="badge badge-info">${m.range}</span></td>`; let hasData = !isP; stores.forEach((_, si) => { const t = m.base[si]||0, s = m.present[si]||0, l = getSmartLogic(si, m.base, m.present); if(isP && l.purchase===0) { row += `<td></td><td></td>`; } else { if(isP) hasData = true; row += `<td><span class="num-target">${t}</span></td>`; const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); row += isP ? `<td><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td onclick="editStock(${ci},${mi},${si})"><span class="num-stock ${cls}">${s}</span></td>`; } }); if(isP && !hasData) return; body += row + `<td></td></tr>`; }); } let tr = `<tr style="background:rgba(13,148,136,0.05)"><td style="font-weight:700">${c.name}</td><td><span class="badge badge-warning">TOTAL</span></td>`; let hasData = !isP; stores.forEach((_, si) => { const t = c.base[si]||0, s = c.present[si]||0, l = getSmartLogic(si, c.base, c.present); if(isP && l.purchase===0) { tr += `<td></td><td></td>`; } else { if(isP) hasData = true; tr += `<td><span class="num-target">${t}</span></td>`; const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); tr += isP ? `<td onclick="openModal(${si})" style="cursor:pointer"><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td onclick="openModal(${si})" style="cursor:pointer"><span class="num-stock ${cls}">${s}</span></td>`; } }); if(isP && !hasData) return; body += tr + `<td></td></tr>`; }); tb.innerHTML = body; }
         function editStock(ci, mi, si) { const val = mi === -1 ? (inventoryData[ci].present[si]||0) : (inventoryData[ci].mrpDetails[mi].present[si]||0); const n = prompt("New Stock:", val); if(n===null) return; const num = parseInt(n); if(isNaN(num)) return; if(mi===-1) inventoryData[ci].present[si] = num; else { inventoryData[ci].mrpDetails[mi].present[si] = num; recalcTotals(ci); } render(); }
 
-        // --- ANALYTICS CHARTS (UPDATED) ---
-        function refreshCharts() {
-            // 1. Destroy existing charts
-            if(mainChart) mainChart.destroy();
-            if(leaderboardChart) leaderboardChart.destroy();
-            if(shortageChart) shortageChart.destroy();
-            if(surplusChart) surplusChart.destroy();
-
-            // Common Options
+        // --- ANALYTICS ---
+        function refreshCharts() { 
+            const ci = parseInt(document.getElementById('chartFilter').value) || 0; 
+            const cat = inventoryData[ci]; 
+            if(!cat) return; 
+            if(mainChart) mainChart.destroy(); 
             const isDark = document.body.classList.contains('dark-mode');
             const txtColor = isDark ? '#f1f5f9' : '#0f172a';
             const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
             
-            // 2. STORE LEADERBOARD CHART
-            const storeEffData = [];
-            stores.forEach((s, i) => {
-                let tSum = 0, sSum = 0;
-                inventoryData.forEach(c => {
-                    tSum += c.base[i] || 0;
-                    sSum += c.present[i] || 0;
-                    if(c.mrpDetails) c.mrpDetails.forEach(m => { tSum += m.base[i] || 0; sSum += m.present[i] || 0; });
-                });
-                const eff = tSum > 0 ? Math.round((sSum/tSum)*100) : 0;
-                storeEffData.push({ store: s, eff: eff });
-            });
-            // Sort by efficiency descending
-            storeEffData.sort((a,b) => b.eff - a.eff);
+            mainChart = new Chart(document.getElementById('mainChart'), { 
+                type: 'bar', 
+                data: { 
+                    labels: stores, 
+                    datasets: [ 
+                        { label: 'Target', data: cat.base, backgroundColor: 'rgba(245, 158, 11, 0.6)', borderColor: '#f59e0b', borderWidth: 1 }, 
+                        { label: 'Stock', data: cat.present, backgroundColor: 'rgba(13, 148, 136, 0.7)', borderColor: '#0d9488', borderWidth: 1 } 
+                    ] 
+                }, 
+                options: { 
+                    responsive: true, maintainAspectRatio: false, 
+                    plugins: { legend: { position: 'top', labels: { color: txtColor } } }, 
+                    scales: { 
+                        x: { grid: { display: false }, ticks: { color: txtColor } }, 
+                        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: txtColor } } 
+                    } 
+                } 
+            }); 
+        }
 
-            leaderboardChart = new Chart(document.getElementById('storeLeaderboardChart'), {
-                type: 'bar',
-                data: {
-                    labels: storeEffData.map(d => d.store),
-                    datasets: [{
-                        label: 'Efficiency %',
-                        data: storeEffData.map(d => d.eff),
-                        backgroundColor: storeEffData.map(d => d.eff >= 95 ? '#059669' : (d.eff >= 80 ? '#f59e0b' : '#dc2626')),
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { beginAtZero: true, max: 100, grid: { color: gridColor }, ticks: { color: txtColor } },
-                        y: { grid: { display: false }, ticks: { color: txtColor } }
-                    }
-                }
+        // --- PURCHASE REPORT LOGIC ---
+        function openPurchaseReport() { document.getElementById('dashboardView').classList.add('hidden'); document.getElementById('purchaseReportView').classList.remove('hidden'); renderPurchaseReport(); }
+        function closePurchaseReport() { document.getElementById('purchaseReportView').classList.add('hidden'); document.getElementById('dashboardView').classList.remove('hidden'); }
+
+        function renderPurchaseReport() {
+            const purchaseItems = []; let totalPurchaseQty = 0; const affectedStores = new Set();
+            inventoryData.forEach(c => {
+                const process = (mrpRange, baseArr, presArr) => {
+                    stores.forEach((s, si) => {
+                        const logic = getSmartLogic(si, baseArr, presArr);
+                        if (logic.purchase > 0) {
+                            const shortage = (baseArr[si] || 0) - (presArr[si] || 0);
+                            purchaseItems.push({ store: s, category: c.name, mrp: mrpRange, target: baseArr[si] || 0, stock: presArr[si] || 0, shortage: shortage, purchase: logic.purchase });
+                            totalPurchaseQty += logic.purchase; affectedStores.add(s);
+                        }
+                    });
+                };
+                if (c.mrpDetails && c.mrpDetails.length > 0) { c.mrpDetails.forEach(m => process(m.range, m.base, m.present)); } else { process('TOTAL', c.base, c.present); }
+            });
+            purchaseItems.sort((a, b) => b.shortage - a.shortage);
+            document.getElementById('reportTotalPurchase').textContent = totalPurchaseQty.toLocaleString();
+            document.getElementById('reportStoresAffected').textContent = affectedStores.size;
+
+            const catTotals = {};
+            purchaseItems.forEach(item => { if (!catTotals[item.category]) catTotals[item.category] = 0; catTotals[item.category] += item.purchase; });
+            const sortedCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+            if (purchaseSummaryChart) purchaseSummaryChart.destroy();
+            purchaseSummaryChart = new Chart(document.getElementById('purchaseSummaryChart'), {
+                type: 'bar', data: { labels: sortedCats.map(c => c[0].substring(0, 15) + '...'), datasets: [{ label: 'Total Purchase Qty', data: sortedCats.map(c => c[1]), backgroundColor: '#dc2626' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
-            // 3. CATEGORY DEEP DIVE (Target vs Stock)
-            const ci = parseInt(document.getElementById('chartFilter').value) || 0;
-            const cat = inventoryData[ci];
-            if(cat) {
-                mainChart = new Chart(document.getElementById('categoryDeepDiveChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: stores,
-                        datasets: [
-                            { label: 'Target', data: cat.base, backgroundColor: 'rgba(245, 158, 11, 0.5)', borderColor: '#f59e0b', borderWidth: 1 },
-                            { label: 'Stock', data: cat.present, backgroundColor: 'rgba(13, 148, 136, 0.7)', borderColor: '#0d9488', borderWidth: 1 }
-                        ]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { labels: { color: txtColor } } },
-                        scales: { x: { grid: { display: false }, ticks: { color: txtColor } }, y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: txtColor } } }
-                    }
+            const container = document.getElementById('purchaseListContainer');
+            let listHtml = `<div class="purchase-list-item font-bold text-xs uppercase" style="background:var(--bg); color:var(--text-muted);"><div>Store</div><div>Category / MRP</div><div class="text-center">Shortage</div><div class="text-center">To Buy</div></div>`;
+            if (purchaseItems.length === 0) { listHtml += `<div class="p-6 text-center text-green-600 font-bold">ALL STOCKS ARE OPTIMIZED.</div>`; } 
+            else {
+                purchaseItems.forEach(item => {
+                    listHtml += `<div class="purchase-list-item">
+                        <div class="flex flex-col"><span class="font-bold text-danger">${item.store}</span><span class="text-xs text-muted">${item.store}</span></div>
+                        <div class="flex flex-col"><span class="font-semibold">${item.category}</span><span class="text-xs text-muted">${item.mrp}</span></div>
+                        <div class="text-center"><span class="font-bold mono text-danger">${item.shortage}</span><div class="text-xs text-muted">T: ${item.target} | S: ${item.stock}</div></div>
+                        <div class="text-center"><button class="btn btn-danger btn-sm" style="padding: 4px 12px;">Buy ${item.purchase}</button></div>
+                    </div>`;
                 });
             }
-
-            // 4. CRITICAL SHORTAGES (Top 5)
-            const catGaps = [];
-            inventoryData.forEach(c => {
-                let tSum = 0, sSum = 0;
-                stores.forEach((_, i) => {
-                    tSum += c.base[i] || 0;
-                    sSum += c.present[i] || 0;
-                    if(c.mrpDetails) c.mrpDetails.forEach(m => { tSum += m.base[i] || 0; sSum += m.present[i] || 0; });
-                });
-                const gap = sSum - tSum;
-                if(gap < 0) catGaps.push({ name: c.name, gap: Math.abs(gap) });
-            });
-            catGaps.sort((a,b) => b.gap - a.gap);
-            const top5Short = catGaps.slice(0, 5);
-
-            shortageChart = new Chart(document.getElementById('shortageChart'), {
-                type: 'bar',
-                data: {
-                    labels: top5Short.map(c => c.name.substring(0,15)),
-                    datasets: [{
-                        label: 'Shortage Qty',
-                        data: top5Short.map(c => c.gap),
-                        backgroundColor: '#dc2626',
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { x: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: txtColor } }, y: { grid: { display: false }, ticks: { color: txtColor } } }
-                }
-            });
-
-            // 5. DEAD STOCK (Top 5 Surplus)
-            const catSurplus = [];
-            inventoryData.forEach(c => {
-                let tSum = 0, sSum = 0;
-                stores.forEach((_, i) => {
-                    tSum += c.base[i] || 0;
-                    sSum += c.present[i] || 0;
-                    if(c.mrpDetails) c.mrpDetails.forEach(m => { tSum += m.base[i] || 0; sSum += m.present[i] || 0; });
-                });
-                const gap = sSum - tSum;
-                if(gap > 0) catSurplus.push({ name: c.name, gap: gap });
-            });
-            catSurplus.sort((a,b) => b.gap - a.gap);
-            const top5Surplus = catSurplus.slice(0, 5);
-
-            surplusChart = new Chart(document.getElementById('surplusChart'), {
-                type: 'bar',
-                data: {
-                    labels: top5Surplus.map(c => c.name.substring(0,15)),
-                    datasets: [{
-                        label: 'Surplus Qty',
-                        data: top5Surplus.map(c => c.gap),
-                        backgroundColor: '#059669',
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { x: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: txtColor } }, y: { grid: { display: false }, ticks: { color: txtColor } } }
-                }
-            });
+            container.innerHTML = listHtml;
         }
 
-        // --- MODALS & ACTIONS (Same as previous) ---
+        async function exportSmartPurchaseExcel() {
+            const purchaseItems = [];
+            inventoryData.forEach(c => {
+                const process = (mrpRange, baseArr, presArr) => {
+                    stores.forEach((s, si) => {
+                        const logic = getSmartLogic(si, baseArr, presArr);
+                        if (logic.purchase > 0) { purchaseItems.push({ Store: s, Category: c.name, MRP: mrpRange, Target: baseArr[si] || 0, Stock: presArr[si] || 0, Shortage: (baseArr[si] || 0) - (presArr[si] || 0), Purchase: logic.purchase }); }
+                    });
+                };
+                if (c.mrpDetails && c.mrpDetails.length > 0) { c.mrpDetails.forEach(m => process(m.range, m.base, m.present)); } else { process('TOTAL', c.base, c.present); }
+            });
+            purchaseItems.sort((a, b) => b.Shortage - a.Shortage);
+
+            const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Purchase List');
+            ws.columns = [ { header: 'Store', key: 'Store', width: 10 }, { header: 'Category', key: 'Category', width: 25 }, { header: 'MRP', key: 'MRP', width: 12 }, { header: 'Target', key: 'Target', width: 8 }, { header: 'Stock', key: 'Stock', width: 8 }, { header: 'Shortage', key: 'Shortage', width: 10 }, { header: 'To Purchase', key: 'Purchase', width: 12 } ];
+            ws.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } }; ws.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDC2626' } }; ws.getRow(1).alignment = { horizontal: 'center' };
+            purchaseItems.forEach(item => ws.addRow(item));
+            const buf = await wb.xlsx.writeBuffer();
+            saveAs(new Blob([buf]), 'Smart_Purchase_List.xlsx');
+        }
+
+        // --- ACTIONS & OPTIONS ---
         function switchTab(t) { document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden')); document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active')); document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('hidden'); event.target.classList.add('active'); if(t==='analytics') refreshCharts(); }
-        function openModal(si) { currentModalBranchIndex = si; const nm = stores[si]; const labels = [], tgts = [], stks = []; let tT=0, tS=0; let rows = ''; inventoryData.forEach(c => { const t = c.base[si]||0, s = c.present[si]||0; if(t>0 || s>0) { tT+=t; tS+=s; labels.push(c.name.substring(0,10)); tgts.push(t); stks.push(s); const g = s-t; const l = getSmartLogic(si, c.base, c.present); let b = ''; if(l.transfer) b = `<span class="badge badge-info">Trans ${l.transfer.qty} fr. ${l.transfer.from}</span>`; else if(l.purchase>0) b = `<span class="badge badge-danger">Buy ${l.purchase}</span>`; else if(g>0) b = `<span class="badge badge-warning">Surplus</span>`; else b = `<span class="badge badge-success">OK</span>`; rows += `<div class="card p-3 mb-2" style="border-left:4px solid ${g<0?'var(--danger)':'var(--success)'}"><div class="flex justify-between text-xs uppercase mb-1" style="color:var(--text-muted)"><span>${c.name}</span><span>Gap: ${g>0?'+':''}${g}</span></div><div class="flex justify-between items-center"><div class="mono text-xs">T: ${t} | S: ${s}</div><div>${b}</div></div></div>`; } }); document.getElementById('modalBody').innerHTML = `<div style="height:250px;margin-bottom:20px;position:relative"><canvas id="branchModalChart"></canvas></div><div class="grid grid-cols-2 gap-4 mb-4 text-center"><div class="p-3 rounded" style="background:var(--bg)"><p class="text-xs text-gray-500 uppercase">Total Target</p><p class="text-xl font-bold mono">${tT}</p></div><div class="p-3 rounded" style="background:var(--info);color:white"><p class="text-xs uppercase opacity-80">Total Stock</p><p class="text-xl font-bold mono">${tS}</p></div></div><h3 class="font-bold text-sm mb-2 uppercase text-muted">Category Breakdown</h3><div>${rows}</div>`; document.getElementById('modalStore').textContent = `${nm} Analysis`; document.getElementById('modal').classList.remove('hidden'); const ctx = document.getElementById('branchModalChart').getContext('2d'); if(branchModalChart) branchModalChart.destroy(); branchModalChart = new Chart(ctx, { type:'bar', data:{labels, datasets:[{label:'Target', data:tgts, backgroundColor:'#f59e0b'}, {label:'Stock', data:stks, backgroundColor:'#0d9488'}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}, scales:{x:{display:true, grid:{display:false}}, y:{beginAtZero:true}} } }); }
+        function openModal(si) { currentModalBranchIndex = si; const nm = stores[si]; const labels = [], tgts = [], stks = []; let tT=0, tS=0; let rows = ''; inventoryData.forEach(c => { const t = c.base[si]||0, s = c.present[si]||0; if(t>0 || s>0) { tT+=t; tS+=s; labels.push(c.name.substring(0,10)); tgts.push(t); stks.push(s); const g = s-t; const l = getSmartLogic(si, c.base, c.present); let b = ''; if(l.transfer) b = `<span class="badge badge-info">Trans ${l.transfer.qty} fr. ${l.transfer.from}</span>`; else if(l.purchase>0) b = `<span class="badge badge-danger">Buy ${l.purchase}</span>`; else if(g>0) b = `<span class="badge badge-warning">Surplus</span>`; else b = `<span class="badge badge-success">OK</span>`; rows += `<div class="card p-3 mb-2" style="border-left:4px solid ${g<0?'var(--danger)':'var(--success)'}"><div class="flex justify-between text-xs uppercase mb-1" style="color:var(--text-muted)"><span>${c.name}</span><span>Gap: ${g>0?'+':''}${g}</span></div><div class="flex justify-between items-center"><div class="mono text-xs">T: ${t} | S: ${s}</div><div>${b}</div></div></div>`; } }); document.getElementById('modalBody').innerHTML = `<div style="height:250px;margin-bottom:20px;position:relative"><canvas id="branchModalChart"></canvas></div><div class="grid grid-cols-2 gap-4 mb-4 text-center"><div class="p-3 rounded" style="background:var(--bg)"><p class="text-xs uppercase" style="color:var(--text-muted)">Total Target</p><p class="text-xl font-bold mono">${tT}</p></div><div class="p-3 rounded" style="background:var(--info);color:white"><p class="text-xs uppercase opacity-80">Total Stock</p><p class="text-xl font-bold mono">${tS}</p></div></div><h3 class="font-bold text-sm mb-2 uppercase" style="color:var(--text-muted)">Category Breakdown</h3><div>${rows}</div>`; document.getElementById('modalStore').textContent = `${nm} Analysis`; document.getElementById('modal').classList.remove('hidden'); const ctx = document.getElementById('branchModalChart').getContext('2d'); if(branchModalChart) branchModalChart.destroy(); branchModalChart = new Chart(ctx, { type:'bar', data:{labels, datasets:[{label:'Target', data:tgts, backgroundColor:'#f59e0b'}, {label:'Stock', data:stks, backgroundColor:'#0d9488'}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}, scales:{x:{display:true, grid:{display:false}}, y:{beginAtZero:true}} } }); }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-        function openPurchaseStoreModal(si) { currentModalBranchIndex = si; const nm = stores[si]; const items = []; inventoryData.forEach(c => { const process = (n, r, b, p) => { const l = getSmartLogic(si, b, p); if(l.purchase > 0) { const t = b[si]||0, s = p[si]||0, sh = t-s; items.push({cat:n, mrp:r, t, s, sh, p: l.purchase}); } }; if(c.mrpDetails && c.mrpDetails.length>0) { c.mrpDetails.forEach(m => process(c.name, m.range, m.base, m.present)); } else { process(c.name, 'TOTAL', c.base, c.present); } }); let tbHtml = ''; items.forEach(i => { tbHtml += `<tr><td>${i.cat}</td><td>${i.mrp}</td><td class="mono">${i.t}</td><td class="mono">${i.s}</td><td class="mono" style="color:var(--danger)">${i.sh}</td><td class="mono" style="font-weight:700">${i.p}</td></tr>`; }); if(items.length===0) tbHtml = `<tr><td colspan="6" style="text-align:center">No purchases needed.</td></tr>`; document.getElementById('purchaseModalTableBody').innerHTML = tbHtml; document.getElementById('purchaseModalStore').textContent = `${nm} Purchase Breakdown`; const ctx = document.getElementById('purchaseModalChart').getContext('2d'); if(purchaseModalChartInstance) purchaseModalChartInstance.destroy(); purchaseModalChartInstance = new Chart(ctx, { type: 'bar', data: { labels: items.map(i=>i.cat.substring(0,10)), datasets: [{ label: 'Purchase Qty', data: items.map(i=>i.p), backgroundColor: '#dc2626' }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins:{legend:{display:false}}, scales:{x:{beginAtZero:true}} } }); document.getElementById('purchaseModal').classList.remove('hidden'); }
-        function closePurchaseModal() { document.getElementById('purchaseModal').classList.add('hidden'); }
         function addBr() { const n=document.getElementById('newBr').value.trim().toUpperCase(); if(!n) return; stores.push(n); inventoryData.forEach(c=>{c.base.push(0);c.present.push(0);if(c.mrpDetails)c.mrpDetails.forEach(m=>{m.base.push(0);m.present.push(0)});}); render(); }
         function addCat() { const n=document.getElementById('newCat').value.trim().toUpperCase(); if(!n) return; inventoryData.push({name:n,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]}); render(); }
-        function updateTargetMrpOptions() { const ci=parseInt(document.getElementById('selCat').value); const s=document.getElementById('selMrp'); s.innerHTML='<option value="TOTAL">TOTAL</option>'; if(!isNaN(ci)){ const c=inventoryData[ci]; if(c.mrpDetails) c.mrpDetails.forEach(m=>{ const o=document.createElement('option'); o.value=m.range; o.textContent=m.range; s.appendChild(o); }); } }
-        function setTarget() { const ci=parseInt(document.getElementById('selCat').value), m=document.getElementById('selMrp').value, si=parseInt(document.getElementById('selBr').value), v=parseInt(document.getElementById('targetVal').value)||0; if(isNaN(ci)||isNaN(si)) return; const c=inventoryData[ci]; if(m==='TOTAL'||!m) c.base[si]=v; else { let r=c.mrpDetails.find(x=>x.range===m); if(!r){r={range:m,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(r);} r.base[si]=v; recalcTotals(ci); } render(); }
-        function updateMrpOptions() { const n=document.getElementById('manualCatInput').value.toUpperCase().trim(); const l=document.getElementById('mrpList'); l.innerHTML='<option value="TOTAL">TOTAL</option>'; if(!n) return; const c=inventoryData.find(x=>x.name===n); if(c&&c.mrpDetails) c.mrpDetails.forEach(m=>{ const o=document.createElement('option'); o.value=m.range; l.appendChild(o); }); }
-        function saveManualData() { const nm=document.getElementById('manualCatInput').value.toUpperCase().trim(), mr=document.getElementById('manualMrp').value.trim(), si=parseInt(document.getElementById('manualBranch').value), tg=parseInt(document.getElementById('manualTarget').value)||0, st=parseInt(document.getElementById('manualStock').value)||0; if(!nm||!mr||isNaN(si)) return; let idx=inventoryData.findIndex(x=>x.name===nm); if(idx===-1){inventoryData.push({name:nm,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]});idx=inventoryData.length-1;} const c=inventoryData[idx]; if(si===-1){ if(mr==='TOTAL'){for(let i=0;i<stores.length;i++){c.base[i]=tg;c.present[i]=st;}} else {let r=c.mrpDetails.find(x=>x.range===mr);if(!r){r={range:mr,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(r);}for(let i=0;i<stores.length;i++){r.base[i]=tg;r.present[i]=st;}recalcTotals(idx);} } else { if(mr==='TOTAL'){c.base[si]=tg;c.present[si]=st;} else {let r=c.mrpDetails.find(x=>x.range===mr);if(!r){r={range:mr,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(r);}r.base[si]=tg;r.present[si]=st;recalcTotals(idx);} } closeManualModal();render(); }
         
-        // --- UPLOAD & EXPORT (Same) ---
-        async function handleFileUpload(e) { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=async ev => { const d=new Uint8Array(ev.target.result); const wb=new ExcelJS.Workbook(); await wb.xlsx.load(d); const ws=wb.worksheets[0]; const hdr=ws.getRow(1); const map=[]; hdr.eachCell((c,i)=>{ if(i<=2) return; let v=c.value; if(c.result) v=c.result; if(v&&typeof v==='object'&&v.richText) v=v.richText.map(t=>t.text).join(''); const t=v?v.toString().trim().toUpperCase():''; if(t) map.push({idx:i,name:t}); }); if(!map.length) return alert('No stores'); const old=[...stores]; let chg=false; map.forEach(m=>{ if(!stores.includes(m.name)){stores.push(m.name);chg=true;} }); if(chg) inventoryData.forEach(c=>{ c.base=[...c.base,...Array(stores.length-old.length).fill(0)]; c.present=[...c.present,...Array(stores.length-old.length).fill(0)]; if(c.mrpDetails)c.mrpDetails.forEach(m=>{m.base=[...m.base,...Array(stores.length-old.length).fill(0)];m.present=[...m.present,...Array(stores.length-old.length).fill(0)];}); }); const norm=s=>{ if(!s) return ''; let st=s.toString().trim().toUpperCase(); if(st==='TOTAL') return 'TOTAL'; let m=st.match(/^(\d+)\s*[-<]+\s*(\d+)\s*(.*)/); if(m) return `${m[1]}<${m[2]}${m[3].trim()}`; m=st.match(/^(>|<)\s*(\d+)/); if(m) return `${m[1]}${m[2]}`; const ns=st.match(/\d+/g); if(ns&&ns.length>=2) return `${ns[0]}<${ns[1]}`; if(ns&&ns.length===1) return `>${ns[0]}`; return st; }; ws.eachRow((rw, rn)=>{ if(rn===1) return; const gV=i=>{ const cl=rw.getCell(i); if(cl.value==null||cl.value===undefined||cl.value==='') return 0; let rv=0; if(cl.result) rv=parseFloat(cl.result); else rv=parseFloat(cl.value); return isNaN(rv)?0:Math.round(rv); }; const gS=i=>{ const cl=rw.getCell(i); let v=cl.value; if(cl.result) v=cl.result; if(v&&typeof v==='object'&&v.richText) v=v.richText.map(t=>t.text).join(''); if(cl.type==4) return cl.value.toString(); return v?v.toString().trim().toUpperCase():''; }; const cn=gS(1), mn=norm(gS(2)); if(!cn) return; let ci=inventoryData.findIndex(x=>x.name===cn); if(ci===-1){ inventoryData.push({name:cn,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]}); ci=inventoryData.length-1; } const c=inventoryData[ci]; const isT=mn==='TOTAL'||!mn; map.forEach(m=>{ const si=stores.indexOf(m.name); const vl=gV(m.idx); if(isT) c.present[si]=vl; else { let mr=c.mrpDetails.find(x=>x.range===mn); if(!mr){mr={range:mn,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(mr);} mr.present[si]=vl; } }); }); inventoryData.forEach((c,i)=>recalcTotals(i)); render(); alert('Merged!'); }; r.readAsArrayBuffer(f); }
-        function openPurchaseReportTab() { localStorage.setItem('sg_r', JSON.stringify({inventoryData,stores})); window.open(location.href.split('#')[0]+'#purchase','_blank'); }
-        function checkPurchase() { if(location.hash==='#purchase'){ document.getElementById('dashboardView').classList.add('hidden'); document.getElementById('purchaseReportView').classList.remove('hidden'); renderPurchasePage(); } }
-        function renderPurchasePage() { const saved = JSON.parse(localStorage.getItem('sg_r')); if(!saved) return; inventoryData = saved.inventoryData; stores = saved.stores; let stats = { p:0, c:new Set() }; inventoryData.forEach(c => { const proc = (b, p) => { stores.forEach((_, si) => { const l = getSmartLogic(si, b, p); if(l.purchase>0){ stats.p+=l.purchase; stats.c.add(c.name); } }); }; if(c.mrpDetails) c.mrpDetails.forEach(m => proc(m.base, m.present)); else proc(c.base, c.present); }); document.getElementById('sumPurchase').textContent = stats.p.toLocaleString(); document.getElementById('sumCats').textContent = stats.c.size; new Chart(document.getElementById('purchaseChart'), { type:'bar', data:{labels:['Purchase'], datasets:[{label:'Qty', data:[stats.p], backgroundColor:'#dc2626'}]}, options:{plugins:{legend:{display:false}}} }); renderMatrix('purchaseMatrixHead', 'purchaseMatrixBody', true, 'purchaseHorizontalTable'); }
-        async function exportBranchReport() { if(currentModalBranchIndex===null) return; const si=currentModalBranchIndex, nm=stores[si]; const wb=new ExcelJS.Workbook(); const ws=wb.addWorksheet(nm); ws.addRow([`Report: ${nm}`]); ws.columns=[{width:25},{width:10},{width:10},{width:30}]; ws.addRow(['Category','Target','Stock','Action']); inventoryData.forEach(c=>{ const l=getSmartLogic(si,c.base,c.present); let a=''; if(l.transfer)a+=`Trans ${l.transfer.qty} fr ${l.transfer.from}; `; if(l.purchase>0)a+=`Buy ${l.purchase}`; if(!a)a='OK'; ws.addRow([c.name,c.base[si]||0,c.present[si]||0,a]); }); const buf=await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]),`${nm}_Report.xlsx`); }
-        async function exportPurchaseReportExcel() { const sd=JSON.parse(localStorage.getItem('sg_r')); if(!sd) return; inventoryData=sd.inventoryData; stores=sd.stores; const wb=new ExcelJS.Workbook(), ws=wb.addWorksheet('Purchase'); const h1=['Cat','MRP']; stores.forEach(s=>h1.push(s,'')); h1.push('Total'); ws.addRow(h1); const h2=['','']; stores.forEach(()=>h2.push('T','P')); h2.push('P'); ws.addRow(h2); ws.columns=[{width:20},{width:10}]; stores.forEach(()=>ws.columns.push({width:6},{width:6})); ws.columns.push({width:8}); let rn=3; inventoryData.forEach(c=>{ const procR=(rng,b,p)=>{ const rd=[c.name,rng]; let rp=0,hp=false; stores.forEach((_,si)=>{ const l=getSmartLogic(si,b,p); rd.push(b[si]||0); rd.push(l.purchase>0?l.purchase:'-'); if(l.purchase>0){rp+=l.purchase;hp=true;} }); rd.push(rp>0?rp:'-'); if(hp){ws.getRow(rn).values=rd; rn++;} }; if(c.mrpDetails)c.mrpDetails.forEach(m=>procR(m.range,m.base,m.present)); else procR('TOTAL',c.base,c.present); }); const buf=await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]),'Purchase_Report.xlsx'); }
-        async function exportStorePurchaseExcel() { if(currentModalBranchIndex===null) return; const si=currentModalBranchIndex, nm=stores[si]; const wb=new ExcelJS.Workbook(); const ws=wb.addWorksheet('Purchase'); ws.addRow([`Purchase: ${nm}`]); ws.addRow([]); ws.columns=[{width:20},{width:15},{width:10},{width:10},{width:10},{width:10}]; ws.addRow(['Category','MRP','Target','Stock','Shortage','Purchase']); inventoryData.forEach(c=>{ const proc=(n,r,b,p)=>{ const l=getSmartLogic(si,b,p); if(l.purchase>0) ws.addRow([n,r,b[si]||0,p[si]||0,(b[si]||0)-(p[si]||0),l.purchase]); }; if(c.mrpDetails)c.mrpDetails.forEach(m=>proc(c.name,m.range,m.base,m.present)); else proc(c.name,'TOTAL',c.base,c.present); }); const buf=await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]),`${nm}_Purchase.xlsx`); }
-        
-        // EXPORT MATRIX (COLOR CODED)
-        async function exportMatrixExcel() {
-            const wb = new ExcelJS.Workbook();
-            const ws = wb.addWorksheet('Stock Matrix');
-            const columns = [{ header: 'Category', key: 'cat', width: 25 }, { header: 'MRP', key: 'mrp', width: 15 }];
-            stores.forEach(s => { columns.push({ header: s, key: s + '_T', width: 8 }); columns.push({ header: s, key: s + '_S', width: 8 }); });
-            columns.push({ header: 'AI Suggestion', key: 'action', width: 20 });
-            ws.columns = columns;
-            const h1 = ws.getRow(1); h1.values = ['Category', 'MRP']; stores.forEach(s => h1.values.push(s, '')); h1.values.push('Action');
-            h1.eachCell((cell, colNumber) => { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0D9488' } }; cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }; cell.alignment = { horizontal: 'center', vertical: 'middle' }; });
-            let colIdx = 3; stores.forEach(() => { ws.mergeCells(1, colIdx, 1, colIdx + 1); colIdx += 2; });
-            const h2 = ws.getRow(2); h2.values = ['', '']; stores.forEach(() => h2.values.push('Tgt', 'Stk')); h2.values.push('');
-            h2.eachCell((cell, colNumber) => { if(colNumber > 2) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; cell.font = { bold: true, color: { argb: 'FF0D9488' }, size: 9 }; cell.alignment = { horizontal: 'center' }; } cell.border = { bottom: {style:'thin'}, top: {style:'thin'}, left: {style:'thin'}, right: {style:'thin'} }; });
-            let currentRow = 3;
-            inventoryData.forEach(cat => {
-                if (cat.mrpDetails && cat.mrpDetails.length > 0) {
-                    cat.mrpDetails.forEach(mrp => {
-                        const row = ws.getRow(currentRow); const values = [cat.name, mrp.range];
-                        stores.forEach((_, si) => { values.push(mrp.base[si] || 0, mrp.present[si] || 0); }); values.push('');
-                        row.values = values;
-                        let cIdx = 3; stores.forEach((_, si) => {
-                            const t = mrp.base[si] || 0; const s = mrp.present[si] || 0;
-                            const tCell = row.getCell(cIdx); const sCell = row.getCell(cIdx + 1);
-                            tCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } }; tCell.font = { name: 'Consolas', size: 10 }; tCell.alignment = { horizontal: 'center' };
-                            sCell.font = { name: 'Consolas', bold: true, size: 10 }; sCell.alignment = { horizontal: 'center' };
-                            const gap = s - t;
-                            if (gap > 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFCA5A5' } };
-                            else if (gap < 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF86EFAC' } };
-                            else sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF93C5FD' } };
-                            cIdx += 2;
-                        });
-                        row.getCell(1).font = { color: { argb: 'FF6B7280' }, size: 10 }; row.getCell(2).alignment = { horizontal: 'center' };
-                        currentRow++;
-                    });
-                }
-                const tRow = ws.getRow(currentRow); const tVals = [cat.name, 'TOTAL'];
-                stores.forEach((_, si) => { tVals.push(cat.base[si]||0, cat.present[si]||0); }); tVals.push('');
-                tRow.values = tVals;
-                tRow.font = { bold: true };
-                tRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } };
-                tRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; tRow.getCell(2).alignment = { horizontal: 'center' };
-                let cIdx = 3; stores.forEach((_, si) => {
-                     const t = cat.base[si] || 0; const s = cat.present[si] || 0;
-                     const tCell = tRow.getCell(cIdx); const sCell = tRow.getCell(cIdx + 1);
-                     tCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; tCell.font = { bold: true, name: 'Consolas', size: 10 }; tCell.alignment = { horizontal: 'center' };
-                     sCell.font = { bold: true, name: 'Consolas', size: 10 }; sCell.alignment = { horizontal: 'center' };
-                     const gap = s - t;
-                     if (gap > 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFCA5A5' } };
-                     else if (gap < 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF86EFAC' } };
-                     else sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF93C5FD' } };
-                     cIdx += 2;
-                });
-                currentRow++;
-            });
-            const buf = await wb.xlsx.writeBuffer();
-            saveAs(new Blob([buf]), 'Stock_Matrix_ColorCoded.xlsx');
+        // FIXED: Update Target MRP Options
+        function updateTargetMrpOptions() { 
+            const ci=parseInt(document.getElementById('selCat').value); 
+            const s=document.getElementById('selMrp'); 
+            s.innerHTML='<option value="TOTAL">TOTAL</option>'; 
+            if(!isNaN(ci)){ 
+                const c=inventoryData[ci]; 
+                if(c.mrpDetails) c.mrpDetails.forEach(m=>{ 
+                    const o=document.createElement('option'); 
+                    o.value=m.range; 
+                    o.textContent=m.range; 
+                    s.appendChild(o); 
+                }); 
+            } 
         }
+        
+        // FIXED: Set Target with MRP
+        function setTarget() { 
+            const ci=parseInt(document.getElementById('selCat').value), m=document.getElementById('selMrp').value, si=parseInt(document.getElementById('selBr').value), v=parseInt(document.getElementById('targetVal').value)||0; 
+            if(isNaN(ci)||isNaN(si)) return alert('Select Category and Branch'); 
+            const c=inventoryData[ci]; 
+            if(m==='TOTAL'||!m) c.base[si]=v; 
+            else { 
+                let r=c.mrpDetails.find(x=>x.range===m); 
+                if(!r){r={range:m,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(r);} 
+                r.base[si]=v; 
+                recalcTotals(ci); 
+            } 
+            render(); 
+            alert('Target Updated'); 
+        }
+        
+        // FIXED: Update Manual Options
+        function updateMrpOptions() { 
+            const n=document.getElementById('manualCatInput').value.toUpperCase().trim(); 
+            const l=document.getElementById('mrpList'); 
+            l.innerHTML='<option value="TOTAL">TOTAL</option>'; 
+            if(!n) return; 
+            const c=inventoryData.find(x=>x.name===n); 
+            if(c&&c.mrpDetails) c.mrpDetails.forEach(m=>{ 
+                const o=document.createElement('option'); 
+                o.value=m.range; 
+                l.appendChild(o); 
+            }); 
+        }
+        
+        function saveManualData() { const nm=document.getElementById('manualCatInput').value.toUpperCase().trim(), mr=document.getElementById('manualMrp').value.trim(), si=parseInt(document.getElementById('manualBranch').value), tg=parseInt(document.getElementById('manualTarget').value)||0, st=parseInt(document.getElementById('manualStock').value)||0; if(!nm||!mr||isNaN(si)) return alert('Missing fields'); let idx=inventoryData.findIndex(x=>x.name===nm); if(idx===-1){inventoryData.push({name:nm,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]});idx=inventoryData.length-1;} const c=inventoryData[idx]; if(si===-1){ if(mr==='TOTAL'){for(let i=0;i<stores.length;i++){c.base[i]=tg;c.present[i]=st;}} else {let r=c.mrpDetails.find(x=>x.range===mr);if(!r){r={range:mr,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(r);}for(let i=0;i<stores.length;i++){r.base[i]=tg;r.present[i]=st;}recalcTotals(idx);} } else { if(mr==='TOTAL'){c.base[si]=tg;c.present[si]=st;} else {let r=c.mrpDetails.find(x=>x.range===mr);if(!r){r={range:mr,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(r);}r.base[si]=tg;r.present[si]=st;recalcTotals(idx);} } closeManualModal();render(); }
+        
+        // --- UPLOAD & EXPORT ---
+        async function handleFileUpload(e) { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=async ev => { const d=new Uint8Array(ev.target.result); const wb=new ExcelJS.Workbook(); await wb.xlsx.load(d); const ws=wb.worksheets[0]; const hdr=ws.getRow(1); const map=[]; hdr.eachCell((c,i)=>{ if(i<=2) return; let v=c.value; if(c.result) v=c.result; if(v&&typeof v==='object'&&v.richText) v=v.richText.map(t=>t.text).join(''); const t=v?v.toString().trim().toUpperCase():''; if(t) map.push({idx:i,name:t}); }); if(!map.length) return alert('No stores'); const old=[...stores]; let chg=false; map.forEach(m=>{ if(!stores.includes(m.name)){stores.push(m.name);chg=true;} }); if(chg) inventoryData.forEach(c=>{ c.base=[...c.base,...Array(stores.length-old.length).fill(0)]; c.present=[...c.present,...Array(stores.length-old.length).fill(0)]; if(c.mrpDetails)c.mrpDetails.forEach(m=>{m.base=[...m.base,...Array(stores.length-old.length).fill(0)];m.present=[...m.present,...Array(stores.length-old.length).fill(0)];}); }); const norm=s=>{ if(!s) return ''; let st=s.toString().trim().toUpperCase(); if(st==='TOTAL') return 'TOTAL'; let m=st.match(/^(\d+)\s*[-<]+\s*(\d+)\s*(.*)/); if(m) return `${m[1]}<${m[2]}${m[3].trim()}`; m=st.match(/^(>|<)\s*(\d+)/); if(m) return `${m[1]}${m[2]}`; const ns=st.match(/\d+/g); if(ns&&ns.length>=2) return `${ns[0]}<${ns[1]}`; if(ns&&ns.length===1) return `>${ns[0]}`; return st; }; ws.eachRow((rw, rn)=>{ if(rn===1) return; const gV=i=>{ const cl=rw.getCell(i); if(cl.value==null||cl.value===undefined||cl.value==='') return 0; let rv=0; if(cl.result) rv=parseFloat(cl.result); else rv=parseFloat(cl.value); return isNaN(rv)?0:Math.round(rv); }; const gS=i=>{ const cl=rw.getCell(i); let v=cl.value; if(cl.result) v=cl.result; if(v&&typeof v==='object'&&v.richText) v=v.richText.map(t=>t.text).join(''); if(cl.type==4) return cl.value.toString(); return v?v.toString().trim().toUpperCase():''; }; const cn=gS(1), mn=norm(gS(2)); if(!cn) return; let ci=inventoryData.findIndex(x=>x.name===cn); if(ci===-1){ inventoryData.push({name:cn,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]}); ci=inventoryData.length-1; } const c=inventoryData[ci]; const isT=mn==='TOTAL'||!mn; map.forEach(m=>{ const si=stores.indexOf(m.name); const vl=gV(m.idx); if(isT) c.present[si]=vl; else { let mr=c.mrpDetails.find(x=>x.range===mn); if(!mr){mr={range:mn,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(mr);} mr.present[si]=vl; } }); }); inventoryData.forEach((c,i)=>recalcTotals(i)); render(); alert('Merged!'); }; r.readAsArrayBuffer(f); }
+        
+        async function exportBranchReport() { if(currentModalBranchIndex===null) return; const si=currentModalBranchIndex, nm=stores[si]; const wb=new ExcelJS.Workbook(); const ws=wb.addWorksheet(nm); ws.addRow([`Report: ${nm}`]); ws.columns=[{width:25},{width:10},{width:10},{width:30}]; ws.addRow(['Category','Target','Stock','Action']); inventoryData.forEach(c=>{ const l=getSmartLogic(si,c.base,c.present); let a=''; if(l.transfer)a+=`Trans ${l.transfer.qty} fr ${l.transfer.from}; `; if(l.purchase>0)a+=`Buy ${l.purchase}`; if(!a)a='OK'; ws.addRow([c.name,c.base[si]||0,c.present[si]||0,a]); }); const buf=await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]),`${nm}_Report.xlsx`); }
+        async function exportMatrixExcel() { const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Stock Matrix'); const columns = [{ header: 'Category', key: 'cat', width: 25 }, { header: 'MRP', key: 'mrp', width: 15 }]; stores.forEach(s => { columns.push({ header: s, key: s + '_T', width: 8 }); columns.push({ header: s, key: s + '_S', width: 8 }); }); columns.push({ header: 'AI Suggestion', key: 'action', width: 20 }); ws.columns = columns; const h1 = ws.getRow(1); h1.values = ['Category', 'MRP']; stores.forEach(s => h1.values.push(s, '')); h1.values.push('Action'); h1.eachCell((cell, colNumber) => { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0D9488' } }; cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }; cell.alignment = { horizontal: 'center', vertical: 'middle' }; }); let colIdx = 3; stores.forEach(() => { ws.mergeCells(1, colIdx, 1, colIdx + 1); colIdx += 2; }); const h2 = ws.getRow(2); h2.values = ['', '']; stores.forEach(() => h2.values.push('Tgt', 'Stk')); h2.values.push(''); h2.eachCell((cell, colNumber) => { if(colNumber > 2) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; cell.font = { bold: true, color: { argb: 'FF0D9488' }, size: 9 }; cell.alignment = { horizontal: 'center' }; } cell.border = { bottom: {style:'thin'}, top: {style:'thin'}, left: {style:'thin'}, right: {style:'thin'} }; }); let currentRow = 3; inventoryData.forEach(cat => { if (cat.mrpDetails && cat.mrpDetails.length > 0) { cat.mrpDetails.forEach(mrp => { const row = ws.getRow(currentRow); const values = [cat.name, mrp.range]; stores.forEach((_, si) => { values.push(mrp.base[si] || 0, mrp.present[si] || 0); }); values.push(''); row.values = values; let cIdx = 3; stores.forEach((_, si) => { const t = mrp.base[si] || 0; const s = mrp.present[si] || 0; const tCell = row.getCell(cIdx); const sCell = row.getCell(cIdx + 1); tCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } }; tCell.font = { name: 'Consolas', size: 10 }; tCell.alignment = { horizontal: 'center' }; sCell.font = { name: 'Consolas', bold: true, size: 10 }; sCell.alignment = { horizontal: 'center' }; const gap = s - t; if (gap > 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFCA5A5' } }; else if (gap < 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF86EFAC' } }; else sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF93C5FD' } }; cIdx += 2; }); row.getCell(1).font = { color: { argb: 'FF6B7280' }, size: 10 }; row.getCell(2).alignment = { horizontal: 'center' }; currentRow++; }); } const tRow = ws.getRow(currentRow); const tVals = [cat.name, 'TOTAL']; stores.forEach((_, si) => { tVals.push(cat.base[si]||0, cat.present[si]||0); }); tVals.push(''); tRow.values = tVals; tRow.font = { bold: true }; tRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; tRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; tRow.getCell(2).alignment = { horizontal: 'center' }; let cIdx = 3; stores.forEach((_, si) => { const t = cat.base[si] || 0; const s = cat.present[si] || 0; const tCell = tRow.getCell(cIdx); const sCell = tRow.getCell(cIdx + 1); tCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; tCell.font = { bold: true, name: 'Consolas', size: 10 }; tCell.alignment = { horizontal: 'center' }; sCell.font = { bold: true, name: 'Consolas', size: 10 }; sCell.alignment = { horizontal: 'center' }; const gap = s - t; if (gap > 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFCA5A5' } }; else if (gap < 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF86EFAC' } }; else sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF93C5FD' } }; cIdx += 2; }); currentRow++; }); const buf = await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]), 'Stock_Matrix_ColorCoded.xlsx'); }
 
         function toggleTheme() { document.body.classList.toggle('dark-mode'); render(); }
         function openManualModal() { render(); document.getElementById('manualModal').classList.remove('hidden'); }
         function closeManualModal() { document.getElementById('manualModal').classList.add('hidden'); }
 
-        window.onload = function() { loadData(); checkPurchase(); render(); };
+        window.onload = function() { loadData(); render(); };
     </script>
 </body>
 </html>
