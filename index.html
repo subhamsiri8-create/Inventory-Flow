@@ -44,7 +44,6 @@
         .mono { font-family: 'JetBrains Mono', monospace; }
         .container { max-width: 1600px; margin: 0 auto; padding: 32px; }
         
-        /* Card & Button Styles (Professional & Clean) */
         .card { 
             background: var(--bg-secondary); 
             border: 1px solid var(--border); 
@@ -52,7 +51,6 @@
             box-shadow: var(--card-shadow); 
             transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease; 
         }
-        .card:hover { transform: translateY(-2px); box-shadow: 0 20px 50px -15px rgba(0,0,0,0.15); }
 
         .btn { 
             display: inline-flex; align-items: center; justify-content: center; gap: 8px; 
@@ -61,13 +59,11 @@
             text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; 
         }
         .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; box-shadow: 0 4px 14px rgba(0,184,148,0.3); }
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,184,148,0.4); filter: brightness(1.1); }
+        .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.1); }
         .btn-danger { background: linear-gradient(135deg, var(--danger), var(--danger-light)); color: #fff; box-shadow: 0 4px 14px rgba(214,48,49,0.3); }
         .btn-danger:hover { transform: translateY(-1px); filter: brightness(1.1); }
         .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: #fff; box-shadow: 0 4px 14px rgba(5,150,105,0.3); }
-        .btn-success:hover { transform: translateY(-1px); filter: brightness(1.1); }
         .btn-info { background: linear-gradient(135deg, var(--info), #0077b6); color: #fff; box-shadow: 0 4px 14px rgba(9,132,227,0.3); }
-        .btn-info:hover { transform: translateY(-1px); filter: brightness(1.1); }
         .btn-secondary { background: var(--bg); color: var(--text); border: 2px solid var(--border); }
         .btn-secondary:hover { background: var(--hover-bg); border-color: var(--accent); color: var(--accent); }
 
@@ -76,59 +72,115 @@
             border-radius: 10px; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif;
             background: var(--bg); color: var(--text); transition: all 0.2s; 
         }
-        .input-field:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,184,148,0.1); }
+        .input-field:focus { outline: none; border-color: var(--accent); }
 
-        /* Tabs */
         .tab-bar { 
             display: flex; gap: 6px; background: var(--bg-secondary); 
             padding: 6px; border-radius: 14px; 
             border: 1px solid var(--border); margin-bottom: 24px; 
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
         }
         .tab-btn { 
             flex: 1; padding: 12px 20px; border-radius: 10px; border: none; 
             background: transparent; color: var(--text-muted); font-weight: 700; font-size: 13px;
-            cursor: pointer; transition: all 0.3s; letter-spacing: 0.3px;
+            cursor: pointer; transition: all 0.3s;
         }
-        .tab-btn.active { 
-            background: var(--accent); color: white; 
-            box-shadow: 0 4px 12px rgba(0,184,148,0.3);
-            transform: scale(1.02);
-        }
-        .tab-btn:not(.active):hover { background: var(--hover-bg); color: var(--text); }
+        .tab-btn.active { background: var(--accent); color: white; box-shadow: 0 4px 12px rgba(0,184,148,0.3); }
+        .tab-btn:not(.active):hover { background: var(--hover-bg); }
 
         /* Table Styling */
-        .table-container { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-secondary); }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        .table-container { 
+            overflow: auto; max-height: 65vh; 
+            border: 1px solid var(--border); border-radius: 12px; 
+            background: var(--bg-secondary); position: relative;
+        }
+        table { 
+            display: table; width: 100%; border-collapse: separate; border-spacing: 0; 
+            min-width: 1200px; /* Ensures proper scrolling */
+        }
         
         th { 
             background: var(--bg); padding: 14px 8px; text-align: center; 
             font-size: 11px; font-weight: 800; text-transform: uppercase; 
             color: var(--text-muted); border-bottom: 2px solid var(--border); 
             border-left: 1px solid var(--border); letter-spacing: 0.5px;
+            position: sticky; top: 0; z-index: 10; 
+            white-space: nowrap; /* Prevent header wrapping */
         }
+        
+        /* Fixed Column Widths for Alignment */
+        .col-cat { width: 240px; min-width: 240px; max-width: 240px; }
+        .col-mrp { width: 150px; min-width: 150px; max-width: 150px; }
+        .col-data { width: 100px; min-width: 100px; } /* T/S columns */
+
         th:first-child { border-left: none; text-align: left; padding-left: 20px; border-radius: 12px 0 0 0; }
         
         th.group-header { 
             background: linear-gradient(135deg, var(--accent), var(--accent-dark)); 
-            color: white; font-size: 12px; border-bottom: none; font-weight: 700; 
+            color: white; font-size: 13px; border-bottom: none; font-weight: 700;
+            z-index: 15; 
         }
         th.sub-header { 
             font-size: 10px; background: rgba(0,184,148,0.05); color: var(--accent); 
             border-bottom: 2px solid var(--accent); font-weight: 700;
+            top: 44px; /* Height of group header roughly */
         }
         
         td { 
             padding: 10px 6px; font-size: 12px; border-bottom: 1px solid var(--border); 
             border-left: 1px solid var(--border); text-align: center; vertical-align: middle; 
             transition: background 0.2s;
+            background: var(--bg-secondary);
         }
         td:first-child { border-left: none; text-align: left; padding-left: 20px; font-weight: 700; color: var(--text); }
         
-        tbody tr:hover td { background: var(--hover-bg); }
+        tbody tr:hover td { background: var(--hover-bg) !important; }
         tbody tr:hover td:first-child { color: var(--accent); }
 
-        /* Matrix Cell Styling - Updated for Black Text & Colored Backgrounds */
+        /* Freezing Columns Logic with precise widths */
+        .sticky-col-1 {
+            position: sticky;
+            left: 0;
+            z-index: 5;
+            width: 240px; min-width: 240px; max-width: 240px; /* Must match .col-cat */
+            border-right: 2px solid var(--border);
+            background: var(--bg-secondary);
+        }
+        
+        .sticky-col-2 {
+            position: sticky;
+            left: 240px; /* Width of col-cat */
+            z-index: 5;
+            width: 150px; min-width: 150px; max-width: 150px; /* Must match .col-mrp */
+            border-right: 2px solid var(--border);
+            background: var(--bg-secondary);
+        }
+
+        /* Intersection of Frozen Header and Frozen Column */
+        thead .sticky-col-1, thead .sticky-col-2 {
+            z-index: 20; 
+            background: var(--bg);
+        }
+        
+        /* Hover Fixes for Sticky Cols */
+        tbody tr:hover .sticky-col-1, tbody tr:hover .sticky-col-2 {
+            background: var(--hover-bg) !important;
+        }
+
+        /* Total Row Sticky Background */
+        tr.total-row td.sticky-col-1, tr.total-row td.sticky-col-2 { background: rgba(0,184,148,0.03); }
+        tr.total-row:hover td.sticky-col-1, tr.total-row:hover td.sticky-col-2 { background: var(--hover-bg) !important; }
+
+        /* AI Suggestion Column - Freeze Right */
+        .sticky-action {
+            position: sticky;
+            right: 0;
+            z-index: 5;
+            background: var(--bg-secondary);
+            border-left: 2px solid var(--border);
+        }
+        thead .sticky-action { z-index: 20; background: var(--bg); }
+
+        /* Matrix Cell Styling */
         .num-target { 
             background-color: var(--bg); color: var(--text-muted); 
             font-family: 'JetBrains Mono', monospace; font-weight: 600; display: block; 
@@ -138,19 +190,14 @@
             font-family: 'JetBrains Mono', monospace; font-weight: 700; display: block; 
             padding: 6px; border-radius: 6px; border: 1px solid transparent; 
             cursor: pointer; transition: all 0.2s; font-size: 12px;
-            color: #000000; /* Force Black Text */
+            color: #000000;
         }
-        .num-stock:hover { opacity: 0.8; transform: scale(1.05); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .num-stock:hover { opacity: 0.8; transform: scale(1.05); }
 
-        /* Color Coding - Pastels for Background, Text is Black */
-        .stock-surplus { background-color: #fecaca; border-color: #fca5a5; } /* Red bg for Overstock */
-        .stock-short { background-color: #bbf7d0; border-color: #86efac; } /* Green bg for Understock */
-        .stock-equal { background-color: #bfdbfe; border-color: #93c5fd; } /* Blue bg for Match */
+        .stock-surplus { background-color: #fecaca; border-color: #fca5a5; }
+        .stock-short { background-color: #bbf7d0; border-color: #86efac; }
+        .stock-equal { background-color: #bfdbfe; border-color: #93c5fd; }
         
-        /* Dark mode text consistency */
-        .dark-mode .num-stock { color: #111827; } /* Ensure black text in dark mode too if background is light, or adjust for dark backgrounds */
-        /* Note: In dark mode, pastel backgrounds still work well with black text. */
-
         .purchase-matrix-val { 
             background-color: rgba(214, 48, 49, 0.1); color: var(--danger); 
             font-family: 'JetBrains Mono', monospace; font-weight: 700; display: block; 
@@ -162,19 +209,15 @@
         .modal-overlay { 
             position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); 
             display: flex; align-items: center; justify-content: center; z-index: 100; padding: 24px; 
-            animation: fadeIn 0.3s ease;
         }
         .modal-content { 
             background: var(--bg-secondary); border-radius: 20px; 
             max-width: 600px; width: 100%; max-height: 90vh; overflow: hidden; 
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4); 
-            border: 1px solid var(--border);
-            animation: slideUp 0.3s ease;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4); border: 1px solid var(--border);
         }
         .modal-lg { max-width: 900px; }
         .hidden { display: none !important; }
 
-        /* Purchase Report Specific */
         .purchase-header { 
             background: linear-gradient(135deg, var(--danger), var(--danger-light)); 
             color: white; padding: 32px; border-radius: 16px; margin-bottom: 32px; 
@@ -184,24 +227,15 @@
         .purchase-list-item { 
             display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap: 16px; 
             padding: 18px; border-bottom: 1px solid var(--border); align-items: center; 
-            transition: background 0.2s;
         }
-        .purchase-list-item:hover { background: var(--hover-bg); }
         
-        /* Badges */
         .badge { 
             display: inline-flex; padding: 5px 10px; border-radius: 6px; 
-            font-size: 10px; font-weight: 700; margin-right: 4px; 
-            border: 1px solid transparent; letter-spacing: 0.5px;
+            font-size: 10px; font-weight: 700; border: 1px solid transparent; 
         }
-        .badge-danger { background: rgba(214,48,49,0.1); color: var(--danger); border-color: rgba(214,48,49,0.2); }
-        .badge-success { background: rgba(0,184,148,0.1); color: var(--success); border-color: rgba(0,184,148,0.2); }
-        .badge-info { background: rgba(9,132,227,0.1); color: var(--info); border-color: rgba(9,132,227,0.2); }
-        .badge-warning { background: rgba(253,203,110,0.15); color: #d97706; border-color: rgba(253,203,110,0.3); }
-
-        /* Animations */
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .badge-danger { background: rgba(214,48,49,0.1); color: var(--danger); }
+        .badge-info { background: rgba(9,132,227,0.1); color: var(--info); }
+        .badge-warning { background: rgba(253,203,110,0.15); color: #d97706; }
 
         .brand-icon {
             width: 48px; height: 48px; border-radius: 12px; 
@@ -493,12 +527,11 @@
         function render() { 
             renderMatrix('matrixHead', 'tableBody', false, 'horizontalTable'); 
             let selC = document.getElementById('selCat'), selB = document.getElementById('selBr');
-            let chartSel = document.getElementById('chartFilter'); // Fixed Chart Filter
-            
+            let chartSel = document.getElementById('chartFilter'); 
             let opts = '', chartOpts = '', brOpts = '', gT = 0, gS = 0; 
             inventoryData.forEach((c, i) => { 
                 opts += `<option value="${i}">${c.name}</option>`; 
-                chartOpts += `<option value="${i}">${c.name}</option>`; // Added for Chart Filter
+                chartOpts += `<option value="${i}">${c.name}</option>`;
                 let cT=0, cS=0; 
                 stores.forEach((_, s) => { 
                     gT += c.base[s]||0; gS += c.present[s]||0; 
@@ -516,7 +549,7 @@
             
             if(selC) selC.innerHTML = opts; 
             if(selB) selB.innerHTML = brOpts; 
-            if(chartSel) chartSel.innerHTML = chartOpts; // Update Chart Filter
+            if(chartSel) chartSel.innerHTML = chartOpts; 
             
             document.getElementById('manualBranch').innerHTML = '<option value="-1">ALL</option>' + brOpts; 
             updateTargetMrpOptions(); 
@@ -525,39 +558,49 @@
         
         function renderMatrix(hId, bId, isP, tId) { 
             const th = document.getElementById(hId), tb = document.getElementById(bId); 
-            let h1 = `<tr><th rowspan="2">Category</th><th rowspan="2">MRP</th>`; 
-            let h2 = '<tr>'; 
+            
+            // Header Row 1: Category, MRP, Store Names (colspan 2), Action
+            let h1 = `<tr>
+                <th rowspan="2" class="sticky-col-1 col-cat">Category</th>
+                <th rowspan="2" class="sticky-col-2 col-mrp">MRP</th>`;
+            
             stores.forEach(s => { 
-                h1 += `<th colspan="2" class="group-header">${s}</th>`; 
-                h2 += `<th class="sub-header">T</th><th class="sub-header" style="border-right:1px solid var(--border)">S</th>`; 
+                h1 += `<th colspan="2" class="group-header col-data">${s}</th>`; 
             }); 
-            h1 += '<th rowspan="2">AI Suggestion</th></tr>'; 
+            h1 += '<th rowspan="2" class="sticky-action">AI Suggestion</th></tr>'; 
+            
+            // Header Row 2: Empty (for Category/MRP), T, S
+            let h2 = '<tr>';
+            stores.forEach(() => { 
+                h2 += `<th class="sub-header col-data">T</th><th class="sub-header col-data" style="border-right:1px solid var(--border)">S</th>`; 
+            }); 
             h2 += '</tr>'; 
+            
             th.innerHTML = h1 + h2; 
             let body = ''; 
             
             inventoryData.forEach((c, ci) => { 
                 if (c.mrpDetails && c.mrpDetails.length > 0) { 
                     c.mrpDetails.forEach((m, mi) => { 
-                        let row = `<tr><td style="font-size:11px;color:var(--text-muted)">${c.name}</td><td><span class="badge badge-info">${m.range}</span></td>`; 
+                        let row = `<tr>
+                            <td class="sticky-col-1 col-cat" style="font-size:11px;color:var(--text-muted)">${c.name}</td>
+                            <td class="sticky-col-2 col-mrp"><span class="badge badge-info">${m.range}</span></td>`; 
                         let hasData = !isP; 
+                        
                         stores.forEach((_, si) => { 
                             const t = m.base[si]||0, s = m.present[si]||0, l = getSmartLogic(si, m.base, m.present); 
-                            if(isP && l.purchase===0) { row += `<td></td><td></td>`; } 
+                            if(isP && l.purchase===0) { row += `<td class="col-data"></td><td class="col-data"></td>`; } 
                             else { 
                                 if(isP) hasData = true; 
-                                row += `<td><span class="num-target">${t}</span></td>`; 
-                                // Updated Color Logic
+                                row += `<td class="col-data"><span class="num-target">${t}</span></td>`; 
                                 const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); 
-                                row += isP ? `<td><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td onclick="editStock(${ci},${mi},${si})"><span class="num-stock ${cls}">${s}</span></td>`; 
+                                row += isP ? `<td class="col-data"><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td class="col-data" onclick="editStock(${ci},${mi},${si})"><span class="num-stock ${cls}">${s}</span></td>`; 
                             } 
                         }); 
                         if(isP && !hasData) return; 
                         
-                        // SMART AI SUGGESTION LOGIC
                         let actionHtml = '';
                         if(!isP){
-                            // Analyze Row for Transfer
                             let surplusStores = [];
                             let shortageStores = [];
                             stores.forEach((sName, sIdx) => {
@@ -574,10 +617,7 @@
                                 actionHtml = `<div class="flex flex-col gap-1 text-left p-1">
                                     <span class="badge badge-info">Move ${transferQty} from ${donor.name}</span>
                                     <span class="text-xs opacity-75">To: ${receiver.name}</span>`;
-                                
-                                if (transferQty < receiver.qty) {
-                                     actionHtml += `<span class="badge badge-danger mt-1">Buy ${receiver.qty - transferQty}</span>`;
-                                }
+                                if (transferQty < receiver.qty) actionHtml += `<span class="badge badge-danger mt-1">Buy ${receiver.qty - transferQty}</span>`;
                                 actionHtml += `</div>`;
                             } else if (shortageStores.length > 0) {
                                 const totalShort = shortageStores.reduce((a,b) => a + b.qty, 0);
@@ -589,25 +629,28 @@
                                  actionHtml = `<span class="badge badge-success">Balanced</span>`;
                             }
                         }
-                        row += `<td>${actionHtml}</td></tr>`; 
+                        row += `<td class="sticky-action">${actionHtml}</td></tr>`; 
                         body += row; 
                     }); 
                 } 
                 
-                let tr = `<tr style="background:rgba(0,184,148,0.03)"><td style="font-weight:800">${c.name}</td><td><span class="badge badge-warning">TOTAL</span></td>`; 
+                // Total Row
+                let tr = `<tr class="total-row">
+                    <td class="sticky-col-1 col-cat" style="font-weight:800">${c.name}</td>
+                    <td class="sticky-col-2 col-mrp"><span class="badge badge-warning">TOTAL</span></td>`; 
                 let hasData = !isP; 
                 stores.forEach((_, si) => { 
                     const t = c.base[si]||0, s = c.present[si]||0, l = getSmartLogic(si, c.base, c.present); 
-                    if(isP && l.purchase===0) { tr += `<td></td><td></td>`; } 
+                    if(isP && l.purchase===0) { tr += `<td class="col-data"></td><td class="col-data"></td>`; } 
                     else { 
                         if(isP) hasData = true; 
-                        tr += `<td><span class="num-target">${t}</span></td>`; 
+                        tr += `<td class="col-data"><span class="num-target">${t}</span></td>`; 
                         const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); 
-                        tr += isP ? `<td onclick="openModal(${si})" style="cursor:pointer"><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td onclick="openModal(${si})" style="cursor:pointer"><span class="num-stock ${cls}">${s}</span></td>`; 
+                        tr += isP ? `<td class="col-data" onclick="openModal(${si})" style="cursor:pointer"><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td class="col-data" onclick="openModal(${si})" style="cursor:pointer"><span class="num-stock ${cls}">${s}</span></td>`; 
                     } 
                 }); 
                 if(isP && !hasData) return; 
-                body += tr + `<td></td></tr>`; 
+                body += tr + `<td class="sticky-action"></td></tr>`; 
             }); 
             tb.innerHTML = body; 
         }
@@ -623,7 +666,6 @@
             if(mainChart) mainChart.destroy(); 
             const isDark = document.body.classList.contains('dark-mode');
             const txtColor = isDark ? '#e6f1ff' : '#102a43';
-            const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
             
             mainChart = new Chart(document.getElementById('mainChart'), { 
                 type: 'bar', 
@@ -636,11 +678,8 @@
                 }, 
                 options: { 
                     responsive: true, maintainAspectRatio: false, 
-                    plugins: { legend: { position: 'top', labels: { color: txtColor, font: { family: 'Plus Jakarta Sans' } } } }, 
-                    scales: { 
-                        x: { grid: { display: false }, ticks: { color: txtColor } }, 
-                        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: txtColor } } 
-                    } 
+                    plugins: { legend: { position: 'top', labels: { color: txtColor } } }, 
+                    scales: { x: { grid: { display: false }, ticks: { color: txtColor } }, y: { beginAtZero: true, ticks: { color: txtColor } } } 
                 } 
             }); 
         }
@@ -768,7 +807,128 @@
         async function handleFileUpload(e) { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=async ev => { const d=new Uint8Array(ev.target.result); const wb=new ExcelJS.Workbook(); await wb.xlsx.load(d); const ws=wb.worksheets[0]; const hdr=ws.getRow(1); const map=[]; hdr.eachCell((c,i)=>{ if(i<=2) return; let v=c.value; if(c.result) v=c.result; if(v&&typeof v==='object'&&v.richText) v=v.richText.map(t=>t.text).join(''); const t=v?v.toString().trim().toUpperCase():''; if(t) map.push({idx:i,name:t}); }); if(!map.length) return alert('No stores'); const old=[...stores]; let chg=false; map.forEach(m=>{ if(!stores.includes(m.name)){stores.push(m.name);chg=true;} }); if(chg) inventoryData.forEach(c=>{ c.base=[...c.base,...Array(stores.length-old.length).fill(0)]; c.present=[...c.present,...Array(stores.length-old.length).fill(0)]; if(c.mrpDetails)c.mrpDetails.forEach(m=>{m.base=[...m.base,...Array(stores.length-old.length).fill(0)];m.present=[...m.present,...Array(stores.length-old.length).fill(0)];}); }); const norm=s=>{ if(!s) return ''; let st=s.toString().trim().toUpperCase(); if(st==='TOTAL') return 'TOTAL'; let m=st.match(/^(\d+)\s*[-<]+\s*(\d+)\s*(.*)/); if(m) return `${m[1]}<${m[2]}${m[3].trim()}`; m=st.match(/^(>|<)\s*(\d+)/); if(m) return `${m[1]}${m[2]}`; const ns=st.match(/\d+/g); if(ns&&ns.length>=2) return `${ns[0]}<${ns[1]}`; if(ns&&ns.length===1) return `>${ns[0]}`; return st; }; ws.eachRow((rw, rn)=>{ if(rn===1) return; const gV=i=>{ const cl=rw.getCell(i); if(cl.value==null||cl.value===undefined||cl.value==='') return 0; let rv=0; if(cl.result) rv=parseFloat(cl.result); else rv=parseFloat(cl.value); return isNaN(rv)?0:Math.round(rv); }; const gS=i=>{ const cl=rw.getCell(i); let v=cl.value; if(cl.result) v=cl.result; if(v&&typeof v==='object'&&v.richText) v=v.richText.map(t=>t.text).join(''); if(cl.type==4) return cl.value.toString(); return v?v.toString().trim().toUpperCase():''; }; const cn=gS(1), mn=norm(gS(2)); if(!cn) return; let ci=inventoryData.findIndex(x=>x.name===cn); if(ci===-1){ inventoryData.push({name:cn,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]}); ci=inventoryData.length-1; } const c=inventoryData[ci]; const isT=mn==='TOTAL'||!mn; map.forEach(m=>{ const si=stores.indexOf(m.name); const vl=gV(m.idx); if(isT) c.present[si]=vl; else { let mr=c.mrpDetails.find(x=>x.range===mn); if(!mr){mr={range:mn,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(mr);} mr.present[si]=vl; } }); }); inventoryData.forEach((c,i)=>recalcTotals(i)); render(); alert('Merged!'); }; r.readAsArrayBuffer(f); }
         
         async function exportBranchReport() { if(currentModalBranchIndex===null) return; const si=currentModalBranchIndex, nm=stores[si]; const wb=new ExcelJS.Workbook(); const ws=wb.addWorksheet(nm); ws.addRow([`Report: ${nm}`]); ws.columns=[{width:25},{width:10},{width:10},{width:30}]; ws.addRow(['Category','Target','Stock','Action']); inventoryData.forEach(c=>{ const l=getSmartLogic(si,c.base,c.present); let a=''; if(l.transfer)a+=`Trans ${l.transfer.qty} fr ${l.transfer.from}; `; if(l.purchase>0)a+=`Buy ${l.purchase}`; if(!a)a='OK'; ws.addRow([c.name,c.base[si]||0,c.present[si]||0,a]); }); const buf=await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]),`${nm}_Report.xlsx`); }
-        async function exportMatrixExcel() { const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Stock Matrix'); const columns = [{ header: 'Category', key: 'cat', width: 25 }, { header: 'MRP', key: 'mrp', width: 15 }]; stores.forEach(s => { columns.push({ header: s, key: s + '_T', width: 8 }); columns.push({ header: s, key: s + '_S', width: 8 }); }); columns.push({ header: 'AI Suggestion', key: 'action', width: 20 }); ws.columns = columns; const h1 = ws.getRow(1); h1.values = ['Category', 'MRP']; stores.forEach(s => h1.values.push(s, '')); h1.values.push('Action'); h1.eachCell((cell, colNumber) => { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00B894' } }; cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }; cell.alignment = { horizontal: 'center', vertical: 'middle' }; }); let colIdx = 3; stores.forEach(() => { ws.mergeCells(1, colIdx, 1, colIdx + 1); colIdx += 2; }); const h2 = ws.getRow(2); h2.values = ['', '']; stores.forEach(() => h2.values.push('Tgt', 'Stk')); h2.values.push(''); h2.eachCell((cell, colNumber) => { if(colNumber > 2) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; cell.font = { bold: true, color: { argb: 'FF00B894' }, size: 9 }; cell.alignment = { horizontal: 'center' }; } cell.border = { bottom: {style:'thin'}, top: {style:'thin'}, left: {style:'thin'}, right: {style:'thin'} }; }); let currentRow = 3; inventoryData.forEach(cat => { if (cat.mrpDetails && cat.mrpDetails.length > 0) { cat.mrpDetails.forEach(mrp => { const row = ws.getRow(currentRow); const values = [cat.name, mrp.range]; stores.forEach((_, si) => { values.push(mrp.base[si] || 0, mrp.present[si] || 0); }); values.push(''); row.values = values; let cIdx = 3; stores.forEach((_, si) => { const t = mrp.base[si] || 0; const s = mrp.present[si] || 0; const tCell = row.getCell(cIdx); const sCell = row.getCell(cIdx + 1); tCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } }; tCell.font = { name: 'Consolas', size: 10 }; tCell.alignment = { horizontal: 'center' }; sCell.font = { name: 'Consolas', bold: true, size: 10, color: { argb: 'FF000000' } }; sCell.alignment = { horizontal: 'center' }; const gap = s - t; if (gap > 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFECACA' } }; else if (gap < 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBBF7D0' } }; else sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBFDBFE' } }; cIdx += 2; }); row.getCell(1).font = { color: { argb: 'FF6B7280' }, size: 10 }; row.getCell(2).alignment = { horizontal: 'center' }; currentRow++; }); } const tRow = ws.getRow(currentRow); const tVals = [cat.name, 'TOTAL']; stores.forEach((_, si) => { tVals.push(cat.base[si]||0, cat.present[si]||0); }); tVals.push(''); tRow.values = tVals; tRow.font = { bold: true }; tRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; tRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; tRow.getCell(2).alignment = { horizontal: 'center' }; let cIdx = 3; stores.forEach((_, si) => { const t = cat.base[si] || 0; const s = cat.present[si] || 0; const tCell = tRow.getCell(cIdx); const sCell = tRow.getCell(cIdx + 1); tCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; tCell.font = { bold: true, name: 'Consolas', size: 10 }; tCell.alignment = { horizontal: 'center' }; sCell.font = { bold: true, name: 'Consolas', size: 10, color: { argb: 'FF000000' } }; sCell.alignment = { horizontal: 'center' }; const gap = s - t; if (gap > 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFECACA' } }; else if (gap < 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBBF7D0' } }; else sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBFDBFE' } }; cIdx += 2; }); currentRow++; }); const buf = await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]), 'Stock_Matrix_ColorCoded.xlsx'); }
+        
+        async function exportMatrixExcel() { 
+            const wb = new ExcelJS.Workbook(); 
+            const ws = wb.addWorksheet('Stock Matrix'); 
+            
+            // 1. Define Columns
+            const cols = [
+                { width: 25 }, { width: 15 } // Category, MRP
+            ];
+            stores.forEach(() => cols.push({ width: 8 }, { width: 8 })); // T, S
+            cols.push({ width: 20 }); // Action
+            ws.columns = cols;
+
+            // 2. Build Header Row 1 (Store Names)
+            const r1 = ws.getRow(1);
+            r1.getCell(1).value = 'Category';
+            r1.getCell(2).value = 'MRP';
+            
+            let cIdx = 3; // Start from col 3
+            stores.forEach(s => {
+                r1.getCell(cIdx).value = s;
+                ws.mergeCells(1, cIdx, 1, cIdx + 1); // Merge T and S
+                cIdx += 2;
+            });
+            r1.getCell(cIdx).value = 'AI Suggestion';
+
+            // Apply styling to Row 1
+            r1.eachCell((cell) => {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00B894' } };
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 };
+                cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            });
+            
+            // Merge Category and MRP vertically (Row 1 and 2)
+            ws.mergeCells(1, 1, 2, 1);
+            ws.mergeCells(1, 2, 2, 2);
+            ws.mergeCells(1, cIdx, 2, cIdx); // Action
+
+            // 3. Build Header Row 2 (Tgt, Stk)
+            const r2 = ws.getRow(2);
+            // Cells 1 and 2 are merged, so skip
+            let cIdx2 = 3;
+            stores.forEach(() => {
+                r2.getCell(cIdx2).value = 'Tgt';
+                r2.getCell(cIdx2+1).value = 'Stk';
+                
+                // Style Tgt/Stk cells
+                [cIdx2, cIdx2+1].forEach(i => {
+                     const cell = r2.getCell(i);
+                     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } };
+                     cell.font = { bold: true, color: { argb: 'FF00B894' }, size: 10 };
+                     cell.alignment = { horizontal: 'center' };
+                     cell.border = { bottom: {style:'thin'}, top: {style:'thin'}, left: {style:'thin'}, right: {style:'thin'} };
+                });
+                
+                cIdx2 += 2;
+            });
+            
+            // 4. Populate Data
+            let currentRow = 3;
+            inventoryData.forEach(cat => {
+                if (cat.mrpDetails && cat.mrpDetails.length > 0) {
+                    cat.mrpDetails.forEach(mrp => {
+                        const row = ws.getRow(currentRow);
+                        row.getCell(1).value = cat.name;
+                        row.getCell(2).value = mrp.range;
+                        
+                        let dc = 3;
+                        stores.forEach((_, si) => {
+                            row.getCell(dc).value = mrp.base[si] || 0;
+                            row.getCell(dc+1).value = mrp.present[si] || 0;
+                            
+                            // Styling
+                            const tCell = row.getCell(dc);
+                            const sCell = row.getCell(dc+1);
+                            tCell.alignment = { horizontal: 'center' };
+                            sCell.alignment = { horizontal: 'center' };
+                            sCell.font = { bold: true, name: 'Consolas', size: 10, color: { argb: 'FF000000' } };
+                            
+                            const gap = (mrp.present[si]||0) - (mrp.base[si]||0);
+                            if (gap > 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFECACA' } };
+                            else if (gap < 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBBF7D0' } };
+                            else sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBFDBFE' } };
+                            
+                            dc += 2;
+                        });
+                        currentRow++;
+                    });
+                }
+                
+                // Total Row
+                const tRow = ws.getRow(currentRow);
+                tRow.getCell(1).value = cat.name;
+                tRow.getCell(2).value = 'TOTAL';
+                tRow.getCell(1).font = { bold: true };
+                tRow.getCell(2).font = { bold: true };
+                tRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } };
+                tRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } };
+
+                let dc = 3;
+                stores.forEach((_, si) => {
+                    tRow.getCell(dc).value = cat.base[si]||0;
+                    tRow.getCell(dc+1).value = cat.present[si]||0;
+                    
+                    const tCell = tRow.getCell(dc);
+                    const sCell = tRow.getCell(dc+1);
+                    tCell.alignment = { horizontal: 'center' }; sCell.alignment = { horizontal: 'center' };
+                    sCell.font = { bold: true, name: 'Consolas', size: 10, color: { argb: 'FF000000' } };
+                    
+                    const gap = (cat.present[si]||0) - (cat.base[si]||0);
+                    if (gap > 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFECACA' } };
+                    else if (gap < 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBBF7D0' } };
+                    else sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBFDBFE' } };
+                    
+                    dc += 2;
+                });
+                currentRow++;
+            });
+            
+            const buf = await wb.xlsx.writeBuffer(); 
+            saveAs(new Blob([buf]), 'Stock_Matrix_Fixed.xlsx'); 
+        }
 
         function toggleTheme() { document.body.classList.toggle('dark-mode'); render(); }
         function openManualModal() { render(); document.getElementById('manualModal').classList.remove('hidden'); }
