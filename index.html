@@ -63,7 +63,6 @@
         .modal-lg { max-width: 900px; }
         .hidden { display: none !important; }
         
-        /* Purchase Report Specific Styles */
         .purchase-header { background: linear-gradient(135deg, var(--danger), #b91c1c); color: white; padding: 24px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .purchase-list-item { display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap: 16px; padding: 16px; border-bottom: 1px solid var(--border); align-items: center; }
         .purchase-list-item:hover { background: var(--bg); }
@@ -111,64 +110,118 @@
             <button class="tab-btn" onclick="switchTab('actions')">Actions</button>
         </div>
 
+        <!-- TAB: MATRIX -->
         <div id="tabMatrix" class="tab-content">
             <div class="card"><div class="table-container" style="border:none;"><table id="horizontalTable"><thead id="matrixHead"></thead><tbody id="tableBody"></tbody></table></div></div>
         </div>
-        <div id="tabAnalytics" class="tab-content hidden"><!-- Analytics Content --></div>
-        <div id="tabActions" class="tab-content hidden"><!-- Actions Content --></div>
+
+        <!-- TAB: ANALYTICS (RESTORED) -->
+        <div id="tabAnalytics" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6" style="max-width: 1600px; margin: 0 auto;">
+                <div class="card p-6">
+                    <div class="flex justify-between items-center mb-4"><h3 class="font-bold">Category Deep Dive</h3><select id="chartFilter" onchange="refreshCharts()" class="input-field" style="width:auto"></select></div>
+                    <div style="position:relative; height:350px;"><canvas id="mainChart"></canvas></div>
+                </div>
+                <div class="card p-6 flex flex-col justify-center items-center text-center">
+                   <h3 class="font-bold mb-4">Network Health</h3>
+                   <p class="text-xs" style="color:var(--text-muted)">Use the filter above to analyze specific categories.</p>
+                   <div class="mt-4 p-4 rounded w-full" style="background:var(--bg);">
+                        <p class="text-xs uppercase mb-1" style="color:var(--text-muted)">Total Categories</p>
+                        <p id="totalCatsCount" class="text-3xl font-bold mono">0</p>
+                   </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: ACTIONS (RESTORED) -->
+        <div id="tabActions" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" style="max-width: 1600px; margin: 0 auto;">
+                <div class="card p-6">
+                    <h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Add Branch</h3>
+                    <div class="flex gap-2">
+                        <input type="text" id="newBr" placeholder="Name" class="input-field">
+                        <button onclick="addBr()" class="btn btn-primary">Add</button>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Add Category</h3>
+                    <div class="flex gap-2">
+                        <input type="text" id="newCat" placeholder="Name" class="input-field">
+                        <button onclick="addCat()" class="btn btn-primary">Add</button>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Set Target</h3>
+                    <div class="flex flex-col gap-2">
+                        <div class="flex gap-2">
+                            <select id="selCat" class="input-field text-xs" onchange="updateTargetMrpOptions()"></select>
+                            <select id="selMrp" class="input-field text-xs"><option value="TOTAL">TOTAL</option></select>
+                        </div>
+                        <div class="flex gap-2">
+                            <select id="selBr" class="input-field text-xs"></select>
+                            <input type="number" id="targetVal" placeholder="Qty" class="input-field w-24">
+                            <button onclick="setTarget()" class="btn btn-secondary">Set</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- PURCHASE REPORT VIEW -->
     <div id="purchaseReportView" class="container hidden">
         <div class="purchase-header">
-            <div>
-                <h1 class="text-2xl font-bold">Purchase Requirement Report</h1>
-                <p class="text-sm opacity-80">Sorted by Critical Shortage</p>
-            </div>
+            <div><h1 class="text-2xl font-bold">Purchase Requirement Report</h1><p class="text-sm opacity-80">Sorted by Critical Shortage</p></div>
             <div class="flex gap-2 no-print">
                 <button onclick="exportSmartPurchaseExcel()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Export List</button>
                 <button onclick="closePurchaseReport()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Close Report</button>
             </div>
         </div>
-
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             <div class="card p-6 lg:col-span-2">
                 <h3 class="font-bold mb-4">Top 5 Critical Categories</h3>
                 <div style="height: 250px; position: relative;"><canvas id="purchaseSummaryChart"></canvas></div>
             </div>
             <div class="card p-6 flex flex-col justify-center">
-                <div class="text-center mb-6">
-                    <p class="text-xs uppercase" style="color:var(--text-muted)">Total Items to Purchase</p>
-                    <p class="text-4xl font-bold mono text-red-600" id="reportTotalPurchase">0</p>
-                </div>
-                <div class="text-center">
-                    <p class="text-xs uppercase" style="color:var(--text-muted)">Stores Affected</p>
-                    <p class="text-2xl font-bold mono" id="reportStoresAffected">0</p>
-                </div>
+                <div class="text-center mb-6"><p class="text-xs uppercase" style="color:var(--text-muted)">Total Items to Purchase</p><p class="text-4xl font-bold mono text-red-600" id="reportTotalPurchase">0</p></div>
+                <div class="text-center"><p class="text-xs uppercase" style="color:var(--text-muted)">Stores Affected</p><p class="text-2xl font-bold mono" id="reportStoresAffected">0</p></div>
             </div>
         </div>
-
         <div class="card">
-            <div class="p-4 border-b" style="border-color: var(--border);">
-                <h3 class="font-bold">Detailed Purchase List</h3>
-                <p class="text-xs" style="color:var(--text-muted)">Items below need immediate purchase.</p>
-            </div>
+            <div class="p-4 border-b" style="border-color: var(--border);"><h3 class="font-bold">Detailed Purchase List</h3><p class="text-xs" style="color:var(--text-muted)">Items below need immediate purchase.</p></div>
             <div id="purchaseListContainer"></div>
         </div>
     </div>
 
-    <!-- MANUAL MODAL -->
+    <!-- MANUAL MODAL (RESTORED) -->
     <div id="manualModal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="p-6" style="background: var(--accent); color: #fff;"><h2 class="text-lg font-bold">Manual Data Entry</h2></div>
             <div class="p-6 space-y-4">
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Category</label><input type="text" id="manualCatInput" list="catList" class="input-field" placeholder="Select or type" oninput="updateMrpOptions()"><datalist id="catList"></datalist></div>
-                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">MRP Range</label><input type="text" id="manualMrp" list="mrpList" class="input-field" placeholder="Select MRP"><datalist id="mrpList"></datalist></div>
+                    <div>
+                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Category</label>
+                        <input type="text" id="manualCatInput" list="catList" class="input-field" placeholder="Select or type" oninput="updateMrpOptions()">
+                        <datalist id="catList"></datalist>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">MRP Range</label>
+                        <input type="text" id="manualMrp" list="mrpList" class="input-field" placeholder="Select MRP">
+                        <datalist id="mrpList"></datalist>
+                    </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Branch</label><select id="manualBranch" class="input-field"><option value="-1">ALL STORES</option></select></div>
-                    <div><label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Target / Stock</label><div class="flex gap-2"><input type="number" id="manualTarget" class="input-field" placeholder="Tgt"><input type="number" id="manualStock" class="input-field" placeholder="Stk"></div></div>
+                    <div>
+                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Branch</label>
+                        <select id="manualBranch" class="input-field"><option value="-1">ALL STORES</option></select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Target / Stock</label>
+                        <div class="flex gap-2">
+                            <input type="number" id="manualTarget" class="input-field" placeholder="Tgt">
+                            <input type="number" id="manualStock" class="input-field" placeholder="Stk">
+                        </div>
+                    </div>
                 </div>
                 <button onclick="saveManualData()" class="btn btn-success w-full py-3 mt-2">Save Entry</button>
             </div>
@@ -189,6 +242,7 @@
         // --- CONFIG & DATA (FULL) ---
         let stores = ["SG", "SGHYD", "SGRJY", "SGTNL", "SIRIELR", "SGTNK", "SGTUNI", "SIRICPT", "SIRIVJY", "SIRIKKD", "SIRITPT", "VS"];
         
+        // Full Data Template
         const defaultInventoryTemplate = [
             { name: "BNS HANDLOOM HF", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [500, 250, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] }, { range: "501<1000", base: [1000, 450, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] }, { range: "1001<1500", base: [1200, 500, 500, 1000, 750, 750, 750, 400, 1200, 750, 750, 750], present: [] }, { range: "1501<2000", base: [500, 250, 250, 400, 300, 350, 350, 250, 500, 350, 350, 300], present: [] }, { range: "2001<3000", base: [500, 250, 250, 350, 300, 350, 300, 250, 500, 350, 350, 300], present: [] }, { range: "3001<4000", base: [300, 150, 150, 200, 200, 200, 200, 150, 300, 200, 200, 150], present: [] }, { range: "4001<6000", base: [200, 100, 100, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] }, { range: "6001<7500", base: [100, 50, 50, 100, 50, 100, 50, 50, 100, 100, 100, 100], present: [] }, { range: ">7500", base: [20, 10, 10, 0, 0, 10, 0, 20, 20, 10, 10, 20], present: [] }, { range: "501<1000(1+1)", base: [800, 500, 500, 500, 500, 400, 1000, 400, 800, 400, 400, 400], present: [] }, { range: "1001<2000(1+1)", base: [500, 250, 250, 400, 300, 300, 500, 300, 500, 300, 300, 400], present: [] } ] },
             { name: "SILK WORK SAREES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [175, 87, 87, 125, 125, 150, 175, 0, 175, 150, 150, 150], present: [] }, { range: "501<1000", base: [370, 185, 185, 295, 245, 295, 345, 50, 370, 295, 295, 295], present: [] }, { range: "1001<1500", base: [400, 175, 175, 350, 280, 350, 490, 200, 400, 350, 350, 350], present: [] }, { range: "1501<2000", base: [400, 200, 200, 300, 150, 300, 200, 100, 400, 300, 300, 250], present: [] }, { range: "2001<3000", base: [350, 175, 175, 300, 150, 350, 400, 150, 350, 350, 350, 250], present: [] }, { range: "3001<4000", base: [125, 63, 63, 100, 100, 100, 100, 100, 125, 100, 100, 50], present: [] }, { range: "4001<6000", base: [50, 25, 25, 25, 25, 50, 50, 25, 50, 50, 50, 25], present: [] }, { range: ">6000", base: [20, 10, 10, 0, 0, 0, 0, 0, 20, 0, 0, 0], present: [] }, { range: "501<1000(1+1)", base: [175, 87, 87, 125, 125, 150, 175, 50, 175, 150, 150, 150], present: [] }, { range: "1001<2000(1+1)", base: [115, 58, 58, 90, 75, 90, 105, 50, 115, 90, 90, 90], present: [] } ] },
@@ -232,8 +286,7 @@
         function initPresentArrays(data) { data.forEach(c => { if(!c.present || c.present.length !== stores.length) c.present = Array(stores.length).fill(0); if(c.mrpDetails) c.mrpDetails.forEach(m => { if(!m.present || m.present.length !== stores.length) m.present = Array(stores.length).fill(0); }); }); }
         initPresentArrays(inventoryData);
 
-        let mainChart = null; let leaderboardChart = null; let shortageChart = null; let surplusChart = null;
-        let currentModalBranchIndex = null; let branchModalChart = null; let purchaseSummaryChart = null;
+        let mainChart = null; let currentModalBranchIndex = null; let branchModalChart = null; let purchaseSummaryChart = null;
 
         // --- CORE FUNCTIONS ---
         function saveData() { localStorage.setItem('subham_inventory', JSON.stringify(inventoryData)); localStorage.setItem('subham_stores', JSON.stringify(stores)); alert('Saved!'); }
@@ -260,17 +313,18 @@
             document.getElementById('totalBase').textContent = gT.toLocaleString(); 
             document.getElementById('totalPresent').textContent = gS.toLocaleString(); 
             document.getElementById('purchaseSuggestion').textContent = Math.max(0, gap).toLocaleString(); 
-            document.getElementById('efficiency').textContent = eff + '%'; 
+            document.getElementById('efficiency').textContent = eff + '%';
+            document.getElementById('totalCatsCount').textContent = inventoryData.length;
             selC.innerHTML = opts; selB.innerHTML = brOpts; 
             document.getElementById('manualBranch').innerHTML = '<option value="-1">ALL</option>' + brOpts; 
-            updateTargetMrpOptions(); // Ensure options update
+            updateTargetMrpOptions(); 
             if (!document.getElementById('tabAnalytics').classList.contains('hidden')) refreshCharts(); 
         }
         
         function renderMatrix(hId, bId, isP, tId) { const th = document.getElementById(hId), tb = document.getElementById(bId); let h1 = `<tr><th rowspan="2">Category</th><th rowspan="2">MRP</th>`; let h2 = '<tr>'; stores.forEach(s => { h1 += `<th colspan="2" class="group-header">${s}</th>`; h2 += `<th class="sub-header">T</th><th class="sub-header" style="border-right:1px solid var(--border)">S</th>`; }); h1 += '<th rowspan="2">Action</th></tr>'; h2 += '</tr>'; th.innerHTML = h1 + h2; let body = ''; inventoryData.forEach((c, ci) => { if (c.mrpDetails && c.mrpDetails.length > 0) { c.mrpDetails.forEach((m, mi) => { let row = `<tr><td style="font-size:11px;color:var(--text-muted)">${c.name}</td><td><span class="badge badge-info">${m.range}</span></td>`; let hasData = !isP; stores.forEach((_, si) => { const t = m.base[si]||0, s = m.present[si]||0, l = getSmartLogic(si, m.base, m.present); if(isP && l.purchase===0) { row += `<td></td><td></td>`; } else { if(isP) hasData = true; row += `<td><span class="num-target">${t}</span></td>`; const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); row += isP ? `<td><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td onclick="editStock(${ci},${mi},${si})"><span class="num-stock ${cls}">${s}</span></td>`; } }); if(isP && !hasData) return; body += row + `<td></td></tr>`; }); } let tr = `<tr style="background:rgba(13,148,136,0.05)"><td style="font-weight:700">${c.name}</td><td><span class="badge badge-warning">TOTAL</span></td>`; let hasData = !isP; stores.forEach((_, si) => { const t = c.base[si]||0, s = c.present[si]||0, l = getSmartLogic(si, c.base, c.present); if(isP && l.purchase===0) { tr += `<td></td><td></td>`; } else { if(isP) hasData = true; tr += `<td><span class="num-target">${t}</span></td>`; const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); tr += isP ? `<td onclick="openModal(${si})" style="cursor:pointer"><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td onclick="openModal(${si})" style="cursor:pointer"><span class="num-stock ${cls}">${s}</span></td>`; } }); if(isP && !hasData) return; body += tr + `<td></td></tr>`; }); tb.innerHTML = body; }
         function editStock(ci, mi, si) { const val = mi === -1 ? (inventoryData[ci].present[si]||0) : (inventoryData[ci].mrpDetails[mi].present[si]||0); const n = prompt("New Stock:", val); if(n===null) return; const num = parseInt(n); if(isNaN(num)) return; if(mi===-1) inventoryData[ci].present[si] = num; else { inventoryData[ci].mrpDetails[mi].present[si] = num; recalcTotals(ci); } render(); }
 
-        // --- ANALYTICS ---
+        // --- ANALYTICS & CHARTS (RESTORED) ---
         function refreshCharts() { 
             const ci = parseInt(document.getElementById('chartFilter').value) || 0; 
             const cat = inventoryData[ci]; 
@@ -319,7 +373,7 @@
                 };
                 if (c.mrpDetails && c.mrpDetails.length > 0) { c.mrpDetails.forEach(m => process(m.range, m.base, m.present)); } else { process('TOTAL', c.base, c.present); }
             });
-            purchaseItems.sort((a, b) => b.shortage - a.shortage);
+            purchaseItems.sort((a, b) => b.shortage - a.sortage);
             document.getElementById('reportTotalPurchase').textContent = totalPurchaseQty.toLocaleString();
             document.getElementById('reportStoresAffected').textContent = affectedStores.size;
 
@@ -370,14 +424,13 @@
             saveAs(new Blob([buf]), 'Smart_Purchase_List.xlsx');
         }
 
-        // --- ACTIONS & OPTIONS ---
+        // --- ACTIONS & OPTIONS (RESTORED) ---
         function switchTab(t) { document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden')); document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active')); document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('hidden'); event.target.classList.add('active'); if(t==='analytics') refreshCharts(); }
         function openModal(si) { currentModalBranchIndex = si; const nm = stores[si]; const labels = [], tgts = [], stks = []; let tT=0, tS=0; let rows = ''; inventoryData.forEach(c => { const t = c.base[si]||0, s = c.present[si]||0; if(t>0 || s>0) { tT+=t; tS+=s; labels.push(c.name.substring(0,10)); tgts.push(t); stks.push(s); const g = s-t; const l = getSmartLogic(si, c.base, c.present); let b = ''; if(l.transfer) b = `<span class="badge badge-info">Trans ${l.transfer.qty} fr. ${l.transfer.from}</span>`; else if(l.purchase>0) b = `<span class="badge badge-danger">Buy ${l.purchase}</span>`; else if(g>0) b = `<span class="badge badge-warning">Surplus</span>`; else b = `<span class="badge badge-success">OK</span>`; rows += `<div class="card p-3 mb-2" style="border-left:4px solid ${g<0?'var(--danger)':'var(--success)'}"><div class="flex justify-between text-xs uppercase mb-1" style="color:var(--text-muted)"><span>${c.name}</span><span>Gap: ${g>0?'+':''}${g}</span></div><div class="flex justify-between items-center"><div class="mono text-xs">T: ${t} | S: ${s}</div><div>${b}</div></div></div>`; } }); document.getElementById('modalBody').innerHTML = `<div style="height:250px;margin-bottom:20px;position:relative"><canvas id="branchModalChart"></canvas></div><div class="grid grid-cols-2 gap-4 mb-4 text-center"><div class="p-3 rounded" style="background:var(--bg)"><p class="text-xs uppercase" style="color:var(--text-muted)">Total Target</p><p class="text-xl font-bold mono">${tT}</p></div><div class="p-3 rounded" style="background:var(--info);color:white"><p class="text-xs uppercase opacity-80">Total Stock</p><p class="text-xl font-bold mono">${tS}</p></div></div><h3 class="font-bold text-sm mb-2 uppercase" style="color:var(--text-muted)">Category Breakdown</h3><div>${rows}</div>`; document.getElementById('modalStore').textContent = `${nm} Analysis`; document.getElementById('modal').classList.remove('hidden'); const ctx = document.getElementById('branchModalChart').getContext('2d'); if(branchModalChart) branchModalChart.destroy(); branchModalChart = new Chart(ctx, { type:'bar', data:{labels, datasets:[{label:'Target', data:tgts, backgroundColor:'#f59e0b'}, {label:'Stock', data:stks, backgroundColor:'#0d9488'}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}, scales:{x:{display:true, grid:{display:false}}, y:{beginAtZero:true}} } }); }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
         function addBr() { const n=document.getElementById('newBr').value.trim().toUpperCase(); if(!n) return; stores.push(n); inventoryData.forEach(c=>{c.base.push(0);c.present.push(0);if(c.mrpDetails)c.mrpDetails.forEach(m=>{m.base.push(0);m.present.push(0)});}); render(); }
         function addCat() { const n=document.getElementById('newCat').value.trim().toUpperCase(); if(!n) return; inventoryData.push({name:n,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]}); render(); }
         
-        // FIXED: Update Target MRP Options
         function updateTargetMrpOptions() { 
             const ci=parseInt(document.getElementById('selCat').value); 
             const s=document.getElementById('selMrp'); 
@@ -393,7 +446,6 @@
             } 
         }
         
-        // FIXED: Set Target with MRP
         function setTarget() { 
             const ci=parseInt(document.getElementById('selCat').value), m=document.getElementById('selMrp').value, si=parseInt(document.getElementById('selBr').value), v=parseInt(document.getElementById('targetVal').value)||0; 
             if(isNaN(ci)||isNaN(si)) return alert('Select Category and Branch'); 
@@ -409,7 +461,6 @@
             alert('Target Updated'); 
         }
         
-        // FIXED: Update Manual Options
         function updateMrpOptions() { 
             const n=document.getElementById('manualCatInput').value.toUpperCase().trim(); 
             const l=document.getElementById('mrpList'); 
