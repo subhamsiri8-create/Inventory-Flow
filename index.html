@@ -8,104 +8,260 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --bg: #f8fafc; --bg-secondary: #ffffff; --text: #0f172a; --text-muted: #64748b;
-            --accent: #0d9488; --accent-light: #14b8a6; --danger: #dc2626; --warning: #f59e0b;
-            --success: #059669; --info: #2563eb; --border: #e2e8f0; --card-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            --bg: #f0f4f8; --bg-secondary: #ffffff; --text: #102a43; --text-muted: #627d98;
+            --accent: #00b894; --accent-dark: #00a383; --accent-light: #55efc4;
+            --danger: #d63031; --danger-light: #ff7675;
+            --warning: #fdcb6e; --success: #00b894; --info: #0984e3;
+            --border: #d9e2ec; --card-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
+            --hover-bg: #f7fafc;
         }
+
         .dark-mode {
-            --bg: #0b1120; --bg-secondary: #1e293b; --text: #f1f5f9; --text-muted: #94a3b8;
-            --accent: #14b8a6; --accent-light: #2dd4bf; --danger: #f87171; --warning: #fbbf24;
-            --success: #34d399; --info: #60a5fa; --border: #334155; --card-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            --bg: #0a192f; --bg-secondary: #112240; --text: #e6f1ff; --text-muted: #8892b0;
+            --accent: #64ffda; --accent-dark: #4fd1c5; --accent-light: #64ffda;
+            --danger: #ff6b6b; --danger-light: #ff8787;
+            --warning: #ffeaa7; --success: #64ffda; --info: #4ea8de;
+            --border: #233554; --card-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+            --hover-bg: #172a45;
         }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; min-height: 100vh; transition: background 0.3s, color 0.3s; }
-        .mono { font-family: 'Space Mono', monospace; }
-        .container { max-width: 100%; margin: 0 auto; padding: 24px; }
-        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--card-shadow); transition: background 0.3s, border 0.3s; }
         
-        .tab-bar { display: flex; gap: 4px; background: var(--bg-secondary); padding: 4px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 10px; border-radius: 8px; border: none; background: transparent; color: var(--text-muted); font-weight: 600; cursor: pointer; transition: all 0.2s; }
-        .tab-btn.active { background: var(--accent); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            line-height: 1.6; 
+            min-height: 100vh; 
+            transition: background 0.4s ease, color 0.4s ease; 
+            -webkit-font-smoothing: antialiased;
+        }
         
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; white-space: nowrap; }
-        .btn-primary { background: var(--accent); color: #fff; } .btn-danger { background: var(--danger); color: #fff; } .btn-success { background: var(--success); color: #fff; }
-        .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); } .btn-info { background: var(--info); color: #fff; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 32px; }
         
-        .input-field { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; background: var(--bg); color: var(--text); transition: border 0.2s; }
-        .input-field:focus { outline: none; border-color: var(--accent); }
+        /* Card & Button Styles (Professional & Clean) */
+        .card { 
+            background: var(--bg-secondary); 
+            border: 1px solid var(--border); 
+            border-radius: 16px; 
+            box-shadow: var(--card-shadow); 
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease; 
+        }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 20px 50px -15px rgba(0,0,0,0.15); }
+
+        .btn { 
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px; 
+            padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 700; 
+            cursor: pointer; border: none; transition: all 0.25s ease; 
+            text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; 
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; box-shadow: 0 4px 14px rgba(0,184,148,0.3); }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,184,148,0.4); filter: brightness(1.1); }
+        .btn-danger { background: linear-gradient(135deg, var(--danger), var(--danger-light)); color: #fff; box-shadow: 0 4px 14px rgba(214,48,49,0.3); }
+        .btn-danger:hover { transform: translateY(-1px); filter: brightness(1.1); }
+        .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: #fff; box-shadow: 0 4px 14px rgba(5,150,105,0.3); }
+        .btn-success:hover { transform: translateY(-1px); filter: brightness(1.1); }
+        .btn-info { background: linear-gradient(135deg, var(--info), #0077b6); color: #fff; box-shadow: 0 4px 14px rgba(9,132,227,0.3); }
+        .btn-info:hover { transform: translateY(-1px); filter: brightness(1.1); }
+        .btn-secondary { background: var(--bg); color: var(--text); border: 2px solid var(--border); }
+        .btn-secondary:hover { background: var(--hover-bg); border-color: var(--accent); color: var(--accent); }
+
+        .input-field { 
+            width: 100%; padding: 12px 16px; border: 2px solid var(--border); 
+            border-radius: 10px; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg); color: var(--text); transition: all 0.2s; 
+        }
+        .input-field:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,184,148,0.1); }
+
+        /* Tabs */
+        .tab-bar { 
+            display: flex; gap: 6px; background: var(--bg-secondary); 
+            padding: 6px; border-radius: 14px; 
+            border: 1px solid var(--border); margin-bottom: 24px; 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+        }
+        .tab-btn { 
+            flex: 1; padding: 12px 20px; border-radius: 10px; border: none; 
+            background: transparent; color: var(--text-muted); font-weight: 700; font-size: 13px;
+            cursor: pointer; transition: all 0.3s; letter-spacing: 0.3px;
+        }
+        .tab-btn.active { 
+            background: var(--accent); color: white; 
+            box-shadow: 0 4px 12px rgba(0,184,148,0.3);
+            transform: scale(1.02);
+        }
+        .tab-btn:not(.active):hover { background: var(--hover-bg); color: var(--text); }
+
+        /* Table Styling */
+        .table-container { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-secondary); }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
         
-        .table-container { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; }
+        th { 
+            background: var(--bg); padding: 14px 8px; text-align: center; 
+            font-size: 11px; font-weight: 800; text-transform: uppercase; 
+            color: var(--text-muted); border-bottom: 2px solid var(--border); 
+            border-left: 1px solid var(--border); letter-spacing: 0.5px;
+        }
+        th:first-child { border-left: none; text-align: left; padding-left: 20px; border-radius: 12px 0 0 0; }
         
-        th { background: var(--bg); padding: 10px 4px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 2px solid var(--border); border-left: 1px solid var(--border); white-space: nowrap; }
-        th:first-child { border-left: none; text-align: left; padding-left: 16px; }
-        th.group-header { background: var(--accent); color: white; font-size: 12px; border-bottom: none; }
-        th.sub-header { font-size: 10px; background: rgba(13, 148, 136, 0.1); color: var(--accent); border-bottom: 2px solid var(--accent); }
+        th.group-header { 
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark)); 
+            color: white; font-size: 12px; border-bottom: none; font-weight: 700; 
+        }
+        th.sub-header { 
+            font-size: 10px; background: rgba(0,184,148,0.05); color: var(--accent); 
+            border-bottom: 2px solid var(--accent); font-weight: 700;
+        }
         
-        td { padding: 8px 4px; font-size: 12px; border-bottom: 1px solid var(--border); border-left: 1px solid var(--border); text-align: center; vertical-align: middle; }
-        td:first-child { border-left: none; text-align: left; padding-left: 16px; font-weight: 600; }
+        td { 
+            padding: 10px 6px; font-size: 12px; border-bottom: 1px solid var(--border); 
+            border-left: 1px solid var(--border); text-align: center; vertical-align: middle; 
+            transition: background 0.2s;
+        }
+        td:first-child { border-left: none; text-align: left; padding-left: 20px; font-weight: 700; color: var(--text); }
         
-        .num-target { background-color: var(--bg); color: var(--text-muted); font-family: 'Space Mono', monospace; font-weight: 600; display: block; padding: 4px; border-radius: 4px; border: 1px solid var(--border); }
-        .num-stock { font-family: 'Space Mono', monospace; font-weight: 700; display: block; padding: 4px; border-radius: 4px; border: 1px solid transparent; cursor: pointer; transition: opacity 0.2s, transform 0.1s; }
-        .num-stock:hover { opacity: 0.9; transform: scale(1.05); }
+        tbody tr:hover td { background: var(--hover-bg); }
+        tbody tr:hover td:first-child { color: var(--accent); }
+
+        /* Matrix Cell Styling - Updated for Black Text & Colored Backgrounds */
+        .num-target { 
+            background-color: var(--bg); color: var(--text-muted); 
+            font-family: 'JetBrains Mono', monospace; font-weight: 600; display: block; 
+            padding: 6px; border-radius: 6px; border: 1px solid transparent; font-size: 12px;
+        }
+        .num-stock { 
+            font-family: 'JetBrains Mono', monospace; font-weight: 700; display: block; 
+            padding: 6px; border-radius: 6px; border: 1px solid transparent; 
+            cursor: pointer; transition: all 0.2s; font-size: 12px;
+            color: #000000; /* Force Black Text */
+        }
+        .num-stock:hover { opacity: 0.8; transform: scale(1.05); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+
+        /* Color Coding - Pastels for Background, Text is Black */
+        .stock-surplus { background-color: #fecaca; border-color: #fca5a5; } /* Red bg for Overstock */
+        .stock-short { background-color: #bbf7d0; border-color: #86efac; } /* Green bg for Understock */
+        .stock-equal { background-color: #bfdbfe; border-color: #93c5fd; } /* Blue bg for Match */
         
-        .stock-surplus { background-color: #fca5a5; color: #000000; border-color: #f87171; }
-        .stock-short { background-color: #86efac; color: #000000; border-color: #4ade80; }
-        .stock-equal { background-color: #93c5fd; color: #000000; border-color: #60a5fa; }
-        
-        .purchase-matrix-val { background-color: #fee2e2; color: #991b1b; font-family: 'Space Mono', monospace; font-weight: 700; display: block; padding: 4px; border-radius: 4px; cursor: pointer; border: 1px solid #fecaca; }
-        
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 24px; }
-        .modal-content { background: var(--bg-secondary); border-radius: 16px; max-width: 600px; width: 100%; max-height: 90vh; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        /* Dark mode text consistency */
+        .dark-mode .num-stock { color: #111827; } /* Ensure black text in dark mode too if background is light, or adjust for dark backgrounds */
+        /* Note: In dark mode, pastel backgrounds still work well with black text. */
+
+        .purchase-matrix-val { 
+            background-color: rgba(214, 48, 49, 0.1); color: var(--danger); 
+            font-family: 'JetBrains Mono', monospace; font-weight: 700; display: block; 
+            padding: 6px; border-radius: 6px; cursor: pointer; 
+            border: 1px solid rgba(214, 48, 49, 0.2); font-size: 12px;
+        }
+
+        /* Modals */
+        .modal-overlay { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); 
+            display: flex; align-items: center; justify-content: center; z-index: 100; padding: 24px; 
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-content { 
+            background: var(--bg-secondary); border-radius: 20px; 
+            max-width: 600px; width: 100%; max-height: 90vh; overflow: hidden; 
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4); 
+            border: 1px solid var(--border);
+            animation: slideUp 0.3s ease;
+        }
         .modal-lg { max-width: 900px; }
         .hidden { display: none !important; }
+
+        /* Purchase Report Specific */
+        .purchase-header { 
+            background: linear-gradient(135deg, var(--danger), var(--danger-light)); 
+            color: white; padding: 32px; border-radius: 16px; margin-bottom: 32px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            box-shadow: 0 10px 30px -5px rgba(214, 48, 49, 0.3);
+        }
+        .purchase-list-item { 
+            display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap: 16px; 
+            padding: 18px; border-bottom: 1px solid var(--border); align-items: center; 
+            transition: background 0.2s;
+        }
+        .purchase-list-item:hover { background: var(--hover-bg); }
         
-        /* Purchase Report Specific Styles */
-        .purchase-header { background: linear-gradient(135deg, var(--danger), #b91c1c); color: white; padding: 24px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .purchase-list-item { display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap: 16px; padding: 16px; border-bottom: 1px solid var(--border); align-items: center; }
-        .purchase-list-item:hover { background: var(--bg); }
-        
-        .badge { display: inline-flex; padding: 4px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; margin-right: 4px; border: 1px solid transparent; }
-        .badge-danger { background: rgba(220,38,38,0.1); color: var(--danger); border-color: var(--danger); }
-        .badge-success { background: rgba(5,150,105,0.1); color: var(--success); border-color: var(--success); }
-        .badge-info { background: rgba(37,99,235,0.1); color: var(--info); border-color: var(--info); }
-        .badge-warning { background: rgba(245,158,11,0.1); color: var(--warning); border-color: var(--warning); }
+        /* Badges */
+        .badge { 
+            display: inline-flex; padding: 5px 10px; border-radius: 6px; 
+            font-size: 10px; font-weight: 700; margin-right: 4px; 
+            border: 1px solid transparent; letter-spacing: 0.5px;
+        }
+        .badge-danger { background: rgba(214,48,49,0.1); color: var(--danger); border-color: rgba(214,48,49,0.2); }
+        .badge-success { background: rgba(0,184,148,0.1); color: var(--success); border-color: rgba(0,184,148,0.2); }
+        .badge-info { background: rgba(9,132,227,0.1); color: var(--info); border-color: rgba(9,132,227,0.2); }
+        .badge-warning { background: rgba(253,203,110,0.15); color: #d97706; border-color: rgba(253,203,110,0.3); }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .brand-icon {
+            width: 48px; height: 48px; border-radius: 12px; 
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,184,148,0.25);
+        }
     </style>
 </head>
 <body>
 
     <!-- MAIN DASHBOARD VIEW -->
     <div id="dashboardView" class="container">
-        <header class="card p-6 mb-6">
-            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--accent);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18"/></svg></div>
-                    <div><h1 class="text-xl font-bold tracking-tight">Subham Grand</h1><p class="text-xs" style="color: var(--text-muted)">Supply Intelligence Dashboard</p></div>
+        <header class="card p-8 mb-8">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                <div class="flex items-center gap-5">
+                    <div class="brand-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-extrabold tracking-tight">Subham Grand</h1>
+                        <p class="text-sm font-medium" style="color: var(--text-muted)">Supply Intelligence Dashboard</p>
+                    </div>
                 </div>
-                <div class="flex flex-wrap gap-2 no-print">
+                <div class="flex flex-wrap gap-3 no-print">
                     <button onclick="toggleTheme()" class="btn btn-secondary">Theme</button>
                     <button onclick="openPurchaseReport()" class="btn btn-danger">Purchase Report</button>
                     <button onclick="document.getElementById('uploadInput').click()" class="btn btn-primary">Upload Stock</button>
                     <input type="file" id="uploadInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleFileUpload(event)">
-                    <button onclick="saveData()" class="btn btn-success">Save Data</button>
-                    <button onclick="resetData()" class="btn btn-danger">Reset Stock</button>
+                    <button onclick="saveData()" class="btn btn-success">Save</button>
+                    <button onclick="resetData()" class="btn btn-secondary">Reset</button>
                     <button onclick="exportMatrixExcel()" class="btn btn-info">Export Matrix</button>
                     <button onclick="openManualModal()" class="btn btn-secondary">Manual</button>
                 </div>
             </div>
         </header>
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6" style="max-width: 1600px; margin: 0 auto;">
-            <div class="card p-4"><p class="text-xs font-semibold uppercase mb-1" style="color: var(--text-muted)">Target</p><div id="totalBase" class="text-2xl font-bold mono">0</div></div>
-            <div class="card p-4"><p class="text-xs font-semibold uppercase mb-1" style="color: var(--text-muted)">Stock</p><div id="totalPresent" class="text-2xl font-bold mono" style="color: var(--info)">0</div></div>
-            <div class="card p-4" style="border-left: 4px solid var(--danger);"><p class="text-xs font-semibold uppercase mb-1" style="color: var(--danger)">Net Shortage</p><div id="purchaseSuggestion" class="text-2xl font-bold mono" style="color: var(--danger)">0</div></div>
-            <div class="card p-4" style="border-left: 4px solid var(--success);"><p class="text-xs font-semibold uppercase mb-1" style="color: var(--text-muted)">Efficiency</p><div id="efficiency" class="text-2xl font-bold mono" style="color: var(--success)">0%</div></div>
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8" style="max-width: 1600px; margin: 0 auto;">
+            <div class="card p-6 flex flex-col justify-between" style="border-left: 5px solid var(--accent);">
+                <p class="text-xs font-bold uppercase tracking-wider mb-2" style="color: var(--text-muted)">Total Target</p>
+                <div id="totalBase" class="text-3xl font-extrabold mono">0</div>
+            </div>
+            <div class="card p-6 flex flex-col justify-between" style="border-left: 5px solid var(--info);">
+                <p class="text-xs font-bold uppercase tracking-wider mb-2" style="color: var(--text-muted)">Total Stock</p>
+                <div id="totalPresent" class="text-3xl font-extrabold mono" style="color: var(--info)">0</div>
+            </div>
+            <div class="card p-6 flex flex-col justify-between" style="border-left: 5px solid var(--danger);">
+                <p class="text-xs font-bold uppercase tracking-wider mb-2" style="color: var(--danger)">Net Shortage</p>
+                <div id="purchaseSuggestion" class="text-3xl font-extrabold mono" style="color: var(--danger)">0</div>
+            </div>
+            <div class="card p-6 flex flex-col justify-between" style="border-left: 5px solid var(--success);">
+                <p class="text-xs font-bold uppercase tracking-wider mb-2" style="color: var(--text-muted)">Efficiency</p>
+                <div id="efficiency" class="text-3xl font-extrabold mono" style="color: var(--success)">0%</div>
+            </div>
         </div>
 
-        <div class="tab-bar no-print" style="max-width: 1600px; margin: 0 auto 20px auto;">
+        <div class="tab-bar no-print" style="max-width: 1600px; margin: 0 auto 24px auto;">
             <button class="tab-btn active" onclick="switchTab('matrix')">Stock Matrix</button>
             <button class="tab-btn" onclick="switchTab('analytics')">Analytics</button>
             <button class="tab-btn" onclick="switchTab('actions')">Actions</button>
@@ -118,17 +274,20 @@
 
         <!-- TAB: ANALYTICS -->
         <div id="tabAnalytics" class="tab-content hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6" style="max-width: 1600px; margin: 0 auto;">
-                <div class="card p-6">
-                    <div class="flex justify-between items-center mb-4"><h3 class="font-bold">Category Deep Dive</h3><select id="chartFilter" onchange="refreshCharts()" class="input-field" style="width:auto"></select></div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8" style="max-width: 1600px; margin: 0 auto;">
+                <div class="card p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-lg">Category Deep Dive</h3>
+                        <select id="chartFilter" onchange="refreshCharts()" class="input-field" style="width:auto"></select>
+                    </div>
                     <div style="position:relative; height:350px;"><canvas id="mainChart"></canvas></div>
                 </div>
-                <div class="card p-6 flex flex-col justify-center items-center text-center">
-                   <h3 class="font-bold mb-4">Network Health</h3>
-                   <p class="text-xs" style="color:var(--text-muted)">Use the filter above to analyze specific categories.</p>
-                   <div class="mt-4 p-4 rounded w-full" style="background:var(--bg);">
-                        <p class="text-xs uppercase mb-1" style="color:var(--text-muted)">Total Categories</p>
-                        <p id="totalCatsCount" class="text-3xl font-bold mono">0</p>
+                <div class="card p-8 flex flex-col justify-center items-center text-center">
+                   <h3 class="font-bold text-lg mb-6">Network Health Overview</h3>
+                   <p class="text-sm" style="color:var(--text-muted)">Select a category filter to analyze specific stock performance metrics.</p>
+                   <div class="mt-6 p-6 rounded-xl w-full" style="background:var(--bg);">
+                        <p class="text-xs uppercase tracking-wider font-bold mb-2" style="color:var(--text-muted)">Total Categories</p>
+                        <p id="totalCatsCount" class="text-4xl font-extrabold mono">0</p>
                    </div>
                 </div>
             </div>
@@ -136,31 +295,31 @@
 
         <!-- TAB: ACTIONS -->
         <div id="tabActions" class="tab-content hidden">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" style="max-width: 1600px; margin: 0 auto;">
-                <div class="card p-6">
-                    <h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Add Branch</h3>
-                    <div class="flex gap-2">
-                        <input type="text" id="newBr" placeholder="Name" class="input-field">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8" style="max-width: 1600px; margin: 0 auto;">
+                <div class="card p-8">
+                    <h3 class="font-bold mb-6 text-sm uppercase tracking-wider" style="color: var(--text-muted)">Add Branch</h3>
+                    <div class="flex gap-3">
+                        <input type="text" id="newBr" placeholder="Branch Name" class="input-field">
                         <button onclick="addBr()" class="btn btn-primary">Add</button>
                     </div>
                 </div>
-                <div class="card p-6">
-                    <h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Add Category</h3>
-                    <div class="flex gap-2">
-                        <input type="text" id="newCat" placeholder="Name" class="input-field">
+                <div class="card p-8">
+                    <h3 class="font-bold mb-6 text-sm uppercase tracking-wider" style="color: var(--text-muted)">Add Category</h3>
+                    <div class="flex gap-3">
+                        <input type="text" id="newCat" placeholder="Category Name" class="input-field">
                         <button onclick="addCat()" class="btn btn-primary">Add</button>
                     </div>
                 </div>
-                <div class="card p-6">
-                    <h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Set Target</h3>
-                    <div class="flex flex-col gap-2">
-                        <div class="flex gap-2">
+                <div class="card p-8">
+                    <h3 class="font-bold mb-6 text-sm uppercase tracking-wider" style="color: var(--text-muted)">Set Target</h3>
+                    <div class="flex flex-col gap-3">
+                        <div class="flex gap-3">
                             <select id="selCat" class="input-field text-xs" onchange="updateTargetMrpOptions()"></select>
                             <select id="selMrp" class="input-field text-xs"><option value="TOTAL">TOTAL</option></select>
                         </div>
-                        <div class="flex gap-2">
+                        <div class="flex gap-3">
                             <select id="selBr" class="input-field text-xs"></select>
-                            <input type="number" id="targetVal" placeholder="Qty" class="input-field w-24">
+                            <input type="number" id="targetVal" placeholder="Qty" class="input-field w-28">
                             <button onclick="setTarget()" class="btn btn-secondary">Set</button>
                         </div>
                     </div>
@@ -172,24 +331,36 @@
     <!-- PURCHASE REPORT VIEW -->
     <div id="purchaseReportView" class="container hidden">
         <div class="purchase-header">
-            <div><h1 class="text-2xl font-bold">Purchase Requirement Report</h1><p class="text-sm opacity-80">Sorted by Critical Shortage</p></div>
-            <div class="flex gap-2 no-print">
-                <button onclick="exportSmartPurchaseExcel()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Export List</button>
-                <button onclick="closePurchaseReport()" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border:none; color:white;">Close Report</button>
+            <div>
+                <h1 class="text-3xl font-extrabold tracking-tight">Purchase Requirement Report</h1>
+                <p class="text-sm opacity-80 mt-1">Sorted by Critical Shortage Analysis</p>
+            </div>
+            <div class="flex gap-3 no-print">
+                <button onclick="exportSmartPurchaseExcel()" class="btn btn-secondary" style="background: rgba(255,255,255,0.15); border:none; color:white;">Export List</button>
+                <button onclick="closePurchaseReport()" class="btn btn-secondary" style="background: rgba(255,255,255,0.15); border:none; color:white;">Close Report</button>
             </div>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            <div class="card p-6 lg:col-span-2">
-                <h3 class="font-bold mb-4">Top 5 Critical Categories</h3>
-                <div style="height: 250px; position: relative;"><canvas id="purchaseSummaryChart"></canvas></div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="card p-8 lg:col-span-2">
+                <h3 class="font-bold mb-6 text-lg">Top 5 Critical Categories</h3>
+                <div style="height: 280px; position: relative;"><canvas id="purchaseSummaryChart"></canvas></div>
             </div>
-            <div class="card p-6 flex flex-col justify-center">
-                <div class="text-center mb-6"><p class="text-xs uppercase" style="color:var(--text-muted)">Total Items to Purchase</p><p class="text-4xl font-bold mono text-red-600" id="reportTotalPurchase">0</p></div>
-                <div class="text-center"><p class="text-xs uppercase" style="color:var(--text-muted)">Stores Affected</p><p class="text-2xl font-bold mono" id="reportStoresAffected">0</p></div>
+            <div class="card p-8 flex flex-col justify-center">
+                <div class="text-center mb-8">
+                    <p class="text-xs uppercase tracking-wider font-bold mb-2" style="color:var(--text-muted)">Total Items to Purchase</p>
+                    <p class="text-5xl font-extrabold mono" style="color: var(--danger)" id="reportTotalPurchase">0</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-xs uppercase tracking-wider font-bold mb-2" style="color:var(--text-muted)">Stores Affected</p>
+                    <p class="text-3xl font-bold mono" id="reportStoresAffected">0</p>
+                </div>
             </div>
         </div>
         <div class="card">
-            <div class="p-4 border-b" style="border-color: var(--border);"><h3 class="font-bold">Detailed Purchase List</h3><p class="text-xs" style="color:var(--text-muted)">Items below need immediate purchase.</p></div>
+            <div class="p-6 border-b" style="border-color: var(--border);">
+                <h3 class="font-bold text-lg">Detailed Purchase List</h3>
+                <p class="text-xs mt-1" style="color:var(--text-muted)">Items below require immediate procurement.</p>
+            </div>
             <div id="purchaseListContainer"></div>
         </div>
     </div>
@@ -197,45 +368,51 @@
     <!-- MANUAL MODAL -->
     <div id="manualModal" class="modal-overlay hidden">
         <div class="modal-content">
-            <div class="p-6" style="background: var(--accent); color: #fff;"><h2 class="text-lg font-bold">Manual Data Entry</h2></div>
-            <div class="p-6 space-y-4">
-                <div class="grid grid-cols-2 gap-4">
+            <div class="p-8" style="background: var(--accent); color: #fff;"><h2 class="text-xl font-bold">Manual Data Entry</h2></div>
+            <div class="p-8 space-y-5">
+                <div class="grid grid-cols-2 gap-5">
                     <div>
-                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Category</label>
+                        <label class="text-xs font-bold block mb-2 uppercase tracking-wider" style="color: var(--text-muted)">Category</label>
                         <input type="text" id="manualCatInput" list="catList" class="input-field" placeholder="Select or type" oninput="updateMrpOptions()">
                         <datalist id="catList"></datalist>
                     </div>
                     <div>
-                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">MRP Range</label>
+                        <label class="text-xs font-bold block mb-2 uppercase tracking-wider" style="color: var(--text-muted)">MRP Range</label>
                         <input type="text" id="manualMrp" list="mrpList" class="input-field" placeholder="Select MRP">
                         <datalist id="mrpList"></datalist>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-5">
                     <div>
-                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Branch</label>
+                        <label class="text-xs font-bold block mb-2 uppercase tracking-wider" style="color: var(--text-muted)">Branch</label>
                         <select id="manualBranch" class="input-field"><option value="-1">ALL STORES</option></select>
                     </div>
                     <div>
-                        <label class="text-xs font-semibold block mb-1" style="color: var(--text-muted)">Target / Stock</label>
-                        <div class="flex gap-2">
-                            <input type="number" id="manualTarget" class="input-field" placeholder="Tgt">
-                            <input type="number" id="manualStock" class="input-field" placeholder="Stk">
+                        <label class="text-xs font-bold block mb-2 uppercase tracking-wider" style="color: var(--text-muted)">Values</label>
+                        <div class="flex gap-3">
+                            <input type="number" id="manualTarget" class="input-field" placeholder="Target">
+                            <input type="number" id="manualStock" class="input-field" placeholder="Stock">
                         </div>
                     </div>
                 </div>
-                <button onclick="saveManualData()" class="btn btn-success w-full py-3 mt-2">Save Entry</button>
+                <button onclick="saveManualData()" class="btn btn-success w-full py-4 mt-2 text-base">Save Entry</button>
             </div>
-            <div class="p-4 text-center" style="border-top: 1px solid var(--border);"><button onclick="closeManualModal()" class="text-xs font-bold uppercase" style="color: var(--text-muted);">Cancel</button></div>
+            <div class="p-5 text-center" style="border-top: 1px solid var(--border);"><button onclick="closeManualModal()" class="text-xs font-bold uppercase tracking-wider" style="color: var(--text-muted);">Cancel</button></div>
         </div>
     </div>
 
     <!-- BRANCH MODAL -->
     <div id="modal" class="modal-overlay hidden">
         <div class="modal-content modal-lg">
-            <div class="p-6 flex justify-between items-center" style="background: var(--accent); color: #fff;"><h2 id="modalStore" class="text-lg font-bold"></h2><button onclick="closeModal()" class="text-2xl opacity-80 hover:opacity-100">&times;</button></div>
-            <div id="modalBody" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto"></div>
-            <div class="p-4 flex gap-2" style="border-top: 1px solid var(--border);"><button onclick="exportBranchReport()" class="btn btn-info w-full no-print">Export</button><button onclick="closeModal()" class="btn btn-secondary w-full no-print">Close</button></div>
+            <div class="p-8 flex justify-between items-center" style="background: var(--accent); color: #fff;">
+                <h2 id="modalStore" class="text-xl font-bold"></h2>
+                <button onclick="closeModal()" class="text-3xl opacity-80 hover:opacity-100">&times;</button>
+            </div>
+            <div id="modalBody" class="p-8 space-y-5 max-h-[80vh] overflow-y-auto"></div>
+            <div class="p-5 flex gap-3" style="border-top: 1px solid var(--border);">
+                <button onclick="exportBranchReport()" class="btn btn-info w-full no-print">Export</button>
+                <button onclick="closeModal()" class="btn btn-secondary w-full no-print">Close</button>
+            </div>
         </div>
     </div>
 
@@ -294,7 +471,6 @@
         function loadData() { const sI = localStorage.getItem('subham_inventory'); const sS = localStorage.getItem('subham_stores'); if(sI && sS) { try { inventoryData = JSON.parse(sI); stores = JSON.parse(sS); initPresentArrays(inventoryData); } catch(e){} } }
         function resetData(s) { if(!s) if(!confirm('Reset ALL Stock to 0?')) return; inventoryData.forEach(c => { if(c.present) c.present.fill(0); if(c.mrpDetails) c.mrpDetails.forEach(m => { if(m.present) m.present.fill(0); }); }); saveData(); render(); if(!s) alert('Done.'); }
         
-        // Logic calculates transfer AND purchase, but we will use them differently now.
         function getSmartLogic(si, base, pres) { 
             if (!base || !pres || si >= base.length || si >= pres.length) return { transfer: null, purchase: 0, gap: 0 }; 
             const gap = (pres[si] || 0) - (base[si] || 0); 
@@ -316,10 +492,13 @@
         
         function render() { 
             renderMatrix('matrixHead', 'tableBody', false, 'horizontalTable'); 
-            let selC = document.getElementById('selCat'), selB = document.getElementById('selBr'); 
-            let opts = '', brOpts = '', gT = 0, gS = 0; 
+            let selC = document.getElementById('selCat'), selB = document.getElementById('selBr');
+            let chartSel = document.getElementById('chartFilter'); // Fixed Chart Filter
+            
+            let opts = '', chartOpts = '', brOpts = '', gT = 0, gS = 0; 
             inventoryData.forEach((c, i) => { 
                 opts += `<option value="${i}">${c.name}</option>`; 
+                chartOpts += `<option value="${i}">${c.name}</option>`; // Added for Chart Filter
                 let cT=0, cS=0; 
                 stores.forEach((_, s) => { 
                     gT += c.base[s]||0; gS += c.present[s]||0; 
@@ -334,13 +513,16 @@
             document.getElementById('purchaseSuggestion').textContent = Math.max(0, gap).toLocaleString(); 
             document.getElementById('efficiency').textContent = eff + '%';
             document.getElementById('totalCatsCount').textContent = inventoryData.length;
-            selC.innerHTML = opts; selB.innerHTML = brOpts; 
+            
+            if(selC) selC.innerHTML = opts; 
+            if(selB) selB.innerHTML = brOpts; 
+            if(chartSel) chartSel.innerHTML = chartOpts; // Update Chart Filter
+            
             document.getElementById('manualBranch').innerHTML = '<option value="-1">ALL</option>' + brOpts; 
             updateTargetMrpOptions(); 
             if (!document.getElementById('tabAnalytics').classList.contains('hidden')) refreshCharts(); 
         }
         
-        // UPDATED RENDER MATRIX
         function renderMatrix(hId, bId, isP, tId) { 
             const th = document.getElementById(hId), tb = document.getElementById(bId); 
             let h1 = `<tr><th rowspan="2">Category</th><th rowspan="2">MRP</th>`; 
@@ -349,7 +531,6 @@
                 h1 += `<th colspan="2" class="group-header">${s}</th>`; 
                 h2 += `<th class="sub-header">T</th><th class="sub-header" style="border-right:1px solid var(--border)">S</th>`; 
             }); 
-            // Changed Header Name
             h1 += '<th rowspan="2">AI Suggestion</th></tr>'; 
             h2 += '</tr>'; 
             th.innerHTML = h1 + h2; 
@@ -366,33 +547,46 @@
                             else { 
                                 if(isP) hasData = true; 
                                 row += `<td><span class="num-target">${t}</span></td>`; 
+                                // Updated Color Logic
                                 const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); 
-                                row += isP ? `<td><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td onclick="editStock(${ci},${mi},${si})"><span class="${cls}">${s}</span></td>`; 
+                                row += isP ? `<td><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td onclick="editStock(${ci},${mi},${si})"><span class="num-stock ${cls}">${s}</span></td>`; 
                             } 
                         }); 
                         if(isP && !hasData) return; 
                         
-                        // Action Column Logic
+                        // SMART AI SUGGESTION LOGIC
                         let actionHtml = '';
                         if(!isP){
-                            // Calculate aggregate logic for this row
-                            let rowGap = 0; let rowDonor = null; let rowMax = 0;
-                            stores.forEach((_, si)=>{
-                                const g = (m.present[si]||0) - (m.base[si]||0);
-                                rowGap += g;
-                                if(g > 0 && g > rowMax) { rowMax = g; rowDonor = stores[si]; }
+                            // Analyze Row for Transfer
+                            let surplusStores = [];
+                            let shortageStores = [];
+                            stores.forEach((sName, sIdx) => {
+                                const diff = (m.present[sIdx]||0) - (m.base[sIdx]||0);
+                                if (diff > 0) surplusStores.push({name: sName, idx: sIdx, qty: diff});
+                                if (diff < 0) shortageStores.push({name: sName, idx: sIdx, qty: Math.abs(diff)});
                             });
-                            
-                            if(rowDonor && rowGap < 0) {
-                                // Transfer Available
-                                actionHtml = `<span class="badge badge-info">Trans fr. ${rowDonor}</span>`;
-                            } else if (rowGap < 0) {
-                                // Shortage (No Purchase Suggestion here)
-                                actionHtml = `<span class="badge badge-danger">Shortage</span>`;
-                            } else if (rowGap > 0) {
-                                actionHtml = `<span class="badge badge-warning">Surplus</span>`;
+
+                            if (surplusStores.length > 0 && shortageStores.length > 0) {
+                                const donor = surplusStores.sort((a,b) => b.qty - a.qty)[0];
+                                const receiver = shortageStores.sort((a,b) => b.qty - a.qty)[0];
+                                const transferQty = Math.min(donor.qty, receiver.qty);
+                                
+                                actionHtml = `<div class="flex flex-col gap-1 text-left p-1">
+                                    <span class="badge badge-info">Move ${transferQty} from ${donor.name}</span>
+                                    <span class="text-xs opacity-75">To: ${receiver.name}</span>`;
+                                
+                                if (transferQty < receiver.qty) {
+                                     actionHtml += `<span class="badge badge-danger mt-1">Buy ${receiver.qty - transferQty}</span>`;
+                                }
+                                actionHtml += `</div>`;
+                            } else if (shortageStores.length > 0) {
+                                const totalShort = shortageStores.reduce((a,b) => a + b.qty, 0);
+                                actionHtml = `<span class="badge badge-danger">Buy ${totalShort}</span>`;
+                            } else if (surplusStores.length > 0) {
+                                 const totalSurplus = surplusStores.reduce((a,b) => a + b.qty, 0);
+                                 actionHtml = `<span class="badge badge-warning">Surplus ${totalSurplus}</span>`;
                             } else {
-                                actionHtml = `<span class="badge badge-success">Balanced</span>`;
+                                 actionHtml = `<span class="badge badge-success">Balanced</span>`;
                             }
                         }
                         row += `<td>${actionHtml}</td></tr>`; 
@@ -400,8 +594,7 @@
                     }); 
                 } 
                 
-                // Total Row
-                let tr = `<tr style="background:rgba(13,148,136,0.05)"><td style="font-weight:700">${c.name}</td><td><span class="badge badge-warning">TOTAL</span></td>`; 
+                let tr = `<tr style="background:rgba(0,184,148,0.03)"><td style="font-weight:800">${c.name}</td><td><span class="badge badge-warning">TOTAL</span></td>`; 
                 let hasData = !isP; 
                 stores.forEach((_, si) => { 
                     const t = c.base[si]||0, s = c.present[si]||0, l = getSmartLogic(si, c.base, c.present); 
@@ -410,7 +603,7 @@
                         if(isP) hasData = true; 
                         tr += `<td><span class="num-target">${t}</span></td>`; 
                         const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); 
-                        tr += isP ? `<td onclick="openModal(${si})" style="cursor:pointer"><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td onclick="openModal(${si})" style="cursor:pointer"><span class="${cls}">${s}</span></td>`; 
+                        tr += isP ? `<td onclick="openModal(${si})" style="cursor:pointer"><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td onclick="openModal(${si})" style="cursor:pointer"><span class="num-stock ${cls}">${s}</span></td>`; 
                     } 
                 }); 
                 if(isP && !hasData) return; 
@@ -421,14 +614,15 @@
         
         function editStock(ci, mi, si) { const val = mi === -1 ? (inventoryData[ci].present[si]||0) : (inventoryData[ci].mrpDetails[mi].present[si]||0); const n = prompt("New Stock:", val); if(n===null) return; const num = parseInt(n); if(isNaN(num)) return; if(mi===-1) inventoryData[ci].present[si] = num; else { inventoryData[ci].mrpDetails[mi].present[si] = num; recalcTotals(ci); } render(); }
 
-        // --- ANALYTICS & CHARTS ---
         function refreshCharts() { 
-            const ci = parseInt(document.getElementById('chartFilter').value) || 0; 
+            const chartSel = document.getElementById('chartFilter');
+            if(!chartSel) return;
+            const ci = parseInt(chartSel.value) || 0; 
             const cat = inventoryData[ci]; 
             if(!cat) return; 
             if(mainChart) mainChart.destroy(); 
             const isDark = document.body.classList.contains('dark-mode');
-            const txtColor = isDark ? '#f1f5f9' : '#0f172a';
+            const txtColor = isDark ? '#e6f1ff' : '#102a43';
             const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
             
             mainChart = new Chart(document.getElementById('mainChart'), { 
@@ -436,13 +630,13 @@
                 data: { 
                     labels: stores, 
                     datasets: [ 
-                        { label: 'Target', data: cat.base, backgroundColor: 'rgba(245, 158, 11, 0.6)', borderColor: '#f59e0b', borderWidth: 1 }, 
-                        { label: 'Stock', data: cat.present, backgroundColor: 'rgba(13, 148, 136, 0.7)', borderColor: '#0d9488', borderWidth: 1 } 
+                        { label: 'Target', data: cat.base, backgroundColor: 'rgba(0, 184, 148, 0.2)', borderColor: '#00b894', borderWidth: 2, borderRadius: 4 }, 
+                        { label: 'Stock', data: cat.present, backgroundColor: 'rgba(9, 132, 227, 0.2)', borderColor: '#0984e3', borderWidth: 2, borderRadius: 4 } 
                     ] 
                 }, 
                 options: { 
                     responsive: true, maintainAspectRatio: false, 
-                    plugins: { legend: { position: 'top', labels: { color: txtColor } } }, 
+                    plugins: { legend: { position: 'top', labels: { color: txtColor, font: { family: 'Plus Jakarta Sans' } } } }, 
                     scales: { 
                         x: { grid: { display: false }, ticks: { color: txtColor } }, 
                         y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: txtColor } } 
@@ -451,7 +645,6 @@
             }); 
         }
 
-        // --- PURCHASE REPORT LOGIC ---
         function openPurchaseReport() { document.getElementById('dashboardView').classList.add('hidden'); document.getElementById('purchaseReportView').classList.remove('hidden'); renderPurchaseReport(); }
         function closePurchaseReport() { document.getElementById('purchaseReportView').classList.add('hidden'); document.getElementById('dashboardView').classList.remove('hidden'); }
 
@@ -480,19 +673,19 @@
 
             if (purchaseSummaryChart) purchaseSummaryChart.destroy();
             purchaseSummaryChart = new Chart(document.getElementById('purchaseSummaryChart'), {
-                type: 'bar', data: { labels: sortedCats.map(c => c[0].substring(0, 15) + '...'), datasets: [{ label: 'Total Purchase Qty', data: sortedCats.map(c => c[1]), backgroundColor: '#dc2626' }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                type: 'bar', data: { labels: sortedCats.map(c => c[0].substring(0, 15) + '...'), datasets: [{ label: 'Total Purchase Qty', data: sortedCats.map(c => c[1]), backgroundColor: '#d63031', borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
             });
 
             const container = document.getElementById('purchaseListContainer');
             let listHtml = `<div class="purchase-list-item font-bold text-xs uppercase" style="background:var(--bg); color:var(--text-muted);"><div>Store</div><div>Category / MRP</div><div class="text-center">Shortage</div><div class="text-center">To Buy</div></div>`;
-            if (purchaseItems.length === 0) { listHtml += `<div class="p-6 text-center text-green-600 font-bold">ALL STOCKS ARE OPTIMIZED.</div>`; } 
+            if (purchaseItems.length === 0) { listHtml += `<div class="p-8 text-center font-bold" style="color: var(--success)">ALL STOCKS ARE OPTIMIZED.</div>`; } 
             else {
                 purchaseItems.forEach(item => {
                     listHtml += `<div class="purchase-list-item">
-                        <div class="flex flex-col"><span class="font-bold text-danger">${item.store}</span><span class="text-xs text-muted">${item.store}</span></div>
-                        <div class="flex flex-col"><span class="font-semibold">${item.category}</span><span class="text-xs text-muted">${item.mrp}</span></div>
-                        <div class="text-center"><span class="font-bold mono text-danger">${item.shortage}</span><div class="text-xs text-muted">T: ${item.target} | S: ${item.stock}</div></div>
+                        <div class="flex flex-col"><span class="font-bold" style="color:var(--danger)">${item.store}</span></div>
+                        <div class="flex flex-col"><span class="font-semibold">${item.category}</span><span class="text-xs" style="color:var(--text-muted)">${item.mrp}</span></div>
+                        <div class="text-center"><span class="font-bold mono" style="color:var(--danger)">${item.shortage}</span><div class="text-xs" style="color:var(--text-muted)">T: ${item.target} | S: ${item.stock}</div></div>
                         <div class="text-center"><button class="btn btn-danger btn-sm" style="padding: 4px 12px;">Buy ${item.purchase}</button></div>
                     </div>`;
                 });
@@ -521,9 +714,8 @@
             saveAs(new Blob([buf]), 'Smart_Purchase_List.xlsx');
         }
 
-        // --- ACTIONS & OPTIONS ---
         function switchTab(t) { document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden')); document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active')); document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('hidden'); event.target.classList.add('active'); if(t==='analytics') refreshCharts(); }
-        function openModal(si) { currentModalBranchIndex = si; const nm = stores[si]; const labels = [], tgts = [], stks = []; let tT=0, tS=0; let rows = ''; inventoryData.forEach(c => { const t = c.base[si]||0, s = c.present[si]||0; if(t>0 || s>0) { tT+=t; tS+=s; labels.push(c.name.substring(0,10)); tgts.push(t); stks.push(s); const g = s-t; const l = getSmartLogic(si, c.base, c.present); let b = ''; if(l.transfer) b = `<span class="badge badge-info">Trans ${l.transfer.qty} fr. ${l.transfer.from}</span>`; else if(l.purchase>0) b = `<span class="badge badge-danger">Buy ${l.purchase}</span>`; else if(g>0) b = `<span class="badge badge-warning">Surplus</span>`; else b = `<span class="badge badge-success">OK</span>`; rows += `<div class="card p-3 mb-2" style="border-left:4px solid ${g<0?'var(--danger)':'var(--success)'}"><div class="flex justify-between text-xs uppercase mb-1" style="color:var(--text-muted)"><span>${c.name}</span><span>Gap: ${g>0?'+':''}${g}</span></div><div class="flex justify-between items-center"><div class="mono text-xs">T: ${t} | S: ${s}</div><div>${b}</div></div></div>`; } }); document.getElementById('modalBody').innerHTML = `<div style="height:250px;margin-bottom:20px;position:relative"><canvas id="branchModalChart"></canvas></div><div class="grid grid-cols-2 gap-4 mb-4 text-center"><div class="p-3 rounded" style="background:var(--bg)"><p class="text-xs uppercase" style="color:var(--text-muted)">Total Target</p><p class="text-xl font-bold mono">${tT}</p></div><div class="p-3 rounded" style="background:var(--info);color:white"><p class="text-xs uppercase opacity-80">Total Stock</p><p class="text-xl font-bold mono">${tS}</p></div></div><h3 class="font-bold text-sm mb-2 uppercase" style="color:var(--text-muted)">Category Breakdown</h3><div>${rows}</div>`; document.getElementById('modalStore').textContent = `${nm} Analysis`; document.getElementById('modal').classList.remove('hidden'); const ctx = document.getElementById('branchModalChart').getContext('2d'); if(branchModalChart) branchModalChart.destroy(); branchModalChart = new Chart(ctx, { type:'bar', data:{labels, datasets:[{label:'Target', data:tgts, backgroundColor:'#f59e0b'}, {label:'Stock', data:stks, backgroundColor:'#0d9488'}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}, scales:{x:{display:true, grid:{display:false}}, y:{beginAtZero:true}} } }); }
+        function openModal(si) { currentModalBranchIndex = si; const nm = stores[si]; const labels = [], tgts = [], stks = []; let tT=0, tS=0; let rows = ''; inventoryData.forEach(c => { const t = c.base[si]||0, s = c.present[si]||0; if(t>0 || s>0) { tT+=t; tS+=s; labels.push(c.name.substring(0,10)); tgts.push(t); stks.push(s); const g = s-t; const l = getSmartLogic(si, c.base, c.present); let b = ''; if(l.transfer) b = `<span class="badge badge-info">Trans ${l.transfer.qty} fr. ${l.transfer.from}</span>`; else if(l.purchase>0) b = `<span class="badge badge-danger">Buy ${l.purchase}</span>`; else if(g>0) b = `<span class="badge badge-warning">Surplus</span>`; else b = `<span class="badge badge-success">OK</span>`; rows += `<div class="card p-4 mb-2" style="border-left:4px solid ${g<0?'var(--danger)':'var(--success)'}"><div class="flex justify-between text-xs uppercase mb-1" style="color:var(--text-muted)"><span>${c.name}</span><span>Gap: ${g>0?'+':''}${g}</span></div><div class="flex justify-between items-center"><div class="mono text-xs">T: ${t} | S: ${s}</div><div>${b}</div></div></div>`; } }); document.getElementById('modalBody').innerHTML = `<div style="height:250px;margin-bottom:20px;position:relative"><canvas id="branchModalChart"></canvas></div><div class="grid grid-cols-2 gap-4 mb-6 text-center"><div class="p-4 rounded-xl" style="background:var(--bg)"><p class="text-xs uppercase font-bold" style="color:var(--text-muted)">Total Target</p><p class="text-2xl font-extrabold mono">${tT}</p></div><div class="p-4 rounded-xl" style="background:var(--info);color:white"><p class="text-xs uppercase font-bold opacity-80">Total Stock</p><p class="text-2xl font-extrabold mono">${tS}</p></div></div><h3 class="font-bold text-sm mb-3 uppercase tracking-wider" style="color:var(--text-muted)">Category Breakdown</h3><div>${rows}</div>`; document.getElementById('modalStore').textContent = `${nm} Analysis`; document.getElementById('modal').classList.remove('hidden'); const ctx = document.getElementById('branchModalChart').getContext('2d'); if(branchModalChart) branchModalChart.destroy(); branchModalChart = new Chart(ctx, { type:'bar', data:{labels, datasets:[{label:'Target', data:tgts, backgroundColor:'#00b894', borderRadius: 4}, {label:'Stock', data:stks, backgroundColor:'#0984e3', borderRadius: 4}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}, scales:{x:{display:true, grid:{display:false}}, y:{beginAtZero:true}} } }); }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
         function addBr() { const n=document.getElementById('newBr').value.trim().toUpperCase(); if(!n) return; stores.push(n); inventoryData.forEach(c=>{c.base.push(0);c.present.push(0);if(c.mrpDetails)c.mrpDetails.forEach(m=>{m.base.push(0);m.present.push(0)});}); render(); }
         function addCat() { const n=document.getElementById('newCat').value.trim().toUpperCase(); if(!n) return; inventoryData.push({name:n,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]}); render(); }
@@ -573,11 +765,10 @@
         
         function saveManualData() { const nm=document.getElementById('manualCatInput').value.toUpperCase().trim(), mr=document.getElementById('manualMrp').value.trim(), si=parseInt(document.getElementById('manualBranch').value), tg=parseInt(document.getElementById('manualTarget').value)||0, st=parseInt(document.getElementById('manualStock').value)||0; if(!nm||!mr||isNaN(si)) return alert('Missing fields'); let idx=inventoryData.findIndex(x=>x.name===nm); if(idx===-1){inventoryData.push({name:nm,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]});idx=inventoryData.length-1;} const c=inventoryData[idx]; if(si===-1){ if(mr==='TOTAL'){for(let i=0;i<stores.length;i++){c.base[i]=tg;c.present[i]=st;}} else {let r=c.mrpDetails.find(x=>x.range===mr);if(!r){r={range:mr,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(r);}for(let i=0;i<stores.length;i++){r.base[i]=tg;r.present[i]=st;}recalcTotals(idx);} } else { if(mr==='TOTAL'){c.base[si]=tg;c.present[si]=st;} else {let r=c.mrpDetails.find(x=>x.range===mr);if(!r){r={range:mr,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(r);}r.base[si]=tg;r.present[si]=st;recalcTotals(idx);} } closeManualModal();render(); }
         
-        // --- UPLOAD & EXPORT ---
         async function handleFileUpload(e) { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=async ev => { const d=new Uint8Array(ev.target.result); const wb=new ExcelJS.Workbook(); await wb.xlsx.load(d); const ws=wb.worksheets[0]; const hdr=ws.getRow(1); const map=[]; hdr.eachCell((c,i)=>{ if(i<=2) return; let v=c.value; if(c.result) v=c.result; if(v&&typeof v==='object'&&v.richText) v=v.richText.map(t=>t.text).join(''); const t=v?v.toString().trim().toUpperCase():''; if(t) map.push({idx:i,name:t}); }); if(!map.length) return alert('No stores'); const old=[...stores]; let chg=false; map.forEach(m=>{ if(!stores.includes(m.name)){stores.push(m.name);chg=true;} }); if(chg) inventoryData.forEach(c=>{ c.base=[...c.base,...Array(stores.length-old.length).fill(0)]; c.present=[...c.present,...Array(stores.length-old.length).fill(0)]; if(c.mrpDetails)c.mrpDetails.forEach(m=>{m.base=[...m.base,...Array(stores.length-old.length).fill(0)];m.present=[...m.present,...Array(stores.length-old.length).fill(0)];}); }); const norm=s=>{ if(!s) return ''; let st=s.toString().trim().toUpperCase(); if(st==='TOTAL') return 'TOTAL'; let m=st.match(/^(\d+)\s*[-<]+\s*(\d+)\s*(.*)/); if(m) return `${m[1]}<${m[2]}${m[3].trim()}`; m=st.match(/^(>|<)\s*(\d+)/); if(m) return `${m[1]}${m[2]}`; const ns=st.match(/\d+/g); if(ns&&ns.length>=2) return `${ns[0]}<${ns[1]}`; if(ns&&ns.length===1) return `>${ns[0]}`; return st; }; ws.eachRow((rw, rn)=>{ if(rn===1) return; const gV=i=>{ const cl=rw.getCell(i); if(cl.value==null||cl.value===undefined||cl.value==='') return 0; let rv=0; if(cl.result) rv=parseFloat(cl.result); else rv=parseFloat(cl.value); return isNaN(rv)?0:Math.round(rv); }; const gS=i=>{ const cl=rw.getCell(i); let v=cl.value; if(cl.result) v=cl.result; if(v&&typeof v==='object'&&v.richText) v=v.richText.map(t=>t.text).join(''); if(cl.type==4) return cl.value.toString(); return v?v.toString().trim().toUpperCase():''; }; const cn=gS(1), mn=norm(gS(2)); if(!cn) return; let ci=inventoryData.findIndex(x=>x.name===cn); if(ci===-1){ inventoryData.push({name:cn,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]}); ci=inventoryData.length-1; } const c=inventoryData[ci]; const isT=mn==='TOTAL'||!mn; map.forEach(m=>{ const si=stores.indexOf(m.name); const vl=gV(m.idx); if(isT) c.present[si]=vl; else { let mr=c.mrpDetails.find(x=>x.range===mn); if(!mr){mr={range:mn,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(mr);} mr.present[si]=vl; } }); }); inventoryData.forEach((c,i)=>recalcTotals(i)); render(); alert('Merged!'); }; r.readAsArrayBuffer(f); }
         
         async function exportBranchReport() { if(currentModalBranchIndex===null) return; const si=currentModalBranchIndex, nm=stores[si]; const wb=new ExcelJS.Workbook(); const ws=wb.addWorksheet(nm); ws.addRow([`Report: ${nm}`]); ws.columns=[{width:25},{width:10},{width:10},{width:30}]; ws.addRow(['Category','Target','Stock','Action']); inventoryData.forEach(c=>{ const l=getSmartLogic(si,c.base,c.present); let a=''; if(l.transfer)a+=`Trans ${l.transfer.qty} fr ${l.transfer.from}; `; if(l.purchase>0)a+=`Buy ${l.purchase}`; if(!a)a='OK'; ws.addRow([c.name,c.base[si]||0,c.present[si]||0,a]); }); const buf=await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]),`${nm}_Report.xlsx`); }
-        async function exportMatrixExcel() { const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Stock Matrix'); const columns = [{ header: 'Category', key: 'cat', width: 25 }, { header: 'MRP', key: 'mrp', width: 15 }]; stores.forEach(s => { columns.push({ header: s, key: s + '_T', width: 8 }); columns.push({ header: s, key: s + '_S', width: 8 }); }); columns.push({ header: 'AI Suggestion', key: 'action', width: 20 }); ws.columns = columns; const h1 = ws.getRow(1); h1.values = ['Category', 'MRP']; stores.forEach(s => h1.values.push(s, '')); h1.values.push('Action'); h1.eachCell((cell, colNumber) => { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0D9488' } }; cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }; cell.alignment = { horizontal: 'center', vertical: 'middle' }; }); let colIdx = 3; stores.forEach(() => { ws.mergeCells(1, colIdx, 1, colIdx + 1); colIdx += 2; }); const h2 = ws.getRow(2); h2.values = ['', '']; stores.forEach(() => h2.values.push('Tgt', 'Stk')); h2.values.push(''); h2.eachCell((cell, colNumber) => { if(colNumber > 2) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; cell.font = { bold: true, color: { argb: 'FF0D9488' }, size: 9 }; cell.alignment = { horizontal: 'center' }; } cell.border = { bottom: {style:'thin'}, top: {style:'thin'}, left: {style:'thin'}, right: {style:'thin'} }; }); let currentRow = 3; inventoryData.forEach(cat => { if (cat.mrpDetails && cat.mrpDetails.length > 0) { cat.mrpDetails.forEach(mrp => { const row = ws.getRow(currentRow); const values = [cat.name, mrp.range]; stores.forEach((_, si) => { values.push(mrp.base[si] || 0, mrp.present[si] || 0); }); values.push(''); row.values = values; let cIdx = 3; stores.forEach((_, si) => { const t = mrp.base[si] || 0; const s = mrp.present[si] || 0; const tCell = row.getCell(cIdx); const sCell = row.getCell(cIdx + 1); tCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } }; tCell.font = { name: 'Consolas', size: 10 }; tCell.alignment = { horizontal: 'center' }; sCell.font = { name: 'Consolas', bold: true, size: 10 }; sCell.alignment = { horizontal: 'center' }; const gap = s - t; if (gap > 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFCA5A5' } }; else if (gap < 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF86EFAC' } }; else sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF93C5FD' } }; cIdx += 2; }); row.getCell(1).font = { color: { argb: 'FF6B7280' }, size: 10 }; row.getCell(2).alignment = { horizontal: 'center' }; currentRow++; }); } const tRow = ws.getRow(currentRow); const tVals = [cat.name, 'TOTAL']; stores.forEach((_, si) => { tVals.push(cat.base[si]||0, cat.present[si]||0); }); tVals.push(''); tRow.values = tVals; tRow.font = { bold: true }; tRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; tRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; tRow.getCell(2).alignment = { horizontal: 'center' }; let cIdx = 3; stores.forEach((_, si) => { const t = cat.base[si] || 0; const s = cat.present[si] || 0; const tCell = tRow.getCell(cIdx); const sCell = tRow.getCell(cIdx + 1); tCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; tCell.font = { bold: true, name: 'Consolas', size: 10 }; tCell.alignment = { horizontal: 'center' }; sCell.font = { bold: true, name: 'Consolas', size: 10 }; sCell.alignment = { horizontal: 'center' }; const gap = s - t; if (gap > 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFCA5A5' } }; else if (gap < 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF86EFAC' } }; else sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF93C5FD' } }; cIdx += 2; }); currentRow++; }); const buf = await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]), 'Stock_Matrix_ColorCoded.xlsx'); }
+        async function exportMatrixExcel() { const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Stock Matrix'); const columns = [{ header: 'Category', key: 'cat', width: 25 }, { header: 'MRP', key: 'mrp', width: 15 }]; stores.forEach(s => { columns.push({ header: s, key: s + '_T', width: 8 }); columns.push({ header: s, key: s + '_S', width: 8 }); }); columns.push({ header: 'AI Suggestion', key: 'action', width: 20 }); ws.columns = columns; const h1 = ws.getRow(1); h1.values = ['Category', 'MRP']; stores.forEach(s => h1.values.push(s, '')); h1.values.push('Action'); h1.eachCell((cell, colNumber) => { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00B894' } }; cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }; cell.alignment = { horizontal: 'center', vertical: 'middle' }; }); let colIdx = 3; stores.forEach(() => { ws.mergeCells(1, colIdx, 1, colIdx + 1); colIdx += 2; }); const h2 = ws.getRow(2); h2.values = ['', '']; stores.forEach(() => h2.values.push('Tgt', 'Stk')); h2.values.push(''); h2.eachCell((cell, colNumber) => { if(colNumber > 2) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; cell.font = { bold: true, color: { argb: 'FF00B894' }, size: 9 }; cell.alignment = { horizontal: 'center' }; } cell.border = { bottom: {style:'thin'}, top: {style:'thin'}, left: {style:'thin'}, right: {style:'thin'} }; }); let currentRow = 3; inventoryData.forEach(cat => { if (cat.mrpDetails && cat.mrpDetails.length > 0) { cat.mrpDetails.forEach(mrp => { const row = ws.getRow(currentRow); const values = [cat.name, mrp.range]; stores.forEach((_, si) => { values.push(mrp.base[si] || 0, mrp.present[si] || 0); }); values.push(''); row.values = values; let cIdx = 3; stores.forEach((_, si) => { const t = mrp.base[si] || 0; const s = mrp.present[si] || 0; const tCell = row.getCell(cIdx); const sCell = row.getCell(cIdx + 1); tCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } }; tCell.font = { name: 'Consolas', size: 10 }; tCell.alignment = { horizontal: 'center' }; sCell.font = { name: 'Consolas', bold: true, size: 10, color: { argb: 'FF000000' } }; sCell.alignment = { horizontal: 'center' }; const gap = s - t; if (gap > 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFECACA' } }; else if (gap < 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBBF7D0' } }; else sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBFDBFE' } }; cIdx += 2; }); row.getCell(1).font = { color: { argb: 'FF6B7280' }, size: 10 }; row.getCell(2).alignment = { horizontal: 'center' }; currentRow++; }); } const tRow = ws.getRow(currentRow); const tVals = [cat.name, 'TOTAL']; stores.forEach((_, si) => { tVals.push(cat.base[si]||0, cat.present[si]||0); }); tVals.push(''); tRow.values = tVals; tRow.font = { bold: true }; tRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; tRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; tRow.getCell(2).alignment = { horizontal: 'center' }; let cIdx = 3; stores.forEach((_, si) => { const t = cat.base[si] || 0; const s = cat.present[si] || 0; const tCell = tRow.getCell(cIdx); const sCell = tRow.getCell(cIdx + 1); tCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; tCell.font = { bold: true, name: 'Consolas', size: 10 }; tCell.alignment = { horizontal: 'center' }; sCell.font = { bold: true, name: 'Consolas', size: 10, color: { argb: 'FF000000' } }; sCell.alignment = { horizontal: 'center' }; const gap = s - t; if (gap > 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFECACA' } }; else if (gap < 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBBF7D0' } }; else sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBFDBFE' } }; cIdx += 2; }); currentRow++; }); const buf = await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]), 'Stock_Matrix_ColorCoded.xlsx'); }
 
         function toggleTheme() { document.body.classList.toggle('dark-mode'); render(); }
         function openManualModal() { render(); document.getElementById('manualModal').classList.remove('hidden'); }
