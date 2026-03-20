@@ -67,18 +67,21 @@
         .purchase-list-item { display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap: 16px; padding: 16px; border-bottom: 1px solid var(--border); align-items: center; }
         .purchase-list-item:hover { background: var(--bg); }
         
-        /* Transfer Recommendation Styles */
-        .transfer-card { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border); }
-        .transfer-card:hover { background: var(--bg); }
-        .transfer-arrow { font-size: 24px; color: var(--accent); font-weight: bold; }
-        .store-badge-source { background: var(--success); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-        .store-badge-dest { background: var(--danger); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-        
-        .badge { display: inline-flex; padding: 4px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; margin-right: 4px; border: 1px solid transparent; }
+        .badge { display: inline-flex; padding: 4px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; margin-right: 4px; border: 1px solid transparent; text-align: center; }
         .badge-danger { background: rgba(220,38,38,0.1); color: var(--danger); border-color: var(--danger); }
         .badge-success { background: rgba(5,150,105,0.1); color: var(--success); border-color: var(--success); }
         .badge-info { background: rgba(37,99,235,0.1); color: var(--info); border-color: var(--info); }
         .badge-warning { background: rgba(245,158,11,0.1); color: var(--warning); border-color: var(--warning); }
+        
+        /* NEW: Specific style for Transfer Recommendations */
+        .badge-transfer { 
+            background: rgba(37,99,235,0.15); 
+            color: var(--info); 
+            border: 1px solid rgba(37,99,235,0.3);
+            font-size: 9px; 
+            padding: 3px 6px; 
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -114,8 +117,7 @@
         <div class="tab-bar no-print" style="max-width: 1600px; margin: 0 auto 20px auto;">
             <button class="tab-btn active" onclick="switchTab('matrix')">Stock Matrix</button>
             <button class="tab-btn" onclick="switchTab('analytics')">Analytics</button>
-            <!-- UPDATED TAB NAME -->
-            <button class="tab-btn" onclick="switchTab('actions')">AI Suggestions</button>
+            <button class="tab-btn" onclick="switchTab('actions')">Actions</button>
         </div>
 
         <!-- TAB: MATRIX -->
@@ -141,24 +143,8 @@
             </div>
         </div>
 
-        <!-- TAB: AI SUGGESTIONS (UPDATED) -->
+        <!-- TAB: ACTIONS -->
         <div id="tabActions" class="tab-content hidden">
-            
-            <!-- NEW Section: Store-to-Store Transfers -->
-            <div class="card p-6 mb-6" style="max-width: 1600px; margin: 0 auto 20px auto; border-left: 4px solid var(--accent);">
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <h3 class="font-bold text-lg">Store-to-Store Transfer Recommendations</h3>
-                        <p class="text-xs" style="color:var(--text-muted)">Automated suggestions to balance inventory by moving surplus stock to shortage locations.</p>
-                    </div>
-                    <span class="badge badge-success">AI Powered</span>
-                </div>
-                <div id="transferRecommendationsList">
-                    <!-- Populated by JS -->
-                </div>
-            </div>
-
-            <!-- Existing Tools -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6" style="max-width: 1600px; margin: 0 auto;">
                 <div class="card p-6">
                     <h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--text-muted)">Add Branch</h3>
@@ -266,7 +252,6 @@
         // --- CONFIG & DATA (FULL) ---
         let stores = ["SG", "SGHYD", "SGRJY", "SGTNL", "SIRIELR", "SGTNK", "SGTUNI", "SIRICPT", "SIRIVJY", "SIRIKKD", "SIRITPT", "VS"];
         
-        // Full Data Template (Compressed for display, but logic is full)
         const defaultInventoryTemplate = [
             { name: "BNS HANDLOOM HF", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [500, 250, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] }, { range: "501<1000", base: [1000, 450, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] }, { range: "1001<1500", base: [1200, 500, 500, 1000, 750, 750, 750, 400, 1200, 750, 750, 750], present: [] }, { range: "1501<2000", base: [500, 250, 250, 400, 300, 350, 350, 250, 500, 350, 350, 300], present: [] }, { range: "2001<3000", base: [500, 250, 250, 350, 300, 350, 300, 250, 500, 350, 350, 300], present: [] }, { range: "3001<4000", base: [300, 150, 150, 200, 200, 200, 200, 150, 300, 200, 200, 150], present: [] }, { range: "4001<6000", base: [200, 100, 100, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] }, { range: "6001<7500", base: [100, 50, 50, 100, 50, 100, 50, 50, 100, 100, 100, 100], present: [] }, { range: ">7500", base: [20, 10, 10, 0, 0, 10, 0, 20, 20, 10, 10, 20], present: [] }, { range: "501<1000(1+1)", base: [800, 500, 500, 500, 500, 400, 1000, 400, 800, 400, 400, 400], present: [] }, { range: "1001<2000(1+1)", base: [500, 250, 250, 400, 300, 300, 500, 300, 500, 300, 300, 400], present: [] } ] },
             { name: "SILK WORK SAREES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [175, 87, 87, 125, 125, 150, 175, 0, 175, 150, 150, 150], present: [] }, { range: "501<1000", base: [370, 185, 185, 295, 245, 295, 345, 50, 370, 295, 295, 295], present: [] }, { range: "1001<1500", base: [400, 175, 175, 350, 280, 350, 490, 200, 400, 350, 350, 350], present: [] }, { range: "1501<2000", base: [400, 200, 200, 300, 150, 300, 200, 100, 400, 300, 300, 250], present: [] }, { range: "2001<3000", base: [350, 175, 175, 300, 150, 350, 400, 150, 350, 350, 350, 250], present: [] }, { range: "3001<4000", base: [125, 63, 63, 100, 100, 100, 100, 100, 125, 100, 100, 50], present: [] }, { range: "4001<6000", base: [50, 25, 25, 25, 25, 50, 50, 25, 50, 50, 50, 25], present: [] }, { range: ">6000", base: [20, 10, 10, 0, 0, 0, 0, 0, 20, 0, 0, 0], present: [] }, { range: "501<1000(1+1)", base: [175, 87, 87, 125, 125, 150, 175, 50, 175, 150, 150, 150], present: [] }, { range: "1001<2000(1+1)", base: [115, 58, 58, 90, 75, 90, 105, 50, 115, 90, 90, 90], present: [] } ] },
@@ -342,115 +327,95 @@
             selC.innerHTML = opts; selB.innerHTML = brOpts; 
             document.getElementById('manualBranch').innerHTML = '<option value="-1">ALL</option>' + brOpts; 
             updateTargetMrpOptions(); 
-            renderTransferRecommendations(); // New Line
             if (!document.getElementById('tabAnalytics').classList.contains('hidden')) refreshCharts(); 
         }
         
-        function renderMatrix(hId, bId, isP, tId) { const th = document.getElementById(hId), tb = document.getElementById(bId); let h1 = `<tr><th rowspan="2">Category</th><th rowspan="2">MRP</th>`; let h2 = '<tr>'; stores.forEach(s => { h1 += `<th colspan="2" class="group-header">${s}</th>`; h2 += `<th class="sub-header">T</th><th class="sub-header" style="border-right:1px solid var(--border)">S</th>`; }); h1 += '<th rowspan="2">Action</th></tr>'; h2 += '</tr>'; th.innerHTML = h1 + h2; let body = ''; inventoryData.forEach((c, ci) => { if (c.mrpDetails && c.mrpDetails.length > 0) { c.mrpDetails.forEach((m, mi) => { let row = `<tr><td style="font-size:11px;color:var(--text-muted)">${c.name}</td><td><span class="badge badge-info">${m.range}</span></td>`; let hasData = !isP; stores.forEach((_, si) => { const t = m.base[si]||0, s = m.present[si]||0, l = getSmartLogic(si, m.base, m.present); if(isP && l.purchase===0) { row += `<td></td><td></td>`; } else { if(isP) hasData = true; row += `<td><span class="num-target">${t}</span></td>`; const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); row += isP ? `<td><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td onclick="editStock(${ci},${mi},${si})"><span class="num-stock ${cls}">${s}</span></td>`; } }); if(isP && !hasData) return; body += row + `<td></td></tr>`; }); } let tr = `<tr style="background:rgba(13,148,136,0.05)"><td style="font-weight:700">${c.name}</td><td><span class="badge badge-warning">TOTAL</span></td>`; let hasData = !isP; stores.forEach((_, si) => { const t = c.base[si]||0, s = c.present[si]||0, l = getSmartLogic(si, c.base, c.present); if(isP && l.purchase===0) { tr += `<td></td><td></td>`; } else { if(isP) hasData = true; tr += `<td><span class="num-target">${t}</span></td>`; const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); tr += isP ? `<td onclick="openModal(${si})" style="cursor:pointer"><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td onclick="openModal(${si})" style="cursor:pointer"><span class="num-stock ${cls}">${s}</span></td>`; } }); if(isP && !hasData) return; body += tr + `<td></td></tr>`; }); tb.innerHTML = body; }
-        function editStock(ci, mi, si) { const val = mi === -1 ? (inventoryData[ci].present[si]||0) : (inventoryData[ci].mrpDetails[mi].present[si]||0); const n = prompt("New Stock:", val); if(n===null) return; const num = parseInt(n); if(isNaN(num)) return; if(mi===-1) inventoryData[ci].present[si] = num; else { inventoryData[ci].mrpDetails[mi].present[si] = num; recalcTotals(ci); } render(); }
-
-        // --- NEW: TRANSFER RECOMMENDATIONS LOGIC ---
-        function renderTransferRecommendations() {
-            const container = document.getElementById('transferRecommendationsList');
-            if (!container) return;
-
-            const recommendations = [];
-
-            // 1. Collect all shortages and surpluses
-            const shortages = []; // {storeIdx, catIdx, mrpIdx(-1 for total), qty}
-            const surpluses = []; // {storeIdx, catIdx, mrpIdx(-1 for total), qty}
-
-            inventoryData.forEach((c, ci) => {
-                const process = (mrpIdx, baseArr, presArr) => {
-                    stores.forEach((s, si) => {
-                        const diff = (presArr[si] || 0) - (baseArr[si] || 0);
-                        if (diff < 0) shortages.push({ si, ci, mi: mrpIdx, qty: Math.abs(diff) });
-                        else if (diff > 0) surpluses.push({ si, ci, mi: mrpIdx, qty: diff });
-                    });
-                };
-                
-                if (c.mrpDetails && c.mrpDetails.length > 0) {
-                    c.mrpDetails.forEach((m, mi) => process(mi, m.base, m.present));
-                } else {
-                    process(-1, c.base, c.present);
-                }
-            });
-
-            // 2. Match shortages to surpluses
-            // Sort shortages by qty desc to handle big issues first
-            shortages.sort((a,b) => b.qty - a.qty);
-
-            shortages.forEach(sh => {
-                // Find best donor: same category/mrp, has surplus
-                // Sort surpluses by qty desc to pick biggest pile first
-                let bestDonor = null;
-                let maxSurplus = 0;
-
-                surpluses.forEach(su => {
-                    // Must be same category and MRP
-                    if (su.ci === sh.ci && su.mi === sh.mi && su.si !== sh.si) {
-                        if (su.qty > maxSurplus) {
-                            maxSurplus = su.qty;
-                            bestDonor = su;
-                        }
-                    }
-                });
-
-                if (bestDonor) {
-                    const transferQty = Math.min(sh.qty, bestDonor.qty);
-                    
-                    recommendations.push({
-                        catName: inventoryData[sh.ci].name,
-                        mrp: sh.mi === -1 ? 'TOTAL' : inventoryData[sh.ci].mrpDetails[sh.mi].range,
-                        fromStore: stores[bestDonor.si],
-                        toStore: stores[sh.si],
-                        qty: transferQty
-                    });
-
-                    // Deduct from the surplus to avoid double counting in this view
-                    bestDonor.qty -= transferQty;
-                    sh.qty -= transferQty;
-                }
-            });
-
-            // 3. Render List
-            if (recommendations.length === 0) {
-                container.innerHTML = `<div class="p-6 text-center" style="color:var(--success);">No transfers needed. Inventory is balanced.</div>`;
-                return;
-            }
-
-            // Sort by quantity desc
-            recommendations.sort((a,b) => b.qty - a.qty);
-
-            let html = `<div class="grid grid-cols-1 divide-y" style="border-color:var(--border);">`;
+        // --- UPDATED MATRIX RENDERER WITH TRANSFER SUGGESTIONS ---
+        function renderMatrix(hId, bId, isP, tId) { 
+            const th = document.getElementById(hId), tb = document.getElementById(bId); 
+            let h1 = `<tr><th rowspan="2">Category</th><th rowspan="2">MRP</th>`; 
+            let h2 = '<tr>'; 
+            stores.forEach(s => { h1 += `<th colspan="2" class="group-header">${s}</th>`; h2 += `<th class="sub-header">T</th><th class="sub-header" style="border-right:1px solid var(--border)">S</th>`; }); 
+            h1 += '<th rowspan="2">Action</th></tr>'; 
+            h2 += '</tr>'; 
+            th.innerHTML = h1 + h2; 
+            let body = ''; 
             
-            recommendations.forEach(rec => {
-                html += `
-                <div class="transfer-card">
-                    <div class="flex flex-col">
-                        <span class="text-xs text-muted uppercase">Category</span>
-                        <span class="font-semibold">${rec.catName}</span>
-                        <span class="badge badge-info" style="width:fit-content; margin-top:4px;">${rec.mrp}</span>
-                    </div>
-                    <div class="flex flex-col items-center px-4">
-                         <span class="text-xs text-muted mb-1">Move</span>
-                         <span class="font-bold text-xl mono">${rec.qty}</span>
-                    </div>
-                    <div class="flex flex-col items-end">
-                        <div class="flex items-center gap-2">
-                            <span class="store-badge-source">${rec.fromStore}</span>
-                            <span class="transfer-arrow">→</span>
-                            <span class="store-badge-dest">${rec.toStore}</span>
-                        </div>
-                        <span class="text-xs mt-1" style="color:var(--text-muted);">Surplus to Shortage</span>
-                    </div>
-                </div>
-                `;
-            });
-
-            html += `</div>`;
-            container.innerHTML = html;
+            inventoryData.forEach((c, ci) => { 
+                if (c.mrpDetails && c.mrpDetails.length > 0) { 
+                    c.mrpDetails.forEach((m, mi) => { 
+                        let row = `<tr><td style="font-size:11px;color:var(--text-muted)">${c.name}</td><td><span class="badge badge-info">${m.range}</span></td>`; 
+                        let hasData = !isP; 
+                        stores.forEach((_, si) => { 
+                            const t = m.base[si]||0, s = m.present[si]||0, l = getSmartLogic(si, m.base, m.present); 
+                            if(isP && l.purchase===0) { row += `<td></td><td></td>`; } 
+                            else { 
+                                if(isP) hasData = true; 
+                                row += `<td><span class="num-target">${t}</span></td>`; 
+                                const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); 
+                                if(isP) { row += `<td><span class="purchase-matrix-val">${l.purchase}</span></td>`; } 
+                                else { row += `<td onclick="editStock(${ci},${mi},${si})"><span class="${cls}">${s}</span></td>`; }
+                            } 
+                        }); 
+                        
+                        // Action Column Logic
+                        let actionHtml = '';
+                        if(!isP) {
+                            const logic = getSmartLogic(si, m.base, m.present); // Use last store context or generic?
+                            // Better: Calculate action for the whole row? 
+                            // Prompt says "Store to Store Transfer Recommendations".
+                            // Let's show the first transfer available for this MRP row.
+                            let foundTransfer = null;
+                            stores.forEach((_, si) => {
+                                const l = getSmartLogic(si, m.base, m.present);
+                                if(l.transfer && !foundTransfer) foundTransfer = l.transfer;
+                            });
+                            
+                            if(foundTransfer) {
+                                actionHtml = `<span class="badge badge-transfer">Trans ${foundTransfer.qty} fr. ${foundTransfer.from}</span>`;
+                            }
+                        }
+                        
+                        if(isP && !hasData) return; 
+                        body += row + `<td>${actionHtml}</td></tr>`; 
+                    }); 
+                }
+                
+                // TOTAL ROW
+                let tr = `<tr style="background:rgba(13,148,136,0.05)"><td style="font-weight:700">${c.name}</td><td><span class="badge badge-warning">TOTAL</span></td>`; 
+                let hasData = !isP; 
+                stores.forEach((_, si) => { 
+                    const t = c.base[si]||0, s = c.present[si]||0, l = getSmartLogic(si, c.base, c.present); 
+                    if(isP && l.purchase===0) { tr += `<td></td><td></td>`; } 
+                    else { 
+                        if(isP) hasData = true; 
+                        tr += `<td><span class="num-target">${t}</span></td>`; 
+                        const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); 
+                        if(isP) { tr += `<td onclick="openModal(${si})" style="cursor:pointer"><span class="purchase-matrix-val">${l.purchase}</span></td>`; } 
+                        else { tr += `<td onclick="openModal(${si})" style="cursor:pointer"><span class="${cls}">${s}</span></td>`; }
+                    } 
+                }); 
+                
+                // Action Column Logic for Total
+                let totalActionHtml = '';
+                if(!isP) {
+                    let foundTransfer = null;
+                    stores.forEach((_, si) => {
+                        const l = getSmartLogic(si, c.base, c.present);
+                        if(l.transfer && !foundTransfer) foundTransfer = l.transfer;
+                    });
+                    if(foundTransfer) {
+                        totalActionHtml = `<span class="badge badge-transfer">Trans ${foundTransfer.qty} fr. ${foundTransfer.from}</span>`;
+                    }
+                }
+                
+                if(isP && !hasData) return; 
+                body += tr + `<td>${totalActionHtml}</td></tr>`; 
+            }); 
+            tb.innerHTML = body; 
         }
+        
+        function editStock(ci, mi, si) { const val = mi === -1 ? (inventoryData[ci].present[si]||0) : (inventoryData[ci].mrpDetails[mi].present[si]||0); const n = prompt("New Stock:", val); if(n===null) return; const num = parseInt(n); if(isNaN(num)) return; if(mi===-1) inventoryData[ci].present[si] = num; else { inventoryData[ci].mrpDetails[mi].present[si] = num; recalcTotals(ci); } render(); }
 
         // --- ANALYTICS & CHARTS ---
         function refreshCharts() { 
@@ -553,15 +518,7 @@
         }
 
         // --- ACTIONS & OPTIONS ---
-        function switchTab(t) { 
-            document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden')); 
-            document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active')); 
-            document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('hidden'); 
-            event.target.classList.add('active'); 
-            if(t==='analytics') refreshCharts(); 
-            if(t==='actions') renderTransferRecommendations(); // Refresh suggestions when opening tab
-        }
-        
+        function switchTab(t) { document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden')); document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active')); document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('hidden'); event.target.classList.add('active'); if(t==='analytics') refreshCharts(); }
         function openModal(si) { currentModalBranchIndex = si; const nm = stores[si]; const labels = [], tgts = [], stks = []; let tT=0, tS=0; let rows = ''; inventoryData.forEach(c => { const t = c.base[si]||0, s = c.present[si]||0; if(t>0 || s>0) { tT+=t; tS+=s; labels.push(c.name.substring(0,10)); tgts.push(t); stks.push(s); const g = s-t; const l = getSmartLogic(si, c.base, c.present); let b = ''; if(l.transfer) b = `<span class="badge badge-info">Trans ${l.transfer.qty} fr. ${l.transfer.from}</span>`; else if(l.purchase>0) b = `<span class="badge badge-danger">Buy ${l.purchase}</span>`; else if(g>0) b = `<span class="badge badge-warning">Surplus</span>`; else b = `<span class="badge badge-success">OK</span>`; rows += `<div class="card p-3 mb-2" style="border-left:4px solid ${g<0?'var(--danger)':'var(--success)'}"><div class="flex justify-between text-xs uppercase mb-1" style="color:var(--text-muted)"><span>${c.name}</span><span>Gap: ${g>0?'+':''}${g}</span></div><div class="flex justify-between items-center"><div class="mono text-xs">T: ${t} | S: ${s}</div><div>${b}</div></div></div>`; } }); document.getElementById('modalBody').innerHTML = `<div style="height:250px;margin-bottom:20px;position:relative"><canvas id="branchModalChart"></canvas></div><div class="grid grid-cols-2 gap-4 mb-4 text-center"><div class="p-3 rounded" style="background:var(--bg)"><p class="text-xs uppercase" style="color:var(--text-muted)">Total Target</p><p class="text-xl font-bold mono">${tT}</p></div><div class="p-3 rounded" style="background:var(--info);color:white"><p class="text-xs uppercase opacity-80">Total Stock</p><p class="text-xl font-bold mono">${tS}</p></div></div><h3 class="font-bold text-sm mb-2 uppercase" style="color:var(--text-muted)">Category Breakdown</h3><div>${rows}</div>`; document.getElementById('modalStore').textContent = `${nm} Analysis`; document.getElementById('modal').classList.remove('hidden'); const ctx = document.getElementById('branchModalChart').getContext('2d'); if(branchModalChart) branchModalChart.destroy(); branchModalChart = new Chart(ctx, { type:'bar', data:{labels, datasets:[{label:'Target', data:tgts, backgroundColor:'#f59e0b'}, {label:'Stock', data:stks, backgroundColor:'#0d9488'}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}, scales:{x:{display:true, grid:{display:false}}, y:{beginAtZero:true}} } }); }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
         function addBr() { const n=document.getElementById('newBr').value.trim().toUpperCase(); if(!n) return; stores.push(n); inventoryData.forEach(c=>{c.base.push(0);c.present.push(0);if(c.mrpDetails)c.mrpDetails.forEach(m=>{m.base.push(0);m.present.push(0)});}); render(); }
@@ -616,7 +573,6 @@
         async function handleFileUpload(e) { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=async ev => { const d=new Uint8Array(ev.target.result); const wb=new ExcelJS.Workbook(); await wb.xlsx.load(d); const ws=wb.worksheets[0]; const hdr=ws.getRow(1); const map=[]; hdr.eachCell((c,i)=>{ if(i<=2) return; let v=c.value; if(c.result) v=c.result; if(v&&typeof v==='object'&&v.richText) v=v.richText.map(t=>t.text).join(''); const t=v?v.toString().trim().toUpperCase():''; if(t) map.push({idx:i,name:t}); }); if(!map.length) return alert('No stores'); const old=[...stores]; let chg=false; map.forEach(m=>{ if(!stores.includes(m.name)){stores.push(m.name);chg=true;} }); if(chg) inventoryData.forEach(c=>{ c.base=[...c.base,...Array(stores.length-old.length).fill(0)]; c.present=[...c.present,...Array(stores.length-old.length).fill(0)]; if(c.mrpDetails)c.mrpDetails.forEach(m=>{m.base=[...m.base,...Array(stores.length-old.length).fill(0)];m.present=[...m.present,...Array(stores.length-old.length).fill(0)];}); }); const norm=s=>{ if(!s) return ''; let st=s.toString().trim().toUpperCase(); if(st==='TOTAL') return 'TOTAL'; let m=st.match(/^(\d+)\s*[-<]+\s*(\d+)\s*(.*)/); if(m) return `${m[1]}<${m[2]}${m[3].trim()}`; m=st.match(/^(>|<)\s*(\d+)/); if(m) return `${m[1]}${m[2]}`; const ns=st.match(/\d+/g); if(ns&&ns.length>=2) return `${ns[0]}<${ns[1]}`; if(ns&&ns.length===1) return `>${ns[0]}`; return st; }; ws.eachRow((rw, rn)=>{ if(rn===1) return; const gV=i=>{ const cl=rw.getCell(i); if(cl.value==null||cl.value===undefined||cl.value==='') return 0; let rv=0; if(cl.result) rv=parseFloat(cl.result); else rv=parseFloat(cl.value); return isNaN(rv)?0:Math.round(rv); }; const gS=i=>{ const cl=rw.getCell(i); let v=cl.value; if(cl.result) v=cl.result; if(v&&typeof v==='object'&&v.richText) v=v.richText.map(t=>t.text).join(''); if(cl.type==4) return cl.value.toString(); return v?v.toString().trim().toUpperCase():''; }; const cn=gS(1), mn=norm(gS(2)); if(!cn) return; let ci=inventoryData.findIndex(x=>x.name===cn); if(ci===-1){ inventoryData.push({name:cn,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]}); ci=inventoryData.length-1; } const c=inventoryData[ci]; const isT=mn==='TOTAL'||!mn; map.forEach(m=>{ const si=stores.indexOf(m.name); const vl=gV(m.idx); if(isT) c.present[si]=vl; else { let mr=c.mrpDetails.find(x=>x.range===mn); if(!mr){mr={range:mn,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(mr);} mr.present[si]=vl; } }); }); inventoryData.forEach((c,i)=>recalcTotals(i)); render(); alert('Merged!'); }; r.readAsArrayBuffer(f); }
         
         async function exportBranchReport() { if(currentModalBranchIndex===null) return; const si=currentModalBranchIndex, nm=stores[si]; const wb=new ExcelJS.Workbook(); const ws=wb.addWorksheet(nm); ws.addRow([`Report: ${nm}`]); ws.columns=[{width:25},{width:10},{width:10},{width:30}]; ws.addRow(['Category','Target','Stock','Action']); inventoryData.forEach(c=>{ const l=getSmartLogic(si,c.base,c.present); let a=''; if(l.transfer)a+=`Trans ${l.transfer.qty} fr ${l.transfer.from}; `; if(l.purchase>0)a+=`Buy ${l.purchase}`; if(!a)a='OK'; ws.addRow([c.name,c.base[si]||0,c.present[si]||0,a]); }); const buf=await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]),`${nm}_Report.xlsx`); }
-        
         async function exportMatrixExcel() { const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Stock Matrix'); const columns = [{ header: 'Category', key: 'cat', width: 25 }, { header: 'MRP', key: 'mrp', width: 15 }]; stores.forEach(s => { columns.push({ header: s, key: s + '_T', width: 8 }); columns.push({ header: s, key: s + '_S', width: 8 }); }); columns.push({ header: 'AI Suggestion', key: 'action', width: 20 }); ws.columns = columns; const h1 = ws.getRow(1); h1.values = ['Category', 'MRP']; stores.forEach(s => h1.values.push(s, '')); h1.values.push('Action'); h1.eachCell((cell, colNumber) => { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0D9488' } }; cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }; cell.alignment = { horizontal: 'center', vertical: 'middle' }; }); let colIdx = 3; stores.forEach(() => { ws.mergeCells(1, colIdx, 1, colIdx + 1); colIdx += 2; }); const h2 = ws.getRow(2); h2.values = ['', '']; stores.forEach(() => h2.values.push('Tgt', 'Stk')); h2.values.push(''); h2.eachCell((cell, colNumber) => { if(colNumber > 2) { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; cell.font = { bold: true, color: { argb: 'FF0D9488' }, size: 9 }; cell.alignment = { horizontal: 'center' }; } cell.border = { bottom: {style:'thin'}, top: {style:'thin'}, left: {style:'thin'}, right: {style:'thin'} }; }); let currentRow = 3; inventoryData.forEach(cat => { if (cat.mrpDetails && cat.mrpDetails.length > 0) { cat.mrpDetails.forEach(mrp => { const row = ws.getRow(currentRow); const values = [cat.name, mrp.range]; stores.forEach((_, si) => { values.push(mrp.base[si] || 0, mrp.present[si] || 0); }); values.push(''); row.values = values; let cIdx = 3; stores.forEach((_, si) => { const t = mrp.base[si] || 0; const s = mrp.present[si] || 0; const tCell = row.getCell(cIdx); const sCell = row.getCell(cIdx + 1); tCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } }; tCell.font = { name: 'Consolas', size: 10 }; tCell.alignment = { horizontal: 'center' }; sCell.font = { name: 'Consolas', bold: true, size: 10 }; sCell.alignment = { horizontal: 'center' }; const gap = s - t; if (gap > 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFCA5A5' } }; else if (gap < 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF86EFAC' } }; else sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF93C5FD' } }; cIdx += 2; }); row.getCell(1).font = { color: { argb: 'FF6B7280' }, size: 10 }; row.getCell(2).alignment = { horizontal: 'center' }; currentRow++; }); } const tRow = ws.getRow(currentRow); const tVals = [cat.name, 'TOTAL']; stores.forEach((_, si) => { tVals.push(cat.base[si]||0, cat.present[si]||0); }); tVals.push(''); tRow.values = tVals; tRow.font = { bold: true }; tRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; tRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; tRow.getCell(2).alignment = { horizontal: 'center' }; let cIdx = 3; stores.forEach((_, si) => { const t = cat.base[si] || 0; const s = cat.present[si] || 0; const tCell = tRow.getCell(cIdx); const sCell = tRow.getCell(cIdx + 1); tCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; tCell.font = { bold: true, name: 'Consolas', size: 10 }; tCell.alignment = { horizontal: 'center' }; sCell.font = { bold: true, name: 'Consolas', size: 10 }; sCell.alignment = { horizontal: 'center' }; const gap = s - t; if (gap > 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFCA5A5' } }; else if (gap < 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF86EFAC' } }; else sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF93C5FD' } }; cIdx += 2; }); currentRow++; }); const buf = await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]), 'Stock_Matrix_ColorCoded.xlsx'); }
 
         function toggleTheme() { document.body.classList.toggle('dark-mode'); render(); }
