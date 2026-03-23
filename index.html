@@ -64,6 +64,7 @@
         .btn-danger:hover { transform: translateY(-1px); filter: brightness(1.1); }
         .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: #fff; box-shadow: 0 4px 14px rgba(5,150,105,0.3); }
         .btn-info { background: linear-gradient(135deg, var(--info), #0077b6); color: #fff; box-shadow: 0 4px 14px rgba(9,132,227,0.3); }
+        .btn-info:hover { transform: translateY(-1px); filter: brightness(1.1); }
         .btn-secondary { background: var(--bg); color: var(--text); border: 2px solid var(--border); }
         .btn-secondary:hover { background: var(--hover-bg); border-color: var(--accent); color: var(--accent); }
 
@@ -136,55 +137,37 @@
         tbody tr:hover td:first-child { color: var(--accent); }
 
         .sticky-col-1 {
-            position: sticky;
-            left: 0;
-            z-index: 5;
+            position: sticky; left: 0; z-index: 5;
             width: 240px; min-width: 240px; max-width: 240px; 
             border-right: 2px solid var(--border);
             background: var(--bg-secondary);
         }
         
         .sticky-col-2 {
-            position: sticky;
-            left: 240px; 
-            z-index: 5;
+            position: sticky; left: 240px; z-index: 5;
             width: 150px; min-width: 150px; max-width: 150px; 
             border-right: 2px solid var(--border);
             background: var(--bg-secondary);
         }
 
-        thead .sticky-col-1, thead .sticky-col-2 {
-            z-index: 20; 
-            background: var(--bg);
-        }
-        
-        tbody tr:hover .sticky-col-1, tbody tr:hover .sticky-col-2 {
-            background: var(--hover-bg) !important;
-        }
+        thead .sticky-col-1, thead .sticky-col-2 { z-index: 20; background: var(--bg); }
+        tbody tr:hover .sticky-col-1, tbody tr:hover .sticky-col-2 { background: var(--hover-bg) !important; }
 
         tr.total-row td.sticky-col-1, tr.total-row td.sticky-col-2 { background: rgba(0,184,148,0.03); }
         tr.total-row:hover td.sticky-col-1, tr.total-row:hover td.sticky-col-2 { background: var(--hover-bg) !important; }
 
         .sticky-action {
-            position: sticky;
-            right: 0;
-            z-index: 5;
+            position: sticky; right: 0; z-index: 5;
             background: var(--bg-secondary);
             border-left: 2px solid var(--border);
         }
         thead .sticky-action { z-index: 20; background: var(--bg); }
 
-        /* Enhanced Target Styling */
         .num-target { 
             background-color: rgba(9, 132, 227, 0.1); 
             color: var(--info); 
-            font-family: 'JetBrains Mono', monospace; 
-            font-weight: 700; 
-            display: block; 
-            padding: 6px; 
-            border-radius: 6px; 
-            border: 1px solid rgba(9, 132, 227, 0.2); 
-            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace; font-weight: 700; display: block; 
+            padding: 6px; border-radius: 6px; border: 1px solid rgba(9, 132, 227, 0.2); font-size: 12px;
         }
         .num-stock { 
             font-family: 'JetBrains Mono', monospace; font-weight: 700; display: block; 
@@ -217,22 +200,33 @@
         .modal-lg { max-width: 900px; }
         .hidden { display: none !important; }
 
-        .purchase-header { 
-            background: linear-gradient(135deg, var(--danger), var(--danger-light)); 
-            color: white; padding: 32px; border-radius: 16px; margin-bottom: 32px; 
+        /* Report Headers */
+        .report-header { 
+            padding: 32px; border-radius: 16px; margin-bottom: 32px; 
             display: flex; justify-content: space-between; align-items: center; 
-            box-shadow: 0 10px 30px -5px rgba(214, 48, 49, 0.3);
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.3);
+        }
+        .report-header.transfer { 
+            background: linear-gradient(135deg, var(--info), #0077b6); color: white;
+        }
+        .report-header.purchase { 
+            background: linear-gradient(135deg, var(--danger), var(--danger-light)); color: white;
         }
         
-        /* Purchase List Grid - Added Target Column */
-        .purchase-list-item { 
+        /* Report List Styling */
+        .report-list-item { 
             display: grid; 
             grid-template-columns: 0.8fr 1.5fr 0.6fr 0.6fr 0.8fr 0.8fr; 
-            gap: 12px; 
-            padding: 16px 18px; 
+            gap: 12px; padding: 16px 18px; 
             border-bottom: 1px solid var(--border); 
-            align-items: center; 
-            font-size: 13px;
+            align-items: center; font-size: 13px;
+        }
+        .transfer-list-item {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr; /* From, To, Category, Item, Qty */
+            gap: 12px; padding: 16px 18px; 
+            border-bottom: 1px solid var(--border); 
+            align-items: center; font-size: 13px;
         }
         
         .badge { 
@@ -242,6 +236,7 @@
         .badge-danger { background: rgba(214,48,49,0.1); color: var(--danger); }
         .badge-info { background: rgba(9,132,227,0.1); color: var(--info); }
         .badge-warning { background: rgba(253,203,110,0.15); color: #d97706; }
+        .badge-success { background: rgba(0,184,148,0.1); color: var(--accent); }
 
         .brand-icon {
             width: 48px; height: 48px; border-radius: 12px; 
@@ -252,35 +247,18 @@
 
         /* Toast Notification */
         #toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: var(--accent);
-            color: #fff;
-            text-align: center;
-            border-radius: 8px;
-            padding: 12px;
-            position: fixed;
-            z-index: 200;
-            left: 50%;
-            bottom: 30px;
-            transform: translateX(-50%);
-            font-size: 14px;
-            font-weight: 700;
+            visibility: hidden; min-width: 250px; background-color: var(--accent); color: #fff;
+            text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 200;
+            left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; font-weight: 700;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        #toast.show {
-            visibility: visible;
-            animation: fadein 0.5s, fadeout 0.5s 2.5s;
-        }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
 
         @media (max-width: 768px) {
-            .purchase-list-item {
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
-            }
-            .purchase-list-item > div:nth-child(1) { grid-column: 1 / -1; }
+            .transfer-list-item, .report-list-item { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .transfer-list-item > div:nth-child(1) { grid-column: 1 / -1; }
         }
     </style>
 </head>
@@ -303,6 +281,7 @@
                 </div>
                 <div class="flex flex-wrap gap-3 no-print">
                     <button onclick="toggleTheme()" class="btn btn-secondary">Theme</button>
+                    <button onclick="openTransferReport()" class="btn btn-info">Transfer Report</button>
                     <button onclick="openPurchaseReport()" class="btn btn-danger">Purchase Report</button>
                     <button onclick="document.getElementById('uploadInput').click()" class="btn btn-primary">Upload Stock</button>
                     <input type="file" id="uploadInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleFileUpload(event)">
@@ -400,12 +379,49 @@
         </div>
     </div>
 
+    <!-- TRANSFER REPORT VIEW -->
+    <div id="transferReportView" class="container hidden">
+        <div class="report-header transfer">
+            <div>
+                <h1 class="text-3xl font-extrabold tracking-tight">Stock Transfer Report</h1>
+                <p class="text-sm opacity-80 mt-1">Optimized movement of existing inventory</p>
+            </div>
+            <div class="flex gap-3 no-print">
+                <button onclick="exportTransferExcel()" class="btn btn-secondary" style="background: rgba(255,255,255,0.15); border:none; color:white;">Export List</button>
+                <button onclick="closeTransferReport()" class="btn btn-secondary" style="background: rgba(255,255,255,0.15); border:none; color:white;">Close Report</button>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="card p-8 lg:col-span-2">
+                <h3 class="font-bold mb-6 text-lg">Network Transfer Distribution</h3>
+                <div style="height: 280px; position: relative;"><canvas id="transferSummaryChart"></canvas></div>
+            </div>
+            <div class="card p-8 flex flex-col justify-center">
+                <div class="text-center mb-8">
+                    <p class="text-xs uppercase tracking-wider font-bold mb-2" style="color:var(--text-muted)">Total Items to Transfer</p>
+                    <p class="text-5xl font-extrabold mono" style="color: var(--info)" id="reportTotalTransfer">0</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-xs uppercase tracking-wider font-bold mb-2" style="color:var(--text-muted)">Potential Purchases Saved</p>
+                    <p class="text-3xl font-bold mono" style="color: var(--success)" id="reportSavedPurchase">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="p-6 border-b" style="border-color: var(--border);">
+                <h3 class="font-bold text-lg">Detailed Transfer Instructions</h3>
+                <p class="text-xs mt-1" style="color:var(--text-muted)">Move stock from Surplus stores to Shortage stores.</p>
+            </div>
+            <div id="transferListContainer"></div>
+        </div>
+    </div>
+
     <!-- PURCHASE REPORT VIEW -->
     <div id="purchaseReportView" class="container hidden">
-        <div class="purchase-header">
+        <div class="report-header purchase">
             <div>
                 <h1 class="text-3xl font-extrabold tracking-tight">Purchase Requirement Report</h1>
-                <p class="text-sm opacity-80 mt-1">Sorted by Critical Shortage Analysis</p>
+                <p class="text-sm opacity-80 mt-1">Remaining shortages after transfers</p>
             </div>
             <div class="flex gap-3 no-print">
                 <button onclick="exportSmartPurchaseExcel()" class="btn btn-secondary" style="background: rgba(255,255,255,0.15); border:none; color:white;">Export List</button>
@@ -495,7 +511,7 @@
         // --- CONFIG & DATA ---
         let stores = ["SG", "SGHYD", "SGRJY", "SGTNL", "SIRIELR", "SGTNK", "SGTUNI", "SIRICPT", "SIRIVJY", "SIRIKKD", "SIRITPT", "VS"];
         
-        // Full Data Template (Default structure)
+        // Full Data Template
         const defaultInventoryTemplate = [
             { name: "BNS HANDLOOM HF", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [500, 250, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] }, { range: "501<1000", base: [1000, 450, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] }, { range: "1001<1500", base: [1200, 500, 500, 1000, 750, 750, 750, 400, 1200, 750, 750, 750], present: [] }, { range: "1501<2000", base: [500, 250, 250, 400, 300, 350, 350, 250, 500, 350, 350, 300], present: [] }, { range: "2001<3000", base: [500, 250, 250, 350, 300, 350, 300, 250, 500, 350, 350, 300], present: [] }, { range: "3001<4000", base: [300, 150, 150, 200, 200, 200, 200, 150, 300, 200, 200, 150], present: [] }, { range: "4001<6000", base: [200, 100, 100, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] }, { range: "6001<7500", base: [100, 50, 50, 100, 50, 100, 50, 50, 100, 100, 100, 100], present: [] }, { range: ">7500", base: [20, 10, 10, 0, 0, 10, 0, 20, 20, 10, 10, 20], present: [] }, { range: "501<1000(1+1)", base: [800, 500, 500, 500, 500, 400, 1000, 400, 800, 400, 400, 400], present: [] }, { range: "1001<2000(1+1)", base: [500, 250, 250, 400, 300, 300, 500, 300, 500, 300, 300, 400], present: [] } ] },
             { name: "SILK WORK SAREES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [175, 87, 87, 125, 125, 150, 175, 0, 175, 150, 150, 150], present: [] }, { range: "501<1000", base: [370, 185, 185, 295, 245, 295, 345, 50, 370, 295, 295, 295], present: [] }, { range: "1001<1500", base: [400, 175, 175, 350, 280, 350, 490, 200, 400, 350, 350, 350], present: [] }, { range: "1501<2000", base: [400, 200, 200, 300, 150, 300, 200, 100, 400, 300, 300, 250], present: [] }, { range: "2001<3000", base: [350, 175, 175, 300, 150, 350, 400, 150, 350, 350, 350, 250], present: [] }, { range: "3001<4000", base: [125, 63, 63, 100, 100, 100, 100, 100, 125, 100, 100, 50], present: [] }, { range: "4001<6000", base: [50, 25, 25, 25, 25, 50, 50, 25, 50, 50, 50, 25], present: [] }, { range: ">6000", base: [20, 10, 10, 0, 0, 0, 0, 0, 20, 0, 0, 0], present: [] }, { range: "501<1000(1+1)", base: [175, 87, 87, 125, 125, 150, 175, 50, 175, 150, 150, 150], present: [] }, { range: "1001<2000(1+1)", base: [115, 58, 58, 90, 75, 90, 105, 50, 115, 90, 90, 90], present: [] } ] },
@@ -536,7 +552,9 @@
         ];
 
         let inventoryData = JSON.parse(JSON.stringify(defaultInventoryTemplate)); 
-        
+        let mainChart = null; let currentModalBranchIndex = null; let branchModalChart = null; 
+        let purchaseSummaryChart = null; let transferSummaryChart = null;
+
         function initPresentArrays(data) { 
             data.forEach(c => { 
                 if(!c.present || c.present.length !== stores.length) c.present = Array(stores.length).fill(0); 
@@ -548,14 +566,10 @@
         
         initPresentArrays(inventoryData);
 
-        let mainChart = null; let currentModalBranchIndex = null; let branchModalChart = null; let purchaseSummaryChart = null;
-
         // --- CORE FUNCTIONS ---
         
         function showToast(msg) {
-            const x = document.getElementById("toast");
-            x.textContent = msg;
-            x.className = "show";
+            const x = document.getElementById("toast"); x.textContent = msg; x.className = "show";
             setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
         }
 
@@ -564,25 +578,15 @@
                 localStorage.setItem('subham_inventory', JSON.stringify(inventoryData)); 
                 localStorage.setItem('subham_stores', JSON.stringify(stores));
                 showToast("Progress Saved"); 
-            } catch(e) {
-                console.error("Error saving data", e);
-            }
+            } catch(e) { console.error("Error saving data", e); }
         }
         
         function loadData() { 
-            const sI = localStorage.getItem('subham_inventory'); 
-            const sS = localStorage.getItem('subham_stores'); 
+            const sI = localStorage.getItem('subham_inventory'); const sS = localStorage.getItem('subham_stores'); 
             if(sI && sS) { 
                 try { 
-                    inventoryData = JSON.parse(sI); 
-                    stores = JSON.parse(sS); 
-                    initPresentArrays(inventoryData); 
-                } catch(e) {
-                    console.error("Error loading data, resetting.", e);
-                    inventoryData = JSON.parse(JSON.stringify(defaultInventoryTemplate));
-                    stores = ["SG", "SGHYD", "SGRJY", "SGTNL", "SIRIELR", "SGTNK", "SGTUNI", "SIRICPT", "SIRIVJY", "SIRIKKD", "SIRITPT", "VS"];
-                    initPresentArrays(inventoryData);
-                } 
+                    inventoryData = JSON.parse(sI); stores = JSON.parse(sS); initPresentArrays(inventoryData); 
+                } catch(e) { console.error("Error loading data, resetting.", e); inventoryData = JSON.parse(JSON.stringify(defaultInventoryTemplate)); initPresentArrays(inventoryData); } 
             } 
         }
         
@@ -590,59 +594,30 @@
             if(!confirm('Clear all stock counts to 0? Targets will remain.')) return; 
             inventoryData.forEach(c => { 
                 if(c.present) c.present.fill(0); 
-                if(c.mrpDetails) c.mrpDetails.forEach(m => { 
-                    if(m.present) m.present.fill(0); 
-                }); 
+                if(c.mrpDetails) c.mrpDetails.forEach(m => { if(m.present) m.present.fill(0); }); 
             }); 
-            saveData();
-            render(); 
+            saveData(); render(); 
         }
-        
-        function getSmartLogic(si, base, pres) { 
-            if (!base || !pres || si >= base.length || si >= pres.length) return { transfer: null, purchase: 0, gap: 0 }; 
-            const gap = (pres[si] || 0) - (base[si] || 0); 
-            if (gap >= 0) return { transfer: null, purchase: 0, gap: gap }; 
-            const need = Math.abs(gap); 
-            let donor = null, max = 0; 
-            for (let i = 0; i < stores.length; i++) { 
-                if (i === si) continue; 
-                const sur = (pres[i] || 0) - (base[i] || 0); 
-                if (sur > max) { max = sur; donor = i; } 
-            } 
-            let tObj = null, pQty = 0; 
-            if (donor !== null && max > 0) { const tQ = Math.min(need, max); tObj = { qty: tQ, from: stores[donor] }; pQty = need - tQ; } 
-            else { pQty = need; } 
-            return { transfer: tObj, purchase: pQty, gap: gap }; 
-        }
-        
+
         function recalcTotals(ci) { 
-            const c = inventoryData[ci]; 
-            if(!c) return; 
+            const c = inventoryData[ci]; if(!c) return; 
             if (!c.base || c.base.length !== stores.length) c.base = Array(stores.length).fill(0); 
             if (!c.present || c.present.length !== stores.length) c.present = Array(stores.length).fill(0); 
-            c.base.fill(0); 
-            c.present.fill(0); 
+            c.base.fill(0); c.present.fill(0); 
             if (c.mrpDetails && c.mrpDetails.length > 0) { 
-                c.mrpDetails.forEach(r => { 
-                    r.base.forEach((v, i) => c.base[i] += v || 0); 
-                    r.present.forEach((v, i) => c.present[i] += v || 0); 
-                }); 
+                c.mrpDetails.forEach(r => { r.base.forEach((v, i) => c.base[i] += v || 0); r.present.forEach((v, i) => c.present[i] += v || 0); }); 
             } 
         }
         
         function render() { 
             renderMatrix('matrixHead', 'tableBody', false, 'horizontalTable'); 
-            let selC = document.getElementById('selCat'), selB = document.getElementById('selBr');
-            let chartSel = document.getElementById('chartFilter'); 
+            let selC = document.getElementById('selCat'), selB = document.getElementById('selBr'), chartSel = document.getElementById('chartFilter'); 
             let opts = '', chartOpts = '', brOpts = '', gT = 0, gS = 0; 
             inventoryData.forEach((c, i) => { 
-                opts += `<option value="${i}">${c.name}</option>`; 
-                chartOpts += `<option value="${i}">${c.name}</option>`;
-                let cT=0, cS=0; 
+                opts += `<option value="${i}">${c.name}</option>`; chartOpts += `<option value="${i}">${c.name}</option>`;
                 stores.forEach((_, s) => { 
                     gT += c.base[s]||0; gS += c.present[s]||0; 
-                    cT+=c.base[s]||0; cS+=c.present[s]||0; 
-                    if(c.mrpDetails) c.mrpDetails.forEach(m => { gT+=m.base[s]||0; gS+=m.present[s]||0; cT+=m.base[s]||0; cS+=m.present[s]||0; }); 
+                    if(c.mrpDetails) c.mrpDetails.forEach(m => { gT+=m.base[s]||0; gS+=m.present[s]||0; }); 
                 }); 
             }); 
             stores.forEach((s, i) => brOpts += `<option value="${i}">${s}</option>`); 
@@ -652,11 +627,7 @@
             document.getElementById('purchaseSuggestion').textContent = Math.max(0, gap).toLocaleString(); 
             document.getElementById('efficiency').textContent = eff + '%';
             document.getElementById('totalCatsCount').textContent = inventoryData.length;
-            
-            if(selC) selC.innerHTML = opts; 
-            if(selB) selB.innerHTML = brOpts; 
-            if(chartSel) chartSel.innerHTML = chartOpts; 
-            
+            if(selC) selC.innerHTML = opts; if(selB) selB.innerHTML = brOpts; if(chartSel) chartSel.innerHTML = chartOpts; 
             document.getElementById('manualBranch').innerHTML = '<option value="-1">ALL</option>' + brOpts; 
             updateTargetMrpOptions(); 
             if (!document.getElementById('tabAnalytics').classList.contains('hidden')) refreshCharts(); 
@@ -664,35 +635,36 @@
         
         function renderMatrix(hId, bId, isP, tId) { 
             const th = document.getElementById(hId), tb = document.getElementById(bId); 
-            
-            let h1 = `<tr>
-                <th rowspan="2" class="sticky-col-1 col-cat">Category</th>
-                <th rowspan="2" class="sticky-col-2 col-mrp">MRP</th>`;
-            
-            stores.forEach(s => { 
-                h1 += `<th colspan="2" class="group-header col-data">${s}</th>`; 
-            }); 
+            let h1 = `<tr><th rowspan="2" class="sticky-col-1 col-cat">Category</th><th rowspan="2" class="sticky-col-2 col-mrp">MRP</th>`;
+            stores.forEach(s => { h1 += `<th colspan="2" class="group-header col-data">${s}</th>`; }); 
             h1 += '<th rowspan="2" class="sticky-action">AI Suggestion</th></tr>'; 
+            let h2 = '<tr>'; stores.forEach(() => { h2 += `<th class="sub-header col-data">T</th><th class="sub-header col-data" style="border-right:1px solid var(--border)">S</th>`; }); h2 += '</tr>'; 
+            th.innerHTML = h1 + h2; let body = ''; 
             
-            let h2 = '<tr>';
-            stores.forEach(() => { 
-                h2 += `<th class="sub-header col-data">T</th><th class="sub-header col-data" style="border-right:1px solid var(--border)">S</th>`; 
-            }); 
-            h2 += '</tr>'; 
-            
-            th.innerHTML = h1 + h2; 
-            let body = ''; 
-            
+            // Helper for logic
+            const getLogic = (base, present, si) => {
+                const gap = (present[si] || 0) - (base[si] || 0);
+                if (gap >= 0) return { transfer: null, purchase: 0, gap: gap };
+                const need = Math.abs(gap);
+                let donor = null, max = 0; 
+                for (let i = 0; i < stores.length; i++) { 
+                    if (i === si) continue; 
+                    const sur = (present[i] || 0) - (base[i] || 0); 
+                    if (sur > max) { max = sur; donor = i; } 
+                }
+                let tObj = null, pQty = 0; 
+                if (donor !== null && max > 0) { const tQ = Math.min(need, max); tObj = { qty: tQ, from: stores[donor] }; pQty = need - tQ; } 
+                else { pQty = need; } 
+                return { transfer: tObj, purchase: pQty, gap: gap }; 
+            };
+
             inventoryData.forEach((c, ci) => { 
                 if (c.mrpDetails && c.mrpDetails.length > 0) { 
                     c.mrpDetails.forEach((m, mi) => { 
-                        let row = `<tr>
-                            <td class="sticky-col-1 col-cat" style="font-size:11px;color:var(--text-muted)">${c.name}</td>
-                            <td class="sticky-col-2 col-mrp"><span class="badge badge-info">${m.range}</span></td>`; 
+                        let row = `<tr><td class="sticky-col-1 col-cat" style="font-size:11px;color:var(--text-muted)">${c.name}</td><td class="sticky-col-2 col-mrp"><span class="badge badge-info">${m.range}</span></td>`; 
                         let hasData = !isP; 
-                        
                         stores.forEach((_, si) => { 
-                            const t = m.base[si]||0, s = m.present[si]||0, l = getSmartLogic(si, m.base, m.present); 
+                            const t = m.base[si]||0, s = m.present[si]||0, l = getLogic(m.base, m.present, si); 
                             if(isP && l.purchase===0) { row += `<td class="col-data"></td><td class="col-data"></td>`; } 
                             else { 
                                 if(isP) hasData = true; 
@@ -705,45 +677,37 @@
                         
                         let actionHtml = '';
                         if(!isP){
-                            let surplusStores = [];
-                            let shortageStores = [];
+                            const l = getLogic(m.base, m.present, stores.indexOf(stores[0])); // Just for rendering logic
+                            // Re-check global logic for the row
+                            let surpluses = [];
+                            let shortages = [];
                             stores.forEach((sName, sIdx) => {
                                 const diff = (m.present[sIdx]||0) - (m.base[sIdx]||0);
-                                if (diff > 0) surplusStores.push({name: sName, idx: sIdx, qty: diff});
-                                if (diff < 0) shortageStores.push({name: sName, idx: sIdx, qty: Math.abs(diff)});
+                                if (diff > 0) surpluses.push({name: sName, qty: diff});
+                                if (diff < 0) shortages.push({name: sName, qty: Math.abs(diff)});
                             });
-
-                            if (surplusStores.length > 0 && shortageStores.length > 0) {
-                                const donor = surplusStores.sort((a,b) => b.qty - a.qty)[0];
-                                const receiver = shortageStores.sort((a,b) => b.qty - a.qty)[0];
-                                const transferQty = Math.min(donor.qty, receiver.qty);
-                                
-                                actionHtml = `<div class="flex flex-col gap-1 text-left p-1">
-                                    <span class="badge badge-info">Move ${transferQty} from ${donor.name}</span>
-                                    <span class="text-xs opacity-75">To: ${receiver.name}</span>`;
-                                if (transferQty < receiver.qty) actionHtml += `<span class="badge badge-danger mt-1">Buy ${receiver.qty - transferQty}</span>`;
-                                actionHtml += `</div>`;
-                            } else if (shortageStores.length > 0) {
-                                const totalShort = shortageStores.reduce((a,b) => a + b.qty, 0);
-                                actionHtml = `<span class="badge badge-danger">Buy ${totalShort}</span>`;
-                            } else if (surplusStores.length > 0) {
-                                 const totalSurplus = surplusStores.reduce((a,b) => a + b.qty, 0);
-                                 actionHtml = `<span class="badge badge-warning">Surplus ${totalSurplus}</span>`;
-                            } else {
-                                 actionHtml = `<span class="badge badge-success">Balanced</span>`;
+                            
+                            if (surpluses.length > 0 && shortages.length > 0) {
+                                // Simplified display for matrix
+                                const donor = surpluses.sort((a,b) => b.qty - a.qty)[0];
+                                const receiver = shortages.sort((a,b) => b.qty - a.qty)[0];
+                                const qty = Math.min(donor.qty, receiver.qty);
+                                actionHtml = `<div class="flex flex-col gap-1 text-left p-1"><span class="badge badge-info">Move ${qty} from ${donor.name}</span><span class="text-xs opacity-75">To: ${receiver.name}</span></div>`;
+                            } else if (shortages.length > 0) {
+                                actionHtml = `<span class="badge badge-danger">Buy ${shortages.reduce((a,b)=>a+b.qty,0)}</span>`;
+                            } else if (surpluses.length > 0) {
+                                 actionHtml = `<span class="badge badge-warning">Surplus ${surpluses.reduce((a,b)=>a+b.qty,0)}</span>`;
                             }
                         }
-                        row += `<td class="sticky-action">${actionHtml}</td></tr>`; 
-                        body += row; 
+                        row += `<td class="sticky-action">${actionHtml}</td></tr>`; body += row; 
                     }); 
                 } 
                 
-                let tr = `<tr class="total-row">
-                    <td class="sticky-col-1 col-cat" style="font-weight:800">${c.name}</td>
-                    <td class="sticky-col-2 col-mrp"><span class="badge badge-warning">TOTAL</span></td>`; 
+                // Total Row
+                let tr = `<tr class="total-row"><td class="sticky-col-1 col-cat" style="font-weight:800">${c.name}</td><td class="sticky-col-2 col-mrp"><span class="badge badge-warning">TOTAL</span></td>`; 
                 let hasData = !isP; 
                 stores.forEach((_, si) => { 
-                    const t = c.base[si]||0, s = c.present[si]||0, l = getSmartLogic(si, c.base, c.present); 
+                    const t = c.base[si]||0, s = c.present[si]||0, l = getLogic(c.base, c.present, si); 
                     if(isP && l.purchase===0) { tr += `<td class="col-data"></td><td class="col-data"></td>`; } 
                     else { 
                         if(isP) hasData = true; 
@@ -760,79 +724,204 @@
         
         function editStock(ci, mi, si) { 
             const val = mi === -1 ? (inventoryData[ci].present[si]||0) : (inventoryData[ci].mrpDetails[mi].present[si]||0); 
-            const n = prompt("New Stock:", val); 
-            if(n===null) return; 
-            const num = parseInt(n); 
-            if(isNaN(num)) return; 
-            if(mi===-1) inventoryData[ci].present[si] = num; 
-            else { 
-                inventoryData[ci].mrpDetails[mi].present[si] = num; 
-                recalcTotals(ci); 
-            } 
-            saveData();
-            render(); 
+            const n = prompt("New Stock:", val); if(n===null) return; const num = parseInt(n); if(isNaN(num)) return; 
+            if(mi===-1) inventoryData[ci].present[si] = num; else { inventoryData[ci].mrpDetails[mi].present[si] = num; recalcTotals(ci); } 
+            saveData(); render(); 
         }
 
         function refreshCharts() { 
-            const chartSel = document.getElementById('chartFilter');
-            if(!chartSel) return;
-            const ci = parseInt(chartSel.value) || 0; 
-            const cat = inventoryData[ci]; 
-            if(!cat) return; 
+            const chartSel = document.getElementById('chartFilter'); if(!chartSel) return;
+            const ci = parseInt(chartSel.value) || 0; const cat = inventoryData[ci]; if(!cat) return; 
             if(mainChart) mainChart.destroy(); 
-            const isDark = document.body.classList.contains('dark-mode');
-            const txtColor = isDark ? '#e6f1ff' : '#102a43';
-            
+            const isDark = document.body.classList.contains('dark-mode'); const txtColor = isDark ? '#e6f1ff' : '#102a43';
             mainChart = new Chart(document.getElementById('mainChart'), { 
-                type: 'bar', 
-                data: { 
-                    labels: stores, 
-                    datasets: [ 
-                        { label: 'Target', data: cat.base, backgroundColor: 'rgba(0, 184, 148, 0.2)', borderColor: '#00b894', borderWidth: 2, borderRadius: 4 }, 
-                        { label: 'Stock', data: cat.present, backgroundColor: 'rgba(9, 132, 227, 0.2)', borderColor: '#0984e3', borderWidth: 2, borderRadius: 4 } 
-                    ] 
-                }, 
-                options: { 
-                    responsive: true, maintainAspectRatio: false, 
-                    plugins: { legend: { position: 'top', labels: { color: txtColor } } }, 
-                    scales: { x: { grid: { display: false }, ticks: { color: txtColor } }, y: { beginAtZero: true, ticks: { color: txtColor } } } 
-                } 
+                type: 'bar', data: { labels: stores, datasets: [ { label: 'Target', data: cat.base, backgroundColor: 'rgba(0, 184, 148, 0.2)', borderColor: '#00b894', borderWidth: 2, borderRadius: 4 }, { label: 'Stock', data: cat.present, backgroundColor: 'rgba(9, 132, 227, 0.2)', borderColor: '#0984e3', borderWidth: 2, borderRadius: 4 } ] }, 
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { color: txtColor } } }, scales: { x: { grid: { display: false }, ticks: { color: txtColor } }, y: { beginAtZero: true, ticks: { color: txtColor } } } } 
             }); 
         }
+
+        // --- REPORT VIEWS ---
 
         function openPurchaseReport() { document.getElementById('dashboardView').classList.add('hidden'); document.getElementById('purchaseReportView').classList.remove('hidden'); renderPurchaseReport(); }
         function closePurchaseReport() { document.getElementById('purchaseReportView').classList.add('hidden'); document.getElementById('dashboardView').classList.remove('hidden'); }
 
-        function renderPurchaseReport() {
-            const purchaseItems = []; let totalPurchaseQty = 0; const affectedStores = new Set();
+        function openTransferReport() { document.getElementById('dashboardView').classList.add('hidden'); document.getElementById('transferReportView').classList.remove('hidden'); renderTransferReport(); }
+        function closeTransferReport() { document.getElementById('transferReportView').classList.add('hidden'); document.getElementById('dashboardView').classList.remove('hidden'); }
+
+        // --- TRANSFER LOGIC ---
+        function calculateGlobalTransfer() {
+            const transfers = [];
             inventoryData.forEach(c => {
+                const processItem = (itemName, mrpRange, baseArr, presArr) => {
+                    // 1. Identify Surpluses and Shortages
+                    let surpluses = [];
+                    let shortages = [];
+                    
+                    stores.forEach((s, i) => {
+                        const diff = (presArr[i]||0) - (baseArr[i]||0);
+                        if (diff > 0) surpluses.push({ store: s, idx: i, qty: diff });
+                        if (diff < 0) shortages.push({ store: s, idx: i, qty: Math.abs(diff) });
+                    });
+
+                    // 2. Sort for optimal matching (largest surplus to largest shortage)
+                    surpluses.sort((a, b) => b.qty - a.qty);
+                    shortages.sort((a, b) => b.qty - a.qty);
+
+                    // 3. Execute Transfers
+                    // We iterate through shortages and try to fulfill them from available surpluses
+                    for (let i = 0; i < shortages.length; i++) {
+                        let needed = shortages[i].qty;
+                        const receiver = shortages[i].store;
+
+                        // Try to find donors
+                        for (let j = 0; j < surpluses.length; j++) {
+                            if (needed === 0) break; // Fulfilled
+                            
+                            if (surpluses[j].qty > 0) {
+                                const donor = surpluses[j];
+                                const available = donor.qty;
+                                const transferQty = Math.min(needed, available);
+
+                                if (transferQty > 0) {
+                                    transfers.push({
+                                        category: itemName,
+                                        mrp: mrpRange,
+                                        from: donor.store,
+                                        to: receiver,
+                                        qty: transferQty
+                                    });
+
+                                    // Update local loop state
+                                    needed -= transferQty;
+                                    surpluses[j].qty -= transferQty;
+                                }
+                            }
+                        }
+                    }
+                };
+
+                if (c.mrpDetails && c.mrpDetails.length > 0) {
+                    c.mrpDetails.forEach(m => processItem(c.name, m.range, m.base, m.present));
+                } else {
+                    processItem(c.name, 'TOTAL', c.base, c.present);
+                }
+            });
+            return transfers;
+        }
+
+        function renderTransferReport() {
+            const transfers = calculateGlobalTransfer();
+            const totalQty = transfers.reduce((sum, t) => sum + t.qty, 0);
+            
+            document.getElementById('reportTotalTransfer').textContent = totalQty.toLocaleString();
+            document.getElementById('reportSavedPurchase').textContent = totalQty.toLocaleString();
+
+            // Chart: Top Routes
+            const routeMap = {};
+            transfers.forEach(t => {
+                const key = `${t.from} → ${t.to}`;
+                routeMap[key] = (routeMap[key] || 0) + t.qty;
+            });
+            const topRoutes = Object.entries(routeMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
+
+            if (transferSummaryChart) transferSummaryChart.destroy();
+            transferSummaryChart = new Chart(document.getElementById('transferSummaryChart'), {
+                type: 'bar', 
+                data: { 
+                    labels: topRoutes.map(r => r[0]), 
+                    datasets: [{ label: 'Items to Transfer', data: topRoutes.map(r => r[1]), backgroundColor: '#0984e3', borderRadius: 4 }] 
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+            });
+
+            // List
+            const container = document.getElementById('transferListContainer');
+            let listHtml = `<div class="transfer-list-item font-bold text-xs uppercase" style="background:var(--bg); color:var(--text-muted);">
+                <div>From</div><div>To</div><div>Category</div><div>MRP</div><div class="text-center">Qty</div>
+            </div>`;
+            
+            if (transfers.length === 0) {
+                listHtml += `<div class="p-8 text-center font-bold" style="color: var(--info)">NO TRANSFERS REQUIRED. INVENTORY IS BALANCED.</div>`;
+            } else {
+                transfers.forEach(t => {
+                    listHtml += `<div class="transfer-list-item">
+                        <div class="font-bold" style="color:var(--success)">${t.from}</div>
+                        <div class="font-bold" style="color:var(--danger)">${t.to}</div>
+                        <div>${t.category}</div>
+                        <div class="text-xs" style="color:var(--text-muted)">${t.mrp}</div>
+                        <div class="text-center"><span class="badge badge-info text-base" style="font-size: 14px">${t.qty}</span></div>
+                    </div>`;
+                });
+            }
+            container.innerHTML = listHtml;
+        }
+
+        async function exportTransferExcel() {
+            const transfers = calculateGlobalTransfer();
+            const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Transfer List');
+            ws.columns = [ { header: 'From Store', key: 'from', width: 12 }, { header: 'To Store', key: 'to', width: 12 }, { header: 'Category', key: 'category', width: 25 }, { header: 'MRP', key: 'mrp', width: 12 }, { header: 'Transfer Qty', key: 'qty', width: 12 } ];
+            ws.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } }; ws.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0984E3' } };
+            transfers.forEach(t => ws.addRow(t));
+            const buf = await wb.xlsx.writeBuffer();
+            saveAs(new Blob([buf]), 'Transfer_Suggestions.xlsx');
+        }
+
+        // --- PURCHASE LOGIC ---
+        function calculatePurchaseNeeds() {
+            const purchaseItems = []; let totalPurchaseQty = 0; const affectedStores = new Set();
+            // 1. Simulate Transfers first to get accurate purchase needs
+            const transfers = calculateGlobalTransfer();
+            
+            // Clone inventory for simulation
+            const simInventory = JSON.parse(JSON.stringify(inventoryData));
+
+            // Apply transfers to simulation
+            transfers.forEach(t => {
+                // Find item in simInventory
+                const cat = simInventory.find(c => c.name === t.category);
+                if (cat) {
+                    const fromIdx = stores.indexOf(t.from);
+                    const toIdx = stores.indexOf(t.to);
+                    if (cat.mrpDetails && cat.mrpDetails.length > 0) {
+                        const mrp = cat.mrpDetails.find(m => m.range === t.mrp);
+                        if (mrp) {
+                            mrp.present[fromIdx] -= t.qty;
+                            mrp.present[toIdx] += t.qty;
+                        }
+                    } else {
+                        cat.present[fromIdx] -= t.qty;
+                        cat.present[toIdx] += t.qty;
+                    }
+                }
+            });
+
+            // Calculate remaining shortages
+            simInventory.forEach(c => {
                 const process = (mrpRange, baseArr, presArr) => {
                     stores.forEach((s, si) => {
-                        const logic = getSmartLogic(si, baseArr, presArr);
-                        if (logic.purchase > 0) {
-                            const shortage = (baseArr[si] || 0) - (presArr[si] || 0);
-                            purchaseItems.push({ 
-                                store: s, 
-                                category: c.name, 
-                                mrp: mrpRange, 
-                                target: baseArr[si] || 0, 
-                                stock: presArr[si] || 0, 
-                                shortage: shortage, 
-                                purchase: logic.purchase 
-                            });
-                            totalPurchaseQty += logic.purchase; 
+                        const shortage = (baseArr[si]||0) - (presArr[si]||0);
+                        if (shortage > 0) {
+                            purchaseItems.push({ store: s, category: c.name, mrp: mrpRange, target: baseArr[si]||0, stock: presArr[si]||0, shortage: shortage, purchase: shortage });
+                            totalPurchaseQty += shortage;
                             affectedStores.add(s);
                         }
                     });
                 };
                 if (c.mrpDetails && c.mrpDetails.length > 0) { c.mrpDetails.forEach(m => process(m.range, m.base, m.present)); } else { process('TOTAL', c.base, c.present); }
             });
-            purchaseItems.sort((a, b) => b.shortage - a.shortage);
-            document.getElementById('reportTotalPurchase').textContent = totalPurchaseQty.toLocaleString();
-            document.getElementById('reportStoresAffected').textContent = affectedStores.size;
 
+            purchaseItems.sort((a, b) => b.shortage - a.shortage);
+            return { items: purchaseItems, total: totalPurchaseQty, stores: affectedStores.size };
+        }
+
+        function renderPurchaseReport() {
+            const data = calculatePurchaseNeeds();
+            document.getElementById('reportTotalPurchase').textContent = data.total.toLocaleString();
+            document.getElementById('reportStoresAffected').textContent = data.stores;
+
+            // Chart Logic (same as before)
             const catTotals = {};
-            purchaseItems.forEach(item => { if (!catTotals[item.category]) catTotals[item.category] = 0; catTotals[item.category] += item.purchase; });
+            data.items.forEach(item => { catTotals[item.category] = (catTotals[item.category] || 0) + item.purchase; });
             const sortedCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
             if (purchaseSummaryChart) purchaseSummaryChart.destroy();
@@ -841,21 +930,16 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
             });
 
+            // List
             const container = document.getElementById('purchaseListContainer');
-            // Added Target and Stock as main columns
-            let listHtml = `<div class="purchase-list-item font-bold text-xs uppercase" style="background:var(--bg); color:var(--text-muted);">
-                <div>Store</div>
-                <div>Category / MRP</div>
-                <div class="text-center">Target</div>
-                <div class="text-center">Stock</div>
-                <div class="text-center">Gap</div>
-                <div class="text-center">To Buy</div>
+            let listHtml = `<div class="report-list-item font-bold text-xs uppercase" style="background:var(--bg); color:var(--text-muted);">
+                <div>Store</div><div>Category / MRP</div><div class="text-center">Target</div><div class="text-center">Stock</div><div class="text-center">Gap</div><div class="text-center">To Buy</div>
             </div>`;
             
-            if (purchaseItems.length === 0) { listHtml += `<div class="p-8 text-center font-bold" style="color: var(--success)">ALL STOCKS ARE OPTIMIZED.</div>`; } 
+            if (data.items.length === 0) { listHtml += `<div class="p-8 text-center font-bold" style="color: var(--success)">ALL STOCKS ARE OPTIMIZED.</div>`; } 
             else {
-                purchaseItems.forEach(item => {
-                    listHtml += `<div class="purchase-list-item">
+                data.items.forEach(item => {
+                    listHtml += `<div class="report-list-item">
                         <div class="flex flex-col"><span class="font-bold" style="color:var(--danger)">${item.store}</span></div>
                         <div class="flex flex-col"><span class="font-semibold">${item.category}</span><span class="text-xs" style="color:var(--text-muted)">${item.mrp}</span></div>
                         <div class="text-center mono font-bold">${item.target}</div>
@@ -869,195 +953,41 @@
         }
 
         async function exportSmartPurchaseExcel() {
-            const purchaseItems = [];
-            inventoryData.forEach(c => {
-                const process = (mrpRange, baseArr, presArr) => {
-                    stores.forEach((s, si) => {
-                        const logic = getSmartLogic(si, baseArr, presArr);
-                        if (logic.purchase > 0) { purchaseItems.push({ Store: s, Category: c.name, MRP: mrpRange, Target: baseArr[si] || 0, Stock: presArr[si] || 0, Shortage: (baseArr[si] || 0) - (presArr[si] || 0), Purchase: logic.purchase }); }
-                    });
-                };
-                if (c.mrpDetails && c.mrpDetails.length > 0) { c.mrpDetails.forEach(m => process(m.range, m.base, m.present)); } else { process('TOTAL', c.base, c.present); }
-            });
-            purchaseItems.sort((a, b) => b.Shortage - a.Shortage);
-
+            const data = calculatePurchaseNeeds();
             const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Purchase List');
-            ws.columns = [ { header: 'Store', key: 'Store', width: 10 }, { header: 'Category', key: 'Category', width: 25 }, { header: 'MRP', key: 'MRP', width: 12 }, { header: 'Target', key: 'Target', width: 8 }, { header: 'Stock', key: 'Stock', width: 8 }, { header: 'Shortage', key: 'Shortage', width: 10 }, { header: 'To Purchase', key: 'Purchase', width: 12 } ];
-            ws.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } }; ws.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDC2626' } }; ws.getRow(1).alignment = { horizontal: 'center' };
-            purchaseItems.forEach(item => ws.addRow(item));
+            ws.columns = [ { header: 'Store', key: 'store', width: 10 }, { header: 'Category', key: 'category', width: 25 }, { header: 'MRP', key: 'mrp', width: 12 }, { header: 'Target', key: 'target', width: 8 }, { header: 'Stock', key: 'stock', width: 8 }, { header: 'Shortage', key: 'shortage', width: 10 }, { header: 'To Purchase', key: 'purchase', width: 12 } ];
+            ws.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } }; ws.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDC2626' } };
+            data.items.forEach(item => ws.addRow(item));
             const buf = await wb.xlsx.writeBuffer();
             saveAs(new Blob([buf]), 'Smart_Purchase_List.xlsx');
         }
 
+        // --- Standard Functions ---
         function switchTab(t) { document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden')); document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active')); document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('hidden'); event.target.classList.add('active'); if(t==='analytics') refreshCharts(); }
-        function openModal(si) { currentModalBranchIndex = si; const nm = stores[si]; const labels = [], tgts = [], stks = []; let tT=0, tS=0; let rows = ''; inventoryData.forEach(c => { const t = c.base[si]||0, s = c.present[si]||0; if(t>0 || s>0) { tT+=t; tS+=s; labels.push(c.name.substring(0,10)); tgts.push(t); stks.push(s); const g = s-t; const l = getSmartLogic(si, c.base, c.present); let b = ''; if(l.transfer) b = `<span class="badge badge-info">Trans ${l.transfer.qty} fr. ${l.transfer.from}</span>`; else if(l.purchase>0) b = `<span class="badge badge-danger">Buy ${l.purchase}</span>`; else if(g>0) b = `<span class="badge badge-warning">Surplus</span>`; else b = `<span class="badge badge-success">OK</span>`; rows += `<div class="card p-4 mb-2" style="border-left:4px solid ${g<0?'var(--danger)':'var(--success)'}"><div class="flex justify-between text-xs uppercase mb-1" style="color:var(--text-muted)"><span>${c.name}</span><span>Gap: ${g>0?'+':''}${g}</span></div><div class="flex justify-between items-center"><div class="mono text-xs">T: ${t} | S: ${s}</div><div>${b}</div></div></div>`; } }); document.getElementById('modalBody').innerHTML = `<div style="height:250px;margin-bottom:20px;position:relative"><canvas id="branchModalChart"></canvas></div><div class="grid grid-cols-2 gap-4 mb-6 text-center"><div class="p-4 rounded-xl" style="background:var(--bg)"><p class="text-xs uppercase font-bold" style="color:var(--text-muted)">Total Target</p><p class="text-2xl font-extrabold mono">${tT}</p></div><div class="p-4 rounded-xl" style="background:var(--info);color:white"><p class="text-xs uppercase font-bold opacity-80">Total Stock</p><p class="text-2xl font-extrabold mono">${tS}</p></div></div><h3 class="font-bold text-sm mb-3 uppercase tracking-wider" style="color:var(--text-muted)">Category Breakdown</h3><div>${rows}</div>`; document.getElementById('modalStore').textContent = `${nm} Analysis`; document.getElementById('modal').classList.remove('hidden'); const ctx = document.getElementById('branchModalChart').getContext('2d'); if(branchModalChart) branchModalChart.destroy(); branchModalChart = new Chart(ctx, { type:'bar', data:{labels, datasets:[{label:'Target', data:tgts, backgroundColor:'#00b894', borderRadius: 4}, {label:'Stock', data:stks, backgroundColor:'#0984e3', borderRadius: 4}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}, scales:{x:{display:true, grid:{display:false}}, y:{beginAtZero:true}} } }); }
+        function openModal(si) { currentModalBranchIndex = si; const nm = stores[si]; const labels = [], tgts = [], stks = []; let tT=0, tS=0; let rows = ''; inventoryData.forEach(c => { const t = c.base[si]||0, s = c.present[si]||0; if(t>0 || s>0) { tT+=t; tS+=s; labels.push(c.name.substring(0,10)); tgts.push(t); stks.push(s); const g = s-t; const l = {purchase: Math.max(0, t-s)}; let b = ''; if(l.purchase>0) b = `<span class="badge badge-danger">Buy ${l.purchase}</span>`; else if(g>0) b = `<span class="badge badge-warning">Surplus</span>`; else b = `<span class="badge badge-success">OK</span>`; rows += `<div class="card p-4 mb-2" style="border-left:4px solid ${g<0?'var(--danger)':'var(--success)'}"><div class="flex justify-between text-xs uppercase mb-1" style="color:var(--text-muted)"><span>${c.name}</span><span>Gap: ${g>0?'+':''}${g}</span></div><div class="flex justify-between items-center"><div class="mono text-xs">T: ${t} | S: ${s}</div><div>${b}</div></div></div>`; } }); document.getElementById('modalBody').innerHTML = `<div style="height:250px;margin-bottom:20px;position:relative"><canvas id="branchModalChart"></canvas></div><div class="grid grid-cols-2 gap-4 mb-6 text-center"><div class="p-4 rounded-xl" style="background:var(--bg)"><p class="text-xs uppercase font-bold" style="color:var(--text-muted)">Total Target</p><p class="text-2xl font-extrabold mono">${tT}</p></div><div class="p-4 rounded-xl" style="background:var(--info);color:white"><p class="text-xs uppercase font-bold opacity-80">Total Stock</p><p class="text-2xl font-extrabold mono">${tS}</p></div></div><h3 class="font-bold text-sm mb-3 uppercase tracking-wider" style="color:var(--text-muted)">Category Breakdown</h3><div>${rows}</div>`; document.getElementById('modalStore').textContent = `${nm} Analysis`; document.getElementById('modal').classList.remove('hidden'); const ctx = document.getElementById('branchModalChart').getContext('2d'); if(branchModalChart) branchModalChart.destroy(); branchModalChart = new Chart(ctx, { type:'bar', data:{labels, datasets:[{label:'Target', data:tgts, backgroundColor:'#00b894', borderRadius: 4}, {label:'Stock', data:stks, backgroundColor:'#0984e3', borderRadius: 4}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}, scales:{x:{display:true, grid:{display:false}}, y:{beginAtZero:true}} } }); }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-        
         function addBr() { const n=document.getElementById('newBr').value.trim().toUpperCase(); if(!n) return; stores.push(n); inventoryData.forEach(c=>{c.base.push(0);c.present.push(0);if(c.mrpDetails)c.mrpDetails.forEach(m=>{m.base.push(0);m.present.push(0)});}); saveData(); render(); }
-        
         function addCat() { const n=document.getElementById('newCat').value.trim().toUpperCase(); if(!n) return; inventoryData.push({name:n,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]}); saveData(); render(); }
-        
-        function updateTargetMrpOptions() { 
-            const ci=parseInt(document.getElementById('selCat').value); 
-            const s=document.getElementById('selMrp'); 
-            s.innerHTML='<option value="TOTAL">TOTAL</option>'; 
-            if(!isNaN(ci)){ 
-                const c=inventoryData[ci]; 
-                if(c.mrpDetails) c.mrpDetails.forEach(m=>{ 
-                    const o=document.createElement('option'); 
-                    o.value=m.range; 
-                    o.textContent=m.range; 
-                    s.appendChild(o); 
-                }); 
-            } 
-        }
-        
-        function setTarget() { 
-            const ci=parseInt(document.getElementById('selCat').value), m=document.getElementById('selMrp').value, si=parseInt(document.getElementById('selBr').value), v=parseInt(document.getElementById('targetVal').value)||0; 
-            if(isNaN(ci)||isNaN(si)) return alert('Select Category and Branch'); 
-            const c=inventoryData[ci]; 
-            if(m==='TOTAL'||!m) c.base[si]=v; 
-            else { 
-                let r=c.mrpDetails.find(x=>x.range===m); 
-                if(!r){r={range:m,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(r);} 
-                r.base[si]=v; 
-                recalcTotals(ci); 
-            } 
-            saveData();
-            render(); 
-            alert('Target Updated'); 
-        }
-        
-        function updateMrpOptions() { 
-            const n=document.getElementById('manualCatInput').value.toUpperCase().trim(); 
-            const l=document.getElementById('mrpList'); 
-            l.innerHTML='<option value="TOTAL">TOTAL</option>'; 
-            if(!n) return; 
-            const c=inventoryData.find(x=>x.name===n); 
-            if(c&&c.mrpDetails) c.mrpDetails.forEach(m=>{ 
-                const o=document.createElement('option'); 
-                o.value=m.range; 
-                l.appendChild(o); 
-            }); 
-        }
-        
+        function updateTargetMrpOptions() { const ci=parseInt(document.getElementById('selCat').value); const s=document.getElementById('selMrp'); s.innerHTML='<option value="TOTAL">TOTAL</option>'; if(!isNaN(ci)){ const c=inventoryData[ci]; if(c.mrpDetails) c.mrpDetails.forEach(m=>{ const o=document.createElement('option'); o.value=m.range; o.textContent=m.range; s.appendChild(o); }); } }
+        function setTarget() { const ci=parseInt(document.getElementById('selCat').value), m=document.getElementById('selMrp').value, si=parseInt(document.getElementById('selBr').value), v=parseInt(document.getElementById('targetVal').value)||0; if(isNaN(ci)||isNaN(si)) return alert('Select Category and Branch'); const c=inventoryData[ci]; if(m==='TOTAL'||!m) c.base[si]=v; else { let r=c.mrpDetails.find(x=>x.range===m); if(!r){r={range:m,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(r);} r.base[si]=v; recalcTotals(ci); } saveData(); render(); alert('Target Updated'); }
+        function updateMrpOptions() { const n=document.getElementById('manualCatInput').value.toUpperCase().trim(); const l=document.getElementById('mrpList'); l.innerHTML='<option value="TOTAL">TOTAL</option>'; if(!n) return; const c=inventoryData.find(x=>x.name===n); if(c&&c.mrpDetails) c.mrpDetails.forEach(m=>{ const o=document.createElement('option'); o.value=m.range; l.appendChild(o); }); }
         function saveManualData() { const nm=document.getElementById('manualCatInput').value.toUpperCase().trim(), mr=document.getElementById('manualMrp').value.trim(), si=parseInt(document.getElementById('manualBranch').value), tg=parseInt(document.getElementById('manualTarget').value)||0, st=parseInt(document.getElementById('manualStock').value)||0; if(!nm||!mr||isNaN(si)) return alert('Missing fields'); let idx=inventoryData.findIndex(x=>x.name===nm); if(idx===-1){inventoryData.push({name:nm,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]});idx=inventoryData.length-1;} const c=inventoryData[idx]; if(si===-1){ if(mr==='TOTAL'){for(let i=0;i<stores.length;i++){c.base[i]=tg;c.present[i]=st;}} else {let r=c.mrpDetails.find(x=>x.range===mr);if(!r){r={range:mr,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(r);}for(let i=0;i<stores.length;i++){r.base[i]=tg;r.present[i]=st;}recalcTotals(idx);} } else { if(mr==='TOTAL'){c.base[si]=tg;c.present[si]=st;} else {let r=c.mrpDetails.find(x=>x.range===mr);if(!r){r={range:mr,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(r);}r.base[si]=tg;r.present[si]=st;recalcTotals(idx);} } closeManualModal();saveData();render(); }
-        
-        async function handleFileUpload(e) { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=async ev => { const d=new Uint8Array(ev.target.result); const wb=new ExcelJS.Workbook(); await wb.xlsx.load(d); const ws=wb.worksheets[0]; const hdr=ws.getRow(1); const map=[]; hdr.eachCell((c,i)=>{ if(i<=2) return; let v=c.value; if(c.result) v=c.result; if(v&&typeof v==='object'&&v.richText) v=v.richText.map(t=>t.text).join(''); const t=v?v.toString().trim().toUpperCase():''; if(t) map.push({idx:i,name:t}); }); if(!map.length) return alert('No stores'); const old=[...stores]; let chg=false; map.forEach(m=>{ if(!stores.includes(m.name)){stores.push(m.name);chg=true;} }); if(chg) inventoryData.forEach(c=>{ c.base=[...c.base,...Array(stores.length-old.length).fill(0)]; c.present=[...c.present,...Array(stores.length-old.length).fill(0)]; if(c.mrpDetails)c.mrpDetails.forEach(m=>{m.base=[...m.base,...Array(stores.length-old.length).fill(0)];m.present=[...m.present,...Array(stores.length-old.length).fill(0)];}); }); const norm=s=>{ if(!s) return ''; let st=s.toString().trim().toUpperCase(); if(st==='TOTAL') return 'TOTAL'; let m=st.match(/^(\d+)\s*[-<]+\s*(\d+)\s*(.*)/); if(m) return `${m[1]}<${m[2]}${m[3].trim()}`; m=st.match(/^(>|<)\s*(\d+)/); if(m) return `${m[1]}${m[2]}`; const ns=st.match(/\d+/g); if(ns&&ns.length>=2) return `${ns[0]}<${ns[1]}`; if(ns&&ns.length===1) return `>${ns[0]}`; return st; }; ws.eachRow((rw, rn)=>{ if(rn===1) return; const gV=i=>{ const cl=rw.getCell(i); if(cl.value==null||cl.value===undefined||cl.value==='') return 0; let rv=0; if(cl.result) rv=parseFloat(cl.result); else rv=parseFloat(cl.value); return isNaN(rv)?0:Math.round(rv); }; const gS=i=>{ const cl=rw.getCell(i); let v=cl.value; if(cl.result) v=cl.result; if(v&&typeof v==='object'&&v.richText) v=v.richText.map(t=>t.text).join(''); if(cl.type==4) return cl.value.toString(); return v?v.toString().trim().toUpperCase():''; }; const cn=gS(1), mn=norm(gS(2)); if(!cn) return; let ci=inventoryData.findIndex(x=>x.name===cn); if(ci===-1){ inventoryData.push({name:cn,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]}); ci=inventoryData.length-1; } const c=inventoryData[ci]; const isT=mn==='TOTAL'||!mn; map.forEach(m=>{ const si=stores.indexOf(m.name); const vl=gV(m.idx); if(isT) c.present[si]=vl; else { let mr=c.mrpDetails.find(x=>x.range===mn); if(!mr){mr={range:mn,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(mr);} mr.present[si]=vl; } }); }); inventoryData.forEach((c,i)=>recalcTotals(i)); saveData();
-        render(); alert('Merged!'); }; r.readAsArrayBuffer(f); }
-        
-        async function exportBranchReport() { if(currentModalBranchIndex===null) return; const si=currentModalBranchIndex, nm=stores[si]; const wb=new ExcelJS.Workbook(); const ws=wb.addWorksheet(nm); ws.addRow([`Report: ${nm}`]); ws.columns=[{width:25},{width:10},{width:10},{width:30}]; ws.addRow(['Category','Target','Stock','Action']); inventoryData.forEach(c=>{ const l=getSmartLogic(si,c.base,c.present); let a=''; if(l.transfer)a+=`Trans ${l.transfer.qty} fr ${l.transfer.from}; `; if(l.purchase>0)a+=`Buy ${l.purchase}`; if(!a)a='OK'; ws.addRow([c.name,c.base[si]||0,c.present[si]||0,a]); }); const buf=await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]),`${nm}_Report.xlsx`); }
+        async function handleFileUpload(e) { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=async ev => { const d=new Uint8Array(ev.target.result); const wb=new ExcelJS.Workbook(); await wb.xlsx.load(d); const ws=wb.worksheets[0]; const hdr=ws.getRow(1); const map=[]; hdr.eachCell((c,i)=>{ if(i<=2) return; let v=c.value; if(c.result) v=c.result; if(v&&typeof v==='object'&&v.richText) v=v.richText.map(t=>t.text).join(''); const t=v?v.toString().trim().toUpperCase():''; if(t) map.push({idx:i,name:t}); }); if(!map.length) return alert('No stores'); const old=[...stores]; let chg=false; map.forEach(m=>{ if(!stores.includes(m.name)){stores.push(m.name);chg=true;} }); if(chg) inventoryData.forEach(c=>{ c.base=[...c.base,...Array(stores.length-old.length).fill(0)]; c.present=[...c.present,...Array(stores.length-old.length).fill(0)]; if(c.mrpDetails)c.mrpDetails.forEach(m=>{m.base=[...m.base,...Array(stores.length-old.length).fill(0)];m.present=[...m.present,...Array(stores.length-old.length).fill(0)];}); }); const norm=s=>{ if(!s) return ''; let st=s.toString().trim().toUpperCase(); if(st==='TOTAL') return 'TOTAL'; let m=st.match(/^(\d+)\s*[-<]+\s*(\d+)\s*(.*)/); if(m) return `${m[1]}<${m[2]}${m[3].trim()}`; m=st.match(/^(>|<)\s*(\d+)/); if(m) return `${m[1]}${m[2]}`; const ns=st.match(/\d+/g); if(ns&&ns.length>=2) return `${ns[0]}<${ns[1]}`; if(ns&&ns.length===1) return `>${ns[0]}`; return st; }; ws.eachRow((rw, rn)=>{ if(rn===1) return; const gV=i=>{ const cl=rw.getCell(i); if(cl.value==null||cl.value===undefined||cl.value==='') return 0; let rv=0; if(cl.result) rv=parseFloat(cl.result); else rv=parseFloat(cl.value); return isNaN(rv)?0:Math.round(rv); }; const gS=i=>{ const cl=rw.getCell(i); let v=cl.value; if(cl.result) v=cl.result; if(v&&typeof v==='object'&&v.richText) v=v.richText.map(t=>t.text).join(''); if(cl.type==4) return cl.value.toString(); return v?v.toString().trim().toUpperCase():''; }; const cn=gS(1), mn=norm(gS(2)); if(!cn) return; let ci=inventoryData.findIndex(x=>x.name===cn); if(ci===-1){ inventoryData.push({name:cn,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]}); ci=inventoryData.length-1; } const c=inventoryData[ci]; const isT=mn==='TOTAL'||!mn; map.forEach(m=>{ const si=stores.indexOf(m.name); const vl=gV(m.idx); if(isT) c.present[si]=vl; else { let mr=c.mrpDetails.find(x=>x.range===mn); if(!mr){mr={range:mn,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(mr);} mr.present[si]=vl; } }); }); inventoryData.forEach((c,i)=>recalcTotals(i)); saveData(); render(); alert('Merged!'); }; r.readAsArrayBuffer(f); }
+        async function exportBranchReport() { if(currentModalBranchIndex===null) return; const si=currentModalBranchIndex, nm=stores[si]; const wb=new ExcelJS.Workbook(); const ws=wb.addWorksheet(nm); ws.addRow([`Report: ${nm}`]); ws.columns=[{width:25},{width:10},{width:10},{width:30}]; ws.addRow(['Category','Target','Stock','Action']); inventoryData.forEach(c=>{ const l={purchase: Math.max(0, (c.base[si]||0) - (c.present[si]||0))}; let a=''; if(l.purchase>0)a+=`Buy ${l.purchase}`; else a='OK'; ws.addRow([c.name,c.base[si]||0,c.present[si]||0,a]); }); const buf=await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]),`${nm}_Report.xlsx`); }
         
         async function exportMatrixExcel() { 
-            const wb = new ExcelJS.Workbook(); 
-            const ws = wb.addWorksheet('Stock Matrix'); 
-            
-            const cols = [
-                { width: 25 }, { width: 15 }
-            ];
-            stores.forEach(() => cols.push({ width: 8 }, { width: 8 })); 
-            cols.push({ width: 20 }); 
-            ws.columns = cols;
-
-            const r1 = ws.getRow(1);
-            r1.getCell(1).value = 'Category';
-            r1.getCell(2).value = 'MRP';
-            
-            let cIdx = 3;
-            stores.forEach(s => {
-                r1.getCell(cIdx).value = s;
-                ws.mergeCells(1, cIdx, 1, cIdx + 1);
-                cIdx += 2;
-            });
-            r1.getCell(cIdx).value = 'AI Suggestion';
-
-            r1.eachCell((cell) => {
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00B894' } };
-                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 };
-                cell.alignment = { horizontal: 'center', vertical: 'middle' };
-            });
-            
-            ws.mergeCells(1, 1, 2, 1);
-            ws.mergeCells(1, 2, 2, 2);
-            ws.mergeCells(1, cIdx, 2, cIdx); 
-
-            const r2 = ws.getRow(2);
-            let cIdx2 = 3;
-            stores.forEach(() => {
-                r2.getCell(cIdx2).value = 'Tgt';
-                r2.getCell(cIdx2+1).value = 'Stk';
-                
-                [cIdx2, cIdx2+1].forEach(i => {
-                     const cell = r2.getCell(i);
-                     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } };
-                     cell.font = { bold: true, color: { argb: 'FF00B894' }, size: 10 };
-                     cell.alignment = { horizontal: 'center' };
-                     cell.border = { bottom: {style:'thin'}, top: {style:'thin'}, left: {style:'thin'}, right: {style:'thin'} };
-                });
-                
-                cIdx2 += 2;
-            });
-            
+            const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Stock Matrix'); 
+            const cols = [{ width: 25 }, { width: 15 }]; stores.forEach(() => cols.push({ width: 8 }, { width: 8 })); cols.push({ width: 20 }); ws.columns = cols;
+            const r1 = ws.getRow(1); r1.getCell(1).value = 'Category'; r1.getCell(2).value = 'MRP'; let cIdx = 3; stores.forEach(s => { r1.getCell(cIdx).value = s; ws.mergeCells(1, cIdx, 1, cIdx + 1); cIdx += 2; }); r1.getCell(cIdx).value = 'AI Suggestion';
+            r1.eachCell((cell) => { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00B894' } }; cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 }; cell.alignment = { horizontal: 'center', vertical: 'middle' }; });
+            ws.mergeCells(1, 1, 2, 1); ws.mergeCells(1, 2, 2, 2); ws.mergeCells(1, cIdx, 2, cIdx); 
+            const r2 = ws.getRow(2); let cIdx2 = 3; stores.forEach(() => { r2.getCell(cIdx2).value = 'Tgt'; r2.getCell(cIdx2+1).value = 'Stk'; [cIdx2, cIdx2+1].forEach(i => { const cell = r2.getCell(i); cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; cell.font = { bold: true, color: { argb: 'FF00B894' }, size: 10 }; cell.alignment = { horizontal: 'center' }; cell.border = { bottom: {style:'thin'}, top: {style:'thin'}, left: {style:'thin'}, right: {style:'thin'} }; }); cIdx2 += 2; });
             let currentRow = 3;
             inventoryData.forEach(cat => {
-                if (cat.mrpDetails && cat.mrpDetails.length > 0) {
-                    cat.mrpDetails.forEach(mrp => {
-                        const row = ws.getRow(currentRow);
-                        row.getCell(1).value = cat.name;
-                        row.getCell(2).value = mrp.range;
-                        
-                        let dc = 3;
-                        stores.forEach((_, si) => {
-                            row.getCell(dc).value = mrp.base[si] || 0;
-                            row.getCell(dc+1).value = mrp.present[si] || 0;
-                            
-                            const tCell = row.getCell(dc);
-                            const sCell = row.getCell(dc+1);
-                            tCell.alignment = { horizontal: 'center' };
-                            sCell.alignment = { horizontal: 'center' };
-                            sCell.font = { bold: true, name: 'Consolas', size: 10, color: { argb: 'FF000000' } };
-                            
-                            const gap = (mrp.present[si]||0) - (mrp.base[si]||0);
-                            if (gap > 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFECACA' } };
-                            else if (gap < 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBBF7D0' } };
-                            else sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBFDBFE' } };
-                            
-                            dc += 2;
-                        });
-                        currentRow++;
-                    });
-                }
-                
-                const tRow = ws.getRow(currentRow);
-                tRow.getCell(1).value = cat.name;
-                tRow.getCell(2).value = 'TOTAL';
-                tRow.getCell(1).font = { bold: true };
-                tRow.getCell(2).font = { bold: true };
-                tRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } };
-                tRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } };
-
-                let dc = 3;
-                stores.forEach((_, si) => {
-                    tRow.getCell(dc).value = cat.base[si]||0;
-                    tRow.getCell(dc+1).value = cat.present[si]||0;
-                    
-                    const tCell = tRow.getCell(dc);
-                    const sCell = tRow.getCell(dc+1);
-                    tCell.alignment = { horizontal: 'center' }; sCell.alignment = { horizontal: 'center' };
-                    sCell.font = { bold: true, name: 'Consolas', size: 10, color: { argb: 'FF000000' } };
-                    
-                    const gap = (cat.present[si]||0) - (cat.base[si]||0);
-                    if (gap > 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFECACA' } };
-                    else if (gap < 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBBF7D0' } };
-                    else sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBFDBFE' } };
-                    
-                    dc += 2;
-                });
-                currentRow++;
+                if (cat.mrpDetails && cat.mrpDetails.length > 0) { cat.mrpDetails.forEach(mrp => { const row = ws.getRow(currentRow); row.getCell(1).value = cat.name; row.getCell(2).value = mrp.range; let dc = 3; stores.forEach((_, si) => { row.getCell(dc).value = mrp.base[si] || 0; row.getCell(dc+1).value = mrp.present[si] || 0; const tCell = row.getCell(dc); const sCell = row.getCell(dc+1); tCell.alignment = { horizontal: 'center' }; sCell.alignment = { horizontal: 'center' }; sCell.font = { bold: true, name: 'Consolas', size: 10, color: { argb: 'FF000000' } }; const gap = (mrp.present[si]||0) - (mrp.base[si]||0); if (gap > 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFECACA' } }; else if (gap < 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBBF7D0' } }; else sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBFDBFE' } }; dc += 2; }); currentRow++; }); }
+                const tRow = ws.getRow(currentRow); tRow.getCell(1).value = cat.name; tRow.getCell(2).value = 'TOTAL'; tRow.getCell(1).font = { bold: true }; tRow.getCell(2).font = { bold: true }; tRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; tRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } }; let dc = 3; stores.forEach((_, si) => { tRow.getCell(dc).value = cat.base[si]||0; tRow.getCell(dc+1).value = cat.present[si]||0; const tCell = tRow.getCell(dc); const sCell = tRow.getCell(dc+1); tCell.alignment = { horizontal: 'center' }; sCell.alignment = { horizontal: 'center' }; sCell.font = { bold: true, name: 'Consolas', size: 10, color: { argb: 'FF000000' } }; const gap = (cat.present[si]||0) - (cat.base[si]||0); if (gap > 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFECACA' } }; else if (gap < 0) sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBBF7D0' } }; else sCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBFDBFE' } }; dc += 2; }); currentRow++;
             });
-            
-            const buf = await wb.xlsx.writeBuffer(); 
-            saveAs(new Blob([buf]), 'Stock_Matrix_Fixed.xlsx'); 
+            const buf = await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]), 'Stock_Matrix_Fixed.xlsx'); 
         }
 
         function toggleTheme() { document.body.classList.toggle('dark-mode'); render(); }
