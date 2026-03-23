@@ -95,7 +95,7 @@
         }
         table { 
             display: table; width: 100%; border-collapse: separate; border-spacing: 0; 
-            min-width: 1200px; /* Ensures proper scrolling */
+            min-width: 1200px; 
         }
         
         th { 
@@ -104,13 +104,12 @@
             color: var(--text-muted); border-bottom: 2px solid var(--border); 
             border-left: 1px solid var(--border); letter-spacing: 0.5px;
             position: sticky; top: 0; z-index: 10; 
-            white-space: nowrap; /* Prevent header wrapping */
+            white-space: nowrap; 
         }
         
-        /* Fixed Column Widths for Alignment */
         .col-cat { width: 240px; min-width: 240px; max-width: 240px; }
         .col-mrp { width: 150px; min-width: 150px; max-width: 150px; }
-        .col-data { width: 100px; min-width: 100px; } /* T/S columns */
+        .col-data { width: 100px; min-width: 100px; }
 
         th:first-child { border-left: none; text-align: left; padding-left: 20px; border-radius: 12px 0 0 0; }
         
@@ -122,7 +121,7 @@
         th.sub-header { 
             font-size: 10px; background: rgba(0,184,148,0.05); color: var(--accent); 
             border-bottom: 2px solid var(--accent); font-weight: 700;
-            top: 44px; /* Height of group header roughly */
+            top: 44px; 
         }
         
         td { 
@@ -136,41 +135,36 @@
         tbody tr:hover td { background: var(--hover-bg) !important; }
         tbody tr:hover td:first-child { color: var(--accent); }
 
-        /* Freezing Columns Logic with precise widths */
         .sticky-col-1 {
             position: sticky;
             left: 0;
             z-index: 5;
-            width: 240px; min-width: 240px; max-width: 240px; /* Must match .col-cat */
+            width: 240px; min-width: 240px; max-width: 240px; 
             border-right: 2px solid var(--border);
             background: var(--bg-secondary);
         }
         
         .sticky-col-2 {
             position: sticky;
-            left: 240px; /* Width of col-cat */
+            left: 240px; 
             z-index: 5;
-            width: 150px; min-width: 150px; max-width: 150px; /* Must match .col-mrp */
+            width: 150px; min-width: 150px; max-width: 150px; 
             border-right: 2px solid var(--border);
             background: var(--bg-secondary);
         }
 
-        /* Intersection of Frozen Header and Frozen Column */
         thead .sticky-col-1, thead .sticky-col-2 {
             z-index: 20; 
             background: var(--bg);
         }
         
-        /* Hover Fixes for Sticky Cols */
         tbody tr:hover .sticky-col-1, tbody tr:hover .sticky-col-2 {
             background: var(--hover-bg) !important;
         }
 
-        /* Total Row Sticky Background */
         tr.total-row td.sticky-col-1, tr.total-row td.sticky-col-2 { background: rgba(0,184,148,0.03); }
         tr.total-row:hover td.sticky-col-1, tr.total-row:hover td.sticky-col-2 { background: var(--hover-bg) !important; }
 
-        /* AI Suggestion Column - Freeze Right */
         .sticky-action {
             position: sticky;
             right: 0;
@@ -180,11 +174,17 @@
         }
         thead .sticky-action { z-index: 20; background: var(--bg); }
 
-        /* Matrix Cell Styling */
+        /* Enhanced Target Styling */
         .num-target { 
-            background-color: var(--bg); color: var(--text-muted); 
-            font-family: 'JetBrains Mono', monospace; font-weight: 600; display: block; 
-            padding: 6px; border-radius: 6px; border: 1px solid transparent; font-size: 12px;
+            background-color: rgba(9, 132, 227, 0.1); 
+            color: var(--info); 
+            font-family: 'JetBrains Mono', monospace; 
+            font-weight: 700; 
+            display: block; 
+            padding: 6px; 
+            border-radius: 6px; 
+            border: 1px solid rgba(9, 132, 227, 0.2); 
+            font-size: 12px;
         }
         .num-stock { 
             font-family: 'JetBrains Mono', monospace; font-weight: 700; display: block; 
@@ -205,7 +205,6 @@
             border: 1px solid rgba(214, 48, 49, 0.2); font-size: 12px;
         }
 
-        /* Modals */
         .modal-overlay { 
             position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); 
             display: flex; align-items: center; justify-content: center; z-index: 100; padding: 24px; 
@@ -224,9 +223,16 @@
             display: flex; justify-content: space-between; align-items: center; 
             box-shadow: 0 10px 30px -5px rgba(214, 48, 49, 0.3);
         }
+        
+        /* Purchase List Grid - Added Target Column */
         .purchase-list-item { 
-            display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap: 16px; 
-            padding: 18px; border-bottom: 1px solid var(--border); align-items: center; 
+            display: grid; 
+            grid-template-columns: 0.8fr 1.5fr 0.6fr 0.6fr 0.8fr 0.8fr; 
+            gap: 12px; 
+            padding: 16px 18px; 
+            border-bottom: 1px solid var(--border); 
+            align-items: center; 
+            font-size: 13px;
         }
         
         .badge { 
@@ -242,6 +248,39 @@
             background: linear-gradient(135deg, var(--accent), var(--accent-dark));
             display: flex; align-items: center; justify-content: center;
             box-shadow: 0 4px 12px rgba(0,184,148,0.25);
+        }
+
+        /* Toast Notification */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: var(--accent);
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 12px;
+            position: fixed;
+            z-index: 200;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        @media (max-width: 768px) {
+            .purchase-list-item {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .purchase-list-item > div:nth-child(1) { grid-column: 1 / -1; }
         }
     </style>
 </head>
@@ -267,8 +306,7 @@
                     <button onclick="openPurchaseReport()" class="btn btn-danger">Purchase Report</button>
                     <button onclick="document.getElementById('uploadInput').click()" class="btn btn-primary">Upload Stock</button>
                     <input type="file" id="uploadInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleFileUpload(event)">
-                    <button onclick="saveData()" class="btn btn-success">Save</button>
-                    <button onclick="resetData()" class="btn btn-secondary">Reset</button>
+                    <button onclick="resetData()" class="btn btn-secondary">Clear Stock</button>
                     <button onclick="exportMatrixExcel()" class="btn btn-info">Export Matrix</button>
                     <button onclick="openManualModal()" class="btn btn-secondary">Manual</button>
                 </div>
@@ -450,11 +488,14 @@
         </div>
     </div>
 
+    <!-- Toast Notification Element -->
+    <div id="toast">Data Saved</div>
+
     <script>
-        // --- CONFIG & DATA (FULL) ---
+        // --- CONFIG & DATA ---
         let stores = ["SG", "SGHYD", "SGRJY", "SGTNL", "SIRIELR", "SGTNK", "SGTUNI", "SIRICPT", "SIRIVJY", "SIRIKKD", "SIRITPT", "VS"];
         
-        // Full Data Template
+        // Full Data Template (Default structure)
         const defaultInventoryTemplate = [
             { name: "BNS HANDLOOM HF", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [500, 250, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] }, { range: "501<1000", base: [1000, 450, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] }, { range: "1001<1500", base: [1200, 500, 500, 1000, 750, 750, 750, 400, 1200, 750, 750, 750], present: [] }, { range: "1501<2000", base: [500, 250, 250, 400, 300, 350, 350, 250, 500, 350, 350, 300], present: [] }, { range: "2001<3000", base: [500, 250, 250, 350, 300, 350, 300, 250, 500, 350, 350, 300], present: [] }, { range: "3001<4000", base: [300, 150, 150, 200, 200, 200, 200, 150, 300, 200, 200, 150], present: [] }, { range: "4001<6000", base: [200, 100, 100, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] }, { range: "6001<7500", base: [100, 50, 50, 100, 50, 100, 50, 50, 100, 100, 100, 100], present: [] }, { range: ">7500", base: [20, 10, 10, 0, 0, 10, 0, 20, 20, 10, 10, 20], present: [] }, { range: "501<1000(1+1)", base: [800, 500, 500, 500, 500, 400, 1000, 400, 800, 400, 400, 400], present: [] }, { range: "1001<2000(1+1)", base: [500, 250, 250, 400, 300, 300, 500, 300, 500, 300, 300, 400], present: [] } ] },
             { name: "SILK WORK SAREES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [175, 87, 87, 125, 125, 150, 175, 0, 175, 150, 150, 150], present: [] }, { range: "501<1000", base: [370, 185, 185, 295, 245, 295, 345, 50, 370, 295, 295, 295], present: [] }, { range: "1001<1500", base: [400, 175, 175, 350, 280, 350, 490, 200, 400, 350, 350, 350], present: [] }, { range: "1501<2000", base: [400, 200, 200, 300, 150, 300, 200, 100, 400, 300, 300, 250], present: [] }, { range: "2001<3000", base: [350, 175, 175, 300, 150, 350, 400, 150, 350, 350, 350, 250], present: [] }, { range: "3001<4000", base: [125, 63, 63, 100, 100, 100, 100, 100, 125, 100, 100, 50], present: [] }, { range: "4001<6000", base: [50, 25, 25, 25, 25, 50, 50, 25, 50, 50, 50, 25], present: [] }, { range: ">6000", base: [20, 10, 10, 0, 0, 0, 0, 0, 20, 0, 0, 0], present: [] }, { range: "501<1000(1+1)", base: [175, 87, 87, 125, 125, 150, 175, 50, 175, 150, 150, 150], present: [] }, { range: "1001<2000(1+1)", base: [115, 58, 58, 90, 75, 90, 105, 50, 115, 90, 90, 90], present: [] } ] },
@@ -495,15 +536,67 @@
         ];
 
         let inventoryData = JSON.parse(JSON.stringify(defaultInventoryTemplate)); 
-        function initPresentArrays(data) { data.forEach(c => { if(!c.present || c.present.length !== stores.length) c.present = Array(stores.length).fill(0); if(c.mrpDetails) c.mrpDetails.forEach(m => { if(!m.present || m.present.length !== stores.length) m.present = Array(stores.length).fill(0); }); }); }
+        
+        function initPresentArrays(data) { 
+            data.forEach(c => { 
+                if(!c.present || c.present.length !== stores.length) c.present = Array(stores.length).fill(0); 
+                if(c.mrpDetails) c.mrpDetails.forEach(m => { 
+                    if(!m.present || m.present.length !== stores.length) m.present = Array(stores.length).fill(0); 
+                }); 
+            }); 
+        }
+        
         initPresentArrays(inventoryData);
 
         let mainChart = null; let currentModalBranchIndex = null; let branchModalChart = null; let purchaseSummaryChart = null;
 
         // --- CORE FUNCTIONS ---
-        function saveData() { localStorage.setItem('subham_inventory', JSON.stringify(inventoryData)); localStorage.setItem('subham_stores', JSON.stringify(stores)); alert('Saved!'); }
-        function loadData() { const sI = localStorage.getItem('subham_inventory'); const sS = localStorage.getItem('subham_stores'); if(sI && sS) { try { inventoryData = JSON.parse(sI); stores = JSON.parse(sS); initPresentArrays(inventoryData); } catch(e){} } }
-        function resetData(s) { if(!s) if(!confirm('Reset ALL Stock to 0?')) return; inventoryData.forEach(c => { if(c.present) c.present.fill(0); if(c.mrpDetails) c.mrpDetails.forEach(m => { if(m.present) m.present.fill(0); }); }); saveData(); render(); if(!s) alert('Done.'); }
+        
+        function showToast(msg) {
+            const x = document.getElementById("toast");
+            x.textContent = msg;
+            x.className = "show";
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        }
+
+        function saveData() { 
+            try {
+                localStorage.setItem('subham_inventory', JSON.stringify(inventoryData)); 
+                localStorage.setItem('subham_stores', JSON.stringify(stores));
+                showToast("Progress Saved"); 
+            } catch(e) {
+                console.error("Error saving data", e);
+            }
+        }
+        
+        function loadData() { 
+            const sI = localStorage.getItem('subham_inventory'); 
+            const sS = localStorage.getItem('subham_stores'); 
+            if(sI && sS) { 
+                try { 
+                    inventoryData = JSON.parse(sI); 
+                    stores = JSON.parse(sS); 
+                    initPresentArrays(inventoryData); 
+                } catch(e) {
+                    console.error("Error loading data, resetting.", e);
+                    inventoryData = JSON.parse(JSON.stringify(defaultInventoryTemplate));
+                    stores = ["SG", "SGHYD", "SGRJY", "SGTNL", "SIRIELR", "SGTNK", "SGTUNI", "SIRICPT", "SIRIVJY", "SIRIKKD", "SIRITPT", "VS"];
+                    initPresentArrays(inventoryData);
+                } 
+            } 
+        }
+        
+        function resetData() { 
+            if(!confirm('Clear all stock counts to 0? Targets will remain.')) return; 
+            inventoryData.forEach(c => { 
+                if(c.present) c.present.fill(0); 
+                if(c.mrpDetails) c.mrpDetails.forEach(m => { 
+                    if(m.present) m.present.fill(0); 
+                }); 
+            }); 
+            saveData();
+            render(); 
+        }
         
         function getSmartLogic(si, base, pres) { 
             if (!base || !pres || si >= base.length || si >= pres.length) return { transfer: null, purchase: 0, gap: 0 }; 
@@ -522,7 +615,20 @@
             return { transfer: tObj, purchase: pQty, gap: gap }; 
         }
         
-        function recalcTotals(ci) { const c = inventoryData[ci]; if(!c) return; if (!c.base || c.base.length !== stores.length) c.base = Array(stores.length).fill(0); if (!c.present || c.present.length !== stores.length) c.present = Array(stores.length).fill(0); c.base.fill(0); c.present.fill(0); if (c.mrpDetails && c.mrpDetails.length > 0) { c.mrpDetails.forEach(r => { r.base.forEach((v, i) => c.base[i] += v || 0); r.present.forEach((v, i) => c.present[i] += v || 0); }); } }
+        function recalcTotals(ci) { 
+            const c = inventoryData[ci]; 
+            if(!c) return; 
+            if (!c.base || c.base.length !== stores.length) c.base = Array(stores.length).fill(0); 
+            if (!c.present || c.present.length !== stores.length) c.present = Array(stores.length).fill(0); 
+            c.base.fill(0); 
+            c.present.fill(0); 
+            if (c.mrpDetails && c.mrpDetails.length > 0) { 
+                c.mrpDetails.forEach(r => { 
+                    r.base.forEach((v, i) => c.base[i] += v || 0); 
+                    r.present.forEach((v, i) => c.present[i] += v || 0); 
+                }); 
+            } 
+        }
         
         function render() { 
             renderMatrix('matrixHead', 'tableBody', false, 'horizontalTable'); 
@@ -559,7 +665,6 @@
         function renderMatrix(hId, bId, isP, tId) { 
             const th = document.getElementById(hId), tb = document.getElementById(bId); 
             
-            // Header Row 1: Category, MRP, Store Names (colspan 2), Action
             let h1 = `<tr>
                 <th rowspan="2" class="sticky-col-1 col-cat">Category</th>
                 <th rowspan="2" class="sticky-col-2 col-mrp">MRP</th>`;
@@ -569,7 +674,6 @@
             }); 
             h1 += '<th rowspan="2" class="sticky-action">AI Suggestion</th></tr>'; 
             
-            // Header Row 2: Empty (for Category/MRP), T, S
             let h2 = '<tr>';
             stores.forEach(() => { 
                 h2 += `<th class="sub-header col-data">T</th><th class="sub-header col-data" style="border-right:1px solid var(--border)">S</th>`; 
@@ -634,7 +738,6 @@
                     }); 
                 } 
                 
-                // Total Row
                 let tr = `<tr class="total-row">
                     <td class="sticky-col-1 col-cat" style="font-weight:800">${c.name}</td>
                     <td class="sticky-col-2 col-mrp"><span class="badge badge-warning">TOTAL</span></td>`; 
@@ -655,7 +758,20 @@
             tb.innerHTML = body; 
         }
         
-        function editStock(ci, mi, si) { const val = mi === -1 ? (inventoryData[ci].present[si]||0) : (inventoryData[ci].mrpDetails[mi].present[si]||0); const n = prompt("New Stock:", val); if(n===null) return; const num = parseInt(n); if(isNaN(num)) return; if(mi===-1) inventoryData[ci].present[si] = num; else { inventoryData[ci].mrpDetails[mi].present[si] = num; recalcTotals(ci); } render(); }
+        function editStock(ci, mi, si) { 
+            const val = mi === -1 ? (inventoryData[ci].present[si]||0) : (inventoryData[ci].mrpDetails[mi].present[si]||0); 
+            const n = prompt("New Stock:", val); 
+            if(n===null) return; 
+            const num = parseInt(n); 
+            if(isNaN(num)) return; 
+            if(mi===-1) inventoryData[ci].present[si] = num; 
+            else { 
+                inventoryData[ci].mrpDetails[mi].present[si] = num; 
+                recalcTotals(ci); 
+            } 
+            saveData();
+            render(); 
+        }
 
         function refreshCharts() { 
             const chartSel = document.getElementById('chartFilter');
@@ -695,14 +811,23 @@
                         const logic = getSmartLogic(si, baseArr, presArr);
                         if (logic.purchase > 0) {
                             const shortage = (baseArr[si] || 0) - (presArr[si] || 0);
-                            purchaseItems.push({ store: s, category: c.name, mrp: mrpRange, target: baseArr[si] || 0, stock: presArr[si] || 0, shortage: shortage, purchase: logic.purchase });
-                            totalPurchaseQty += logic.purchase; affectedStores.add(s);
+                            purchaseItems.push({ 
+                                store: s, 
+                                category: c.name, 
+                                mrp: mrpRange, 
+                                target: baseArr[si] || 0, 
+                                stock: presArr[si] || 0, 
+                                shortage: shortage, 
+                                purchase: logic.purchase 
+                            });
+                            totalPurchaseQty += logic.purchase; 
+                            affectedStores.add(s);
                         }
                     });
                 };
                 if (c.mrpDetails && c.mrpDetails.length > 0) { c.mrpDetails.forEach(m => process(m.range, m.base, m.present)); } else { process('TOTAL', c.base, c.present); }
             });
-            purchaseItems.sort((a, b) => b.shortage - a.sortage);
+            purchaseItems.sort((a, b) => b.shortage - a.shortage);
             document.getElementById('reportTotalPurchase').textContent = totalPurchaseQty.toLocaleString();
             document.getElementById('reportStoresAffected').textContent = affectedStores.size;
 
@@ -717,14 +842,25 @@
             });
 
             const container = document.getElementById('purchaseListContainer');
-            let listHtml = `<div class="purchase-list-item font-bold text-xs uppercase" style="background:var(--bg); color:var(--text-muted);"><div>Store</div><div>Category / MRP</div><div class="text-center">Shortage</div><div class="text-center">To Buy</div></div>`;
+            // Added Target and Stock as main columns
+            let listHtml = `<div class="purchase-list-item font-bold text-xs uppercase" style="background:var(--bg); color:var(--text-muted);">
+                <div>Store</div>
+                <div>Category / MRP</div>
+                <div class="text-center">Target</div>
+                <div class="text-center">Stock</div>
+                <div class="text-center">Gap</div>
+                <div class="text-center">To Buy</div>
+            </div>`;
+            
             if (purchaseItems.length === 0) { listHtml += `<div class="p-8 text-center font-bold" style="color: var(--success)">ALL STOCKS ARE OPTIMIZED.</div>`; } 
             else {
                 purchaseItems.forEach(item => {
                     listHtml += `<div class="purchase-list-item">
                         <div class="flex flex-col"><span class="font-bold" style="color:var(--danger)">${item.store}</span></div>
                         <div class="flex flex-col"><span class="font-semibold">${item.category}</span><span class="text-xs" style="color:var(--text-muted)">${item.mrp}</span></div>
-                        <div class="text-center"><span class="font-bold mono" style="color:var(--danger)">${item.shortage}</span><div class="text-xs" style="color:var(--text-muted)">T: ${item.target} | S: ${item.stock}</div></div>
+                        <div class="text-center mono font-bold">${item.target}</div>
+                        <div class="text-center mono font-bold" style="color:var(--info)">${item.stock}</div>
+                        <div class="text-center"><span class="font-bold mono" style="color:var(--warning)">${item.shortage}</span></div>
                         <div class="text-center"><button class="btn btn-danger btn-sm" style="padding: 4px 12px;">Buy ${item.purchase}</button></div>
                     </div>`;
                 });
@@ -756,8 +892,10 @@
         function switchTab(t) { document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden')); document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active')); document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('hidden'); event.target.classList.add('active'); if(t==='analytics') refreshCharts(); }
         function openModal(si) { currentModalBranchIndex = si; const nm = stores[si]; const labels = [], tgts = [], stks = []; let tT=0, tS=0; let rows = ''; inventoryData.forEach(c => { const t = c.base[si]||0, s = c.present[si]||0; if(t>0 || s>0) { tT+=t; tS+=s; labels.push(c.name.substring(0,10)); tgts.push(t); stks.push(s); const g = s-t; const l = getSmartLogic(si, c.base, c.present); let b = ''; if(l.transfer) b = `<span class="badge badge-info">Trans ${l.transfer.qty} fr. ${l.transfer.from}</span>`; else if(l.purchase>0) b = `<span class="badge badge-danger">Buy ${l.purchase}</span>`; else if(g>0) b = `<span class="badge badge-warning">Surplus</span>`; else b = `<span class="badge badge-success">OK</span>`; rows += `<div class="card p-4 mb-2" style="border-left:4px solid ${g<0?'var(--danger)':'var(--success)'}"><div class="flex justify-between text-xs uppercase mb-1" style="color:var(--text-muted)"><span>${c.name}</span><span>Gap: ${g>0?'+':''}${g}</span></div><div class="flex justify-between items-center"><div class="mono text-xs">T: ${t} | S: ${s}</div><div>${b}</div></div></div>`; } }); document.getElementById('modalBody').innerHTML = `<div style="height:250px;margin-bottom:20px;position:relative"><canvas id="branchModalChart"></canvas></div><div class="grid grid-cols-2 gap-4 mb-6 text-center"><div class="p-4 rounded-xl" style="background:var(--bg)"><p class="text-xs uppercase font-bold" style="color:var(--text-muted)">Total Target</p><p class="text-2xl font-extrabold mono">${tT}</p></div><div class="p-4 rounded-xl" style="background:var(--info);color:white"><p class="text-xs uppercase font-bold opacity-80">Total Stock</p><p class="text-2xl font-extrabold mono">${tS}</p></div></div><h3 class="font-bold text-sm mb-3 uppercase tracking-wider" style="color:var(--text-muted)">Category Breakdown</h3><div>${rows}</div>`; document.getElementById('modalStore').textContent = `${nm} Analysis`; document.getElementById('modal').classList.remove('hidden'); const ctx = document.getElementById('branchModalChart').getContext('2d'); if(branchModalChart) branchModalChart.destroy(); branchModalChart = new Chart(ctx, { type:'bar', data:{labels, datasets:[{label:'Target', data:tgts, backgroundColor:'#00b894', borderRadius: 4}, {label:'Stock', data:stks, backgroundColor:'#0984e3', borderRadius: 4}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}, scales:{x:{display:true, grid:{display:false}}, y:{beginAtZero:true}} } }); }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-        function addBr() { const n=document.getElementById('newBr').value.trim().toUpperCase(); if(!n) return; stores.push(n); inventoryData.forEach(c=>{c.base.push(0);c.present.push(0);if(c.mrpDetails)c.mrpDetails.forEach(m=>{m.base.push(0);m.present.push(0)});}); render(); }
-        function addCat() { const n=document.getElementById('newCat').value.trim().toUpperCase(); if(!n) return; inventoryData.push({name:n,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]}); render(); }
+        
+        function addBr() { const n=document.getElementById('newBr').value.trim().toUpperCase(); if(!n) return; stores.push(n); inventoryData.forEach(c=>{c.base.push(0);c.present.push(0);if(c.mrpDetails)c.mrpDetails.forEach(m=>{m.base.push(0);m.present.push(0)});}); saveData(); render(); }
+        
+        function addCat() { const n=document.getElementById('newCat').value.trim().toUpperCase(); if(!n) return; inventoryData.push({name:n,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]}); saveData(); render(); }
         
         function updateTargetMrpOptions() { 
             const ci=parseInt(document.getElementById('selCat').value); 
@@ -785,6 +923,7 @@
                 r.base[si]=v; 
                 recalcTotals(ci); 
             } 
+            saveData();
             render(); 
             alert('Target Updated'); 
         }
@@ -802,9 +941,10 @@
             }); 
         }
         
-        function saveManualData() { const nm=document.getElementById('manualCatInput').value.toUpperCase().trim(), mr=document.getElementById('manualMrp').value.trim(), si=parseInt(document.getElementById('manualBranch').value), tg=parseInt(document.getElementById('manualTarget').value)||0, st=parseInt(document.getElementById('manualStock').value)||0; if(!nm||!mr||isNaN(si)) return alert('Missing fields'); let idx=inventoryData.findIndex(x=>x.name===nm); if(idx===-1){inventoryData.push({name:nm,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]});idx=inventoryData.length-1;} const c=inventoryData[idx]; if(si===-1){ if(mr==='TOTAL'){for(let i=0;i<stores.length;i++){c.base[i]=tg;c.present[i]=st;}} else {let r=c.mrpDetails.find(x=>x.range===mr);if(!r){r={range:mr,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(r);}for(let i=0;i<stores.length;i++){r.base[i]=tg;r.present[i]=st;}recalcTotals(idx);} } else { if(mr==='TOTAL'){c.base[si]=tg;c.present[si]=st;} else {let r=c.mrpDetails.find(x=>x.range===mr);if(!r){r={range:mr,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(r);}r.base[si]=tg;r.present[si]=st;recalcTotals(idx);} } closeManualModal();render(); }
+        function saveManualData() { const nm=document.getElementById('manualCatInput').value.toUpperCase().trim(), mr=document.getElementById('manualMrp').value.trim(), si=parseInt(document.getElementById('manualBranch').value), tg=parseInt(document.getElementById('manualTarget').value)||0, st=parseInt(document.getElementById('manualStock').value)||0; if(!nm||!mr||isNaN(si)) return alert('Missing fields'); let idx=inventoryData.findIndex(x=>x.name===nm); if(idx===-1){inventoryData.push({name:nm,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]});idx=inventoryData.length-1;} const c=inventoryData[idx]; if(si===-1){ if(mr==='TOTAL'){for(let i=0;i<stores.length;i++){c.base[i]=tg;c.present[i]=st;}} else {let r=c.mrpDetails.find(x=>x.range===mr);if(!r){r={range:mr,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(r);}for(let i=0;i<stores.length;i++){r.base[i]=tg;r.present[i]=st;}recalcTotals(idx);} } else { if(mr==='TOTAL'){c.base[si]=tg;c.present[si]=st;} else {let r=c.mrpDetails.find(x=>x.range===mr);if(!r){r={range:mr,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(r);}r.base[si]=tg;r.present[si]=st;recalcTotals(idx);} } closeManualModal();saveData();render(); }
         
-        async function handleFileUpload(e) { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=async ev => { const d=new Uint8Array(ev.target.result); const wb=new ExcelJS.Workbook(); await wb.xlsx.load(d); const ws=wb.worksheets[0]; const hdr=ws.getRow(1); const map=[]; hdr.eachCell((c,i)=>{ if(i<=2) return; let v=c.value; if(c.result) v=c.result; if(v&&typeof v==='object'&&v.richText) v=v.richText.map(t=>t.text).join(''); const t=v?v.toString().trim().toUpperCase():''; if(t) map.push({idx:i,name:t}); }); if(!map.length) return alert('No stores'); const old=[...stores]; let chg=false; map.forEach(m=>{ if(!stores.includes(m.name)){stores.push(m.name);chg=true;} }); if(chg) inventoryData.forEach(c=>{ c.base=[...c.base,...Array(stores.length-old.length).fill(0)]; c.present=[...c.present,...Array(stores.length-old.length).fill(0)]; if(c.mrpDetails)c.mrpDetails.forEach(m=>{m.base=[...m.base,...Array(stores.length-old.length).fill(0)];m.present=[...m.present,...Array(stores.length-old.length).fill(0)];}); }); const norm=s=>{ if(!s) return ''; let st=s.toString().trim().toUpperCase(); if(st==='TOTAL') return 'TOTAL'; let m=st.match(/^(\d+)\s*[-<]+\s*(\d+)\s*(.*)/); if(m) return `${m[1]}<${m[2]}${m[3].trim()}`; m=st.match(/^(>|<)\s*(\d+)/); if(m) return `${m[1]}${m[2]}`; const ns=st.match(/\d+/g); if(ns&&ns.length>=2) return `${ns[0]}<${ns[1]}`; if(ns&&ns.length===1) return `>${ns[0]}`; return st; }; ws.eachRow((rw, rn)=>{ if(rn===1) return; const gV=i=>{ const cl=rw.getCell(i); if(cl.value==null||cl.value===undefined||cl.value==='') return 0; let rv=0; if(cl.result) rv=parseFloat(cl.result); else rv=parseFloat(cl.value); return isNaN(rv)?0:Math.round(rv); }; const gS=i=>{ const cl=rw.getCell(i); let v=cl.value; if(cl.result) v=cl.result; if(v&&typeof v==='object'&&v.richText) v=v.richText.map(t=>t.text).join(''); if(cl.type==4) return cl.value.toString(); return v?v.toString().trim().toUpperCase():''; }; const cn=gS(1), mn=norm(gS(2)); if(!cn) return; let ci=inventoryData.findIndex(x=>x.name===cn); if(ci===-1){ inventoryData.push({name:cn,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]}); ci=inventoryData.length-1; } const c=inventoryData[ci]; const isT=mn==='TOTAL'||!mn; map.forEach(m=>{ const si=stores.indexOf(m.name); const vl=gV(m.idx); if(isT) c.present[si]=vl; else { let mr=c.mrpDetails.find(x=>x.range===mn); if(!mr){mr={range:mn,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(mr);} mr.present[si]=vl; } }); }); inventoryData.forEach((c,i)=>recalcTotals(i)); render(); alert('Merged!'); }; r.readAsArrayBuffer(f); }
+        async function handleFileUpload(e) { const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=async ev => { const d=new Uint8Array(ev.target.result); const wb=new ExcelJS.Workbook(); await wb.xlsx.load(d); const ws=wb.worksheets[0]; const hdr=ws.getRow(1); const map=[]; hdr.eachCell((c,i)=>{ if(i<=2) return; let v=c.value; if(c.result) v=c.result; if(v&&typeof v==='object'&&v.richText) v=v.richText.map(t=>t.text).join(''); const t=v?v.toString().trim().toUpperCase():''; if(t) map.push({idx:i,name:t}); }); if(!map.length) return alert('No stores'); const old=[...stores]; let chg=false; map.forEach(m=>{ if(!stores.includes(m.name)){stores.push(m.name);chg=true;} }); if(chg) inventoryData.forEach(c=>{ c.base=[...c.base,...Array(stores.length-old.length).fill(0)]; c.present=[...c.present,...Array(stores.length-old.length).fill(0)]; if(c.mrpDetails)c.mrpDetails.forEach(m=>{m.base=[...m.base,...Array(stores.length-old.length).fill(0)];m.present=[...m.present,...Array(stores.length-old.length).fill(0)];}); }); const norm=s=>{ if(!s) return ''; let st=s.toString().trim().toUpperCase(); if(st==='TOTAL') return 'TOTAL'; let m=st.match(/^(\d+)\s*[-<]+\s*(\d+)\s*(.*)/); if(m) return `${m[1]}<${m[2]}${m[3].trim()}`; m=st.match(/^(>|<)\s*(\d+)/); if(m) return `${m[1]}${m[2]}`; const ns=st.match(/\d+/g); if(ns&&ns.length>=2) return `${ns[0]}<${ns[1]}`; if(ns&&ns.length===1) return `>${ns[0]}`; return st; }; ws.eachRow((rw, rn)=>{ if(rn===1) return; const gV=i=>{ const cl=rw.getCell(i); if(cl.value==null||cl.value===undefined||cl.value==='') return 0; let rv=0; if(cl.result) rv=parseFloat(cl.result); else rv=parseFloat(cl.value); return isNaN(rv)?0:Math.round(rv); }; const gS=i=>{ const cl=rw.getCell(i); let v=cl.value; if(cl.result) v=cl.result; if(v&&typeof v==='object'&&v.richText) v=v.richText.map(t=>t.text).join(''); if(cl.type==4) return cl.value.toString(); return v?v.toString().trim().toUpperCase():''; }; const cn=gS(1), mn=norm(gS(2)); if(!cn) return; let ci=inventoryData.findIndex(x=>x.name===cn); if(ci===-1){ inventoryData.push({name:cn,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]}); ci=inventoryData.length-1; } const c=inventoryData[ci]; const isT=mn==='TOTAL'||!mn; map.forEach(m=>{ const si=stores.indexOf(m.name); const vl=gV(m.idx); if(isT) c.present[si]=vl; else { let mr=c.mrpDetails.find(x=>x.range===mn); if(!mr){mr={range:mn,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(mr);} mr.present[si]=vl; } }); }); inventoryData.forEach((c,i)=>recalcTotals(i)); saveData();
+        render(); alert('Merged!'); }; r.readAsArrayBuffer(f); }
         
         async function exportBranchReport() { if(currentModalBranchIndex===null) return; const si=currentModalBranchIndex, nm=stores[si]; const wb=new ExcelJS.Workbook(); const ws=wb.addWorksheet(nm); ws.addRow([`Report: ${nm}`]); ws.columns=[{width:25},{width:10},{width:10},{width:30}]; ws.addRow(['Category','Target','Stock','Action']); inventoryData.forEach(c=>{ const l=getSmartLogic(si,c.base,c.present); let a=''; if(l.transfer)a+=`Trans ${l.transfer.qty} fr ${l.transfer.from}; `; if(l.purchase>0)a+=`Buy ${l.purchase}`; if(!a)a='OK'; ws.addRow([c.name,c.base[si]||0,c.present[si]||0,a]); }); const buf=await wb.xlsx.writeBuffer(); saveAs(new Blob([buf]),`${nm}_Report.xlsx`); }
         
@@ -812,48 +952,41 @@
             const wb = new ExcelJS.Workbook(); 
             const ws = wb.addWorksheet('Stock Matrix'); 
             
-            // 1. Define Columns
             const cols = [
-                { width: 25 }, { width: 15 } // Category, MRP
+                { width: 25 }, { width: 15 }
             ];
-            stores.forEach(() => cols.push({ width: 8 }, { width: 8 })); // T, S
-            cols.push({ width: 20 }); // Action
+            stores.forEach(() => cols.push({ width: 8 }, { width: 8 })); 
+            cols.push({ width: 20 }); 
             ws.columns = cols;
 
-            // 2. Build Header Row 1 (Store Names)
             const r1 = ws.getRow(1);
             r1.getCell(1).value = 'Category';
             r1.getCell(2).value = 'MRP';
             
-            let cIdx = 3; // Start from col 3
+            let cIdx = 3;
             stores.forEach(s => {
                 r1.getCell(cIdx).value = s;
-                ws.mergeCells(1, cIdx, 1, cIdx + 1); // Merge T and S
+                ws.mergeCells(1, cIdx, 1, cIdx + 1);
                 cIdx += 2;
             });
             r1.getCell(cIdx).value = 'AI Suggestion';
 
-            // Apply styling to Row 1
             r1.eachCell((cell) => {
                 cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00B894' } };
                 cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 12 };
                 cell.alignment = { horizontal: 'center', vertical: 'middle' };
             });
             
-            // Merge Category and MRP vertically (Row 1 and 2)
             ws.mergeCells(1, 1, 2, 1);
             ws.mergeCells(1, 2, 2, 2);
-            ws.mergeCells(1, cIdx, 2, cIdx); // Action
+            ws.mergeCells(1, cIdx, 2, cIdx); 
 
-            // 3. Build Header Row 2 (Tgt, Stk)
             const r2 = ws.getRow(2);
-            // Cells 1 and 2 are merged, so skip
             let cIdx2 = 3;
             stores.forEach(() => {
                 r2.getCell(cIdx2).value = 'Tgt';
                 r2.getCell(cIdx2+1).value = 'Stk';
                 
-                // Style Tgt/Stk cells
                 [cIdx2, cIdx2+1].forEach(i => {
                      const cell = r2.getCell(i);
                      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } };
@@ -865,7 +998,6 @@
                 cIdx2 += 2;
             });
             
-            // 4. Populate Data
             let currentRow = 3;
             inventoryData.forEach(cat => {
                 if (cat.mrpDetails && cat.mrpDetails.length > 0) {
@@ -879,7 +1011,6 @@
                             row.getCell(dc).value = mrp.base[si] || 0;
                             row.getCell(dc+1).value = mrp.present[si] || 0;
                             
-                            // Styling
                             const tCell = row.getCell(dc);
                             const sCell = row.getCell(dc+1);
                             tCell.alignment = { horizontal: 'center' };
@@ -897,7 +1028,6 @@
                     });
                 }
                 
-                // Total Row
                 const tRow = ws.getRow(currentRow);
                 tRow.getCell(1).value = cat.name;
                 tRow.getCell(2).value = 'TOTAL';
