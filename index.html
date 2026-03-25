@@ -285,7 +285,8 @@
                     <button onclick="openPurchaseReport()" class="btn btn-danger">Purchase Report</button>
                     <button onclick="document.getElementById('uploadInput').click()" class="btn btn-primary">Upload Stock</button>
                     <input type="file" id="uploadInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleFileUpload(event)">
-                    <button onclick="resetData()" class="btn btn-secondary">Clear Stock</button>
+                    <!-- Clear Stock Button: Resets only stock, keeps targets -->
+                    <button onclick="resetStockData()" class="btn btn-secondary">Clear Stock</button>
                     <button onclick="exportMatrixExcel()" class="btn btn-info">Export Matrix</button>
                     <button onclick="openManualModal()" class="btn btn-secondary">Manual</button>
                 </div>
@@ -511,7 +512,7 @@
         // --- CONFIG & DATA ---
         let stores = ["SG", "SGHYD", "SGRJY", "SGTNL", "SIRIELR", "SGTNK", "SGTUNI", "SIRICPT", "SIRIVJY", "SIRIKKD", "SIRITPT", "VS"];
         
-        // Full Data Template
+        // Full Data Template (Defaults for first run ONLY)
         const defaultInventoryTemplate = [
             { name: "BNS HANDLOOM HF", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [500, 250, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] }, { range: "501<1000", base: [1000, 450, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] }, { range: "1001<1500", base: [1200, 500, 500, 1000, 750, 750, 750, 400, 1200, 750, 750, 750], present: [] }, { range: "1501<2000", base: [500, 250, 250, 400, 300, 350, 350, 250, 500, 350, 350, 300], present: [] }, { range: "2001<3000", base: [500, 250, 250, 350, 300, 350, 300, 250, 500, 350, 350, 300], present: [] }, { range: "3001<4000", base: [300, 150, 150, 200, 200, 200, 200, 150, 300, 200, 200, 150], present: [] }, { range: "4001<6000", base: [200, 100, 100, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] }, { range: "6001<7500", base: [100, 50, 50, 100, 50, 100, 50, 50, 100, 100, 100, 100], present: [] }, { range: ">7500", base: [20, 10, 10, 0, 0, 10, 0, 20, 20, 10, 10, 20], present: [] }, { range: "501<1000(1+1)", base: [800, 500, 500, 500, 500, 400, 1000, 400, 800, 400, 400, 400], present: [] }, { range: "1001<2000(1+1)", base: [500, 250, 250, 400, 300, 300, 500, 300, 500, 300, 300, 400], present: [] } ] },
             { name: "SILK WORK SAREES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [175, 87, 87, 125, 125, 150, 175, 0, 175, 150, 150, 150], present: [] }, { range: "501<1000", base: [370, 185, 185, 295, 245, 295, 345, 50, 370, 295, 295, 295], present: [] }, { range: "1001<1500", base: [400, 175, 175, 350, 280, 350, 490, 200, 400, 350, 350, 350], present: [] }, { range: "1501<2000", base: [400, 200, 200, 300, 150, 300, 200, 100, 400, 300, 300, 250], present: [] }, { range: "2001<3000", base: [350, 175, 175, 300, 150, 350, 400, 150, 350, 350, 350, 250], present: [] }, { range: "3001<4000", base: [125, 63, 63, 100, 100, 100, 100, 100, 125, 100, 100, 50], present: [] }, { range: "4001<6000", base: [50, 25, 25, 25, 25, 50, 50, 25, 50, 50, 50, 25], present: [] }, { range: ">6000", base: [20, 10, 10, 0, 0, 0, 0, 0, 20, 0, 0, 0], present: [] }, { range: "501<1000(1+1)", base: [175, 87, 87, 125, 125, 150, 175, 50, 175, 150, 150, 150], present: [] }, { range: "1001<2000(1+1)", base: [115, 58, 58, 90, 75, 90, 105, 50, 115, 90, 90, 90], present: [] } ] },
@@ -551,9 +552,11 @@
             { name: "NARAYANPET PATTU", base: Array(12).fill(0), present: [], mrpDetails: [] }
         ];
 
-        let inventoryData = JSON.parse(JSON.stringify(defaultInventoryTemplate)); 
+        let inventoryData = []; // Will be loaded or initialized
         let mainChart = null; let currentModalBranchIndex = null; let branchModalChart = null; 
         let purchaseSummaryChart = null; let transferSummaryChart = null;
+
+        // --- CORE PERSISTENCE FUNCTIONS ---
 
         function initPresentArrays(data) { 
             data.forEach(c => { 
@@ -564,41 +567,60 @@
             }); 
         }
         
-        initPresentArrays(inventoryData);
-
-        // --- CORE FUNCTIONS ---
-        
         function showToast(msg) {
             const x = document.getElementById("toast"); x.textContent = msg; x.className = "show";
             setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
         }
 
+        // SAVE: Saves to LocalStorage
         function saveData() { 
             try {
                 localStorage.setItem('subham_inventory', JSON.stringify(inventoryData)); 
                 localStorage.setItem('subham_stores', JSON.stringify(stores));
-                showToast("Progress Saved"); 
+                showToast("Data Saved"); 
             } catch(e) { console.error("Error saving data", e); }
         }
         
+        // LOAD: Loads from LocalStorage or uses defaults
         function loadData() { 
-            const sI = localStorage.getItem('subham_inventory'); const sS = localStorage.getItem('subham_stores'); 
+            const sI = localStorage.getItem('subham_inventory'); 
+            const sS = localStorage.getItem('subham_stores'); 
+            
             if(sI && sS) { 
                 try { 
-                    inventoryData = JSON.parse(sI); stores = JSON.parse(sS); initPresentArrays(inventoryData); 
-                } catch(e) { console.error("Error loading data, resetting.", e); inventoryData = JSON.parse(JSON.stringify(defaultInventoryTemplate)); initPresentArrays(inventoryData); } 
-            } 
+                    inventoryData = JSON.parse(sI); 
+                    stores = JSON.parse(sS); 
+                    initPresentArrays(inventoryData); // Ensure arrays are correct size
+                } catch(e) { 
+                    console.error("Error loading data, resetting to default.", e); 
+                    inventoryData = JSON.parse(JSON.stringify(defaultInventoryTemplate));
+                    initPresentArrays(inventoryData);
+                } 
+            } else {
+                // First run: Load defaults
+                inventoryData = JSON.parse(JSON.stringify(defaultInventoryTemplate));
+                initPresentArrays(inventoryData);
+                saveData(); // Save defaults immediately
+            }
         }
         
-        function resetData() { 
-            if(!confirm('Clear all stock counts to 0? Targets will remain.')) return; 
+        // RESET: Clears only Stock, keeps Targets
+        function resetStockData() { 
+            if(!confirm('This will set ALL Stock values to 0. Targets will remain. Proceed?')) return; 
+            
             inventoryData.forEach(c => { 
-                if(c.present) c.present.fill(0); 
-                if(c.mrpDetails) c.mrpDetails.forEach(m => { if(m.present) m.present.fill(0); }); 
+                // Reset Top Level Stock
+                if(c.present) c.present.fill(0);
+                // Reset MRP Detail Level Stock
+                if(c.mrpDetails) c.mrpDetails.forEach(m => { 
+                    if(m.present) m.present.fill(0); 
+                }); 
             }); 
-            saveData(); render(); 
+            
+            saveData(); // Save the cleared state
+            render(); 
         }
-
+        
         function recalcTotals(ci) { 
             const c = inventoryData[ci]; if(!c) return; 
             if (!c.base || c.base.length !== stores.length) c.base = Array(stores.length).fill(0); 
@@ -641,30 +663,15 @@
             let h2 = '<tr>'; stores.forEach(() => { h2 += `<th class="sub-header col-data">T</th><th class="sub-header col-data" style="border-right:1px solid var(--border)">S</th>`; }); h2 += '</tr>'; 
             th.innerHTML = h1 + h2; let body = ''; 
             
-            // Helper for logic
-            const getLogic = (base, present, si) => {
-                const gap = (present[si] || 0) - (base[si] || 0);
-                if (gap >= 0) return { transfer: null, purchase: 0, gap: gap };
-                const need = Math.abs(gap);
-                let donor = null, max = 0; 
-                for (let i = 0; i < stores.length; i++) { 
-                    if (i === si) continue; 
-                    const sur = (present[i] || 0) - (base[i] || 0); 
-                    if (sur > max) { max = sur; donor = i; } 
-                }
-                let tObj = null, pQty = 0; 
-                if (donor !== null && max > 0) { const tQ = Math.min(need, max); tObj = { qty: tQ, from: stores[donor] }; pQty = need - tQ; } 
-                else { pQty = need; } 
-                return { transfer: tObj, purchase: pQty, gap: gap }; 
-            };
-
             inventoryData.forEach((c, ci) => { 
                 if (c.mrpDetails && c.mrpDetails.length > 0) { 
                     c.mrpDetails.forEach((m, mi) => { 
                         let row = `<tr><td class="sticky-col-1 col-cat" style="font-size:11px;color:var(--text-muted)">${c.name}</td><td class="sticky-col-2 col-mrp"><span class="badge badge-info">${m.range}</span></td>`; 
                         let hasData = !isP; 
                         stores.forEach((_, si) => { 
-                            const t = m.base[si]||0, s = m.present[si]||0, l = getLogic(m.base, m.present, si); 
+                            const t = m.base[si]||0, s = m.present[si]||0;
+                            const l = getSmartLogic(si, m.base, m.present);
+                            
                             if(isP && l.purchase===0) { row += `<td class="col-data"></td><td class="col-data"></td>`; } 
                             else { 
                                 if(isP) hasData = true; 
@@ -677,10 +684,7 @@
                         
                         let actionHtml = '';
                         if(!isP){
-                            const l = getLogic(m.base, m.present, stores.indexOf(stores[0])); // Just for rendering logic
-                            // Re-check global logic for the row
-                            let surpluses = [];
-                            let shortages = [];
+                            let surpluses = []; let shortages = [];
                             stores.forEach((sName, sIdx) => {
                                 const diff = (m.present[sIdx]||0) - (m.base[sIdx]||0);
                                 if (diff > 0) surpluses.push({name: sName, qty: diff});
@@ -688,7 +692,6 @@
                             });
                             
                             if (surpluses.length > 0 && shortages.length > 0) {
-                                // Simplified display for matrix
                                 const donor = surpluses.sort((a,b) => b.qty - a.qty)[0];
                                 const receiver = shortages.sort((a,b) => b.qty - a.qty)[0];
                                 const qty = Math.min(donor.qty, receiver.qty);
@@ -707,7 +710,7 @@
                 let tr = `<tr class="total-row"><td class="sticky-col-1 col-cat" style="font-weight:800">${c.name}</td><td class="sticky-col-2 col-mrp"><span class="badge badge-warning">TOTAL</span></td>`; 
                 let hasData = !isP; 
                 stores.forEach((_, si) => { 
-                    const t = c.base[si]||0, s = c.present[si]||0, l = getLogic(c.base, c.present, si); 
+                    const t = c.base[si]||0, s = c.present[si]||0, l = getSmartLogic(si, c.base, c.present); 
                     if(isP && l.purchase===0) { tr += `<td class="col-data"></td><td class="col-data"></td>`; } 
                     else { 
                         if(isP) hasData = true; 
@@ -720,6 +723,23 @@
                 body += tr + `<td class="sticky-action"></td></tr>`; 
             }); 
             tb.innerHTML = body; 
+        }
+
+        function getSmartLogic(si, base, pres) { 
+            if (!base || !pres || si >= base.length || si >= pres.length) return { transfer: null, purchase: 0, gap: 0 }; 
+            const gap = (pres[si] || 0) - (base[si] || 0); 
+            if (gap >= 0) return { transfer: null, purchase: 0, gap: gap }; 
+            const need = Math.abs(gap); 
+            let donor = null, max = 0; 
+            for (let i = 0; i < stores.length; i++) { 
+                if (i === si) continue; 
+                const sur = (pres[i] || 0) - (base[i] || 0); 
+                if (sur > max) { max = sur; donor = i; } 
+            } 
+            let tObj = null, pQty = 0; 
+            if (donor !== null && max > 0) { const tQ = Math.min(need, max); tObj = { qty: tQ, from: stores[donor] }; pQty = need - tQ; } 
+            else { pQty = need; } 
+            return { transfer: tObj, purchase: pQty, gap: gap }; 
         }
         
         function editStock(ci, mi, si) { 
@@ -753,45 +773,25 @@
             const transfers = [];
             inventoryData.forEach(c => {
                 const processItem = (itemName, mrpRange, baseArr, presArr) => {
-                    // 1. Identify Surpluses and Shortages
-                    let surpluses = [];
-                    let shortages = [];
-                    
+                    let surpluses = []; let shortages = [];
                     stores.forEach((s, i) => {
                         const diff = (presArr[i]||0) - (baseArr[i]||0);
                         if (diff > 0) surpluses.push({ store: s, idx: i, qty: diff });
                         if (diff < 0) shortages.push({ store: s, idx: i, qty: Math.abs(diff) });
                     });
-
-                    // 2. Sort for optimal matching (largest surplus to largest shortage)
                     surpluses.sort((a, b) => b.qty - a.qty);
                     shortages.sort((a, b) => b.qty - a.qty);
-
-                    // 3. Execute Transfers
-                    // We iterate through shortages and try to fulfill them from available surpluses
                     for (let i = 0; i < shortages.length; i++) {
                         let needed = shortages[i].qty;
                         const receiver = shortages[i].store;
-
-                        // Try to find donors
                         for (let j = 0; j < surpluses.length; j++) {
-                            if (needed === 0) break; // Fulfilled
-                            
+                            if (needed === 0) break;
                             if (surpluses[j].qty > 0) {
                                 const donor = surpluses[j];
                                 const available = donor.qty;
                                 const transferQty = Math.min(needed, available);
-
                                 if (transferQty > 0) {
-                                    transfers.push({
-                                        category: itemName,
-                                        mrp: mrpRange,
-                                        from: donor.store,
-                                        to: receiver,
-                                        qty: transferQty
-                                    });
-
-                                    // Update local loop state
+                                    transfers.push({ category: itemName, mrp: mrpRange, from: donor.store, to: receiver, qty: transferQty });
                                     needed -= transferQty;
                                     surpluses[j].qty -= transferQty;
                                 }
@@ -799,12 +799,8 @@
                         }
                     }
                 };
-
-                if (c.mrpDetails && c.mrpDetails.length > 0) {
-                    c.mrpDetails.forEach(m => processItem(c.name, m.range, m.base, m.present));
-                } else {
-                    processItem(c.name, 'TOTAL', c.base, c.present);
-                }
+                if (c.mrpDetails && c.mrpDetails.length > 0) { c.mrpDetails.forEach(m => processItem(c.name, m.range, m.base, m.present)); } 
+                else { processItem(c.name, 'TOTAL', c.base, c.present); }
             });
             return transfers;
         }
@@ -812,45 +808,25 @@
         function renderTransferReport() {
             const transfers = calculateGlobalTransfer();
             const totalQty = transfers.reduce((sum, t) => sum + t.qty, 0);
-            
             document.getElementById('reportTotalTransfer').textContent = totalQty.toLocaleString();
             document.getElementById('reportSavedPurchase').textContent = totalQty.toLocaleString();
 
-            // Chart: Top Routes
             const routeMap = {};
-            transfers.forEach(t => {
-                const key = `${t.from} → ${t.to}`;
-                routeMap[key] = (routeMap[key] || 0) + t.qty;
-            });
+            transfers.forEach(t => { const key = `${t.from} → ${t.to}`; routeMap[key] = (routeMap[key] || 0) + t.qty; });
             const topRoutes = Object.entries(routeMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
 
             if (transferSummaryChart) transferSummaryChart.destroy();
             transferSummaryChart = new Chart(document.getElementById('transferSummaryChart'), {
-                type: 'bar', 
-                data: { 
-                    labels: topRoutes.map(r => r[0]), 
-                    datasets: [{ label: 'Items to Transfer', data: topRoutes.map(r => r[1]), backgroundColor: '#0984e3', borderRadius: 4 }] 
-                },
+                type: 'bar', data: { labels: topRoutes.map(r => r[0]), datasets: [{ label: 'Items to Transfer', data: topRoutes.map(r => r[1]), backgroundColor: '#0984e3', borderRadius: 4 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
             });
 
-            // List
             const container = document.getElementById('transferListContainer');
-            let listHtml = `<div class="transfer-list-item font-bold text-xs uppercase" style="background:var(--bg); color:var(--text-muted);">
-                <div>From</div><div>To</div><div>Category</div><div>MRP</div><div class="text-center">Qty</div>
-            </div>`;
-            
-            if (transfers.length === 0) {
-                listHtml += `<div class="p-8 text-center font-bold" style="color: var(--info)">NO TRANSFERS REQUIRED. INVENTORY IS BALANCED.</div>`;
-            } else {
+            let listHtml = `<div class="transfer-list-item font-bold text-xs uppercase" style="background:var(--bg); color:var(--text-muted);"><div>From</div><div>To</div><div>Category</div><div>MRP</div><div class="text-center">Qty</div></div>`;
+            if (transfers.length === 0) { listHtml += `<div class="p-8 text-center font-bold" style="color: var(--info)">NO TRANSFERS REQUIRED.</div>`; } 
+            else {
                 transfers.forEach(t => {
-                    listHtml += `<div class="transfer-list-item">
-                        <div class="font-bold" style="color:var(--success)">${t.from}</div>
-                        <div class="font-bold" style="color:var(--danger)">${t.to}</div>
-                        <div>${t.category}</div>
-                        <div class="text-xs" style="color:var(--text-muted)">${t.mrp}</div>
-                        <div class="text-center"><span class="badge badge-info text-base" style="font-size: 14px">${t.qty}</span></div>
-                    </div>`;
+                    listHtml += `<div class="transfer-list-item"><div class="font-bold" style="color:var(--success)">${t.from}</div><div class="font-bold" style="color:var(--danger)">${t.to}</div><div>${t.category}</div><div class="text-xs" style="color:var(--text-muted)">${t.mrp}</div><div class="text-center"><span class="badge badge-info text-base" style="font-size: 14px">${t.qty}</span></div></div>`;
                 });
             }
             container.innerHTML = listHtml;
@@ -869,47 +845,30 @@
         // --- PURCHASE LOGIC ---
         function calculatePurchaseNeeds() {
             const purchaseItems = []; let totalPurchaseQty = 0; const affectedStores = new Set();
-            // 1. Simulate Transfers first to get accurate purchase needs
             const transfers = calculateGlobalTransfer();
-            
-            // Clone inventory for simulation
             const simInventory = JSON.parse(JSON.stringify(inventoryData));
-
-            // Apply transfers to simulation
             transfers.forEach(t => {
-                // Find item in simInventory
                 const cat = simInventory.find(c => c.name === t.category);
                 if (cat) {
-                    const fromIdx = stores.indexOf(t.from);
-                    const toIdx = stores.indexOf(t.to);
+                    const fromIdx = stores.indexOf(t.from); const toIdx = stores.indexOf(t.to);
                     if (cat.mrpDetails && cat.mrpDetails.length > 0) {
                         const mrp = cat.mrpDetails.find(m => m.range === t.mrp);
-                        if (mrp) {
-                            mrp.present[fromIdx] -= t.qty;
-                            mrp.present[toIdx] += t.qty;
-                        }
-                    } else {
-                        cat.present[fromIdx] -= t.qty;
-                        cat.present[toIdx] += t.qty;
-                    }
+                        if (mrp) { mrp.present[fromIdx] -= t.qty; mrp.present[toIdx] += t.qty; }
+                    } else { cat.present[fromIdx] -= t.qty; cat.present[toIdx] += t.qty; }
                 }
             });
-
-            // Calculate remaining shortages
             simInventory.forEach(c => {
                 const process = (mrpRange, baseArr, presArr) => {
                     stores.forEach((s, si) => {
                         const shortage = (baseArr[si]||0) - (presArr[si]||0);
                         if (shortage > 0) {
                             purchaseItems.push({ store: s, category: c.name, mrp: mrpRange, target: baseArr[si]||0, stock: presArr[si]||0, shortage: shortage, purchase: shortage });
-                            totalPurchaseQty += shortage;
-                            affectedStores.add(s);
+                            totalPurchaseQty += shortage; affectedStores.add(s);
                         }
                     });
                 };
                 if (c.mrpDetails && c.mrpDetails.length > 0) { c.mrpDetails.forEach(m => process(m.range, m.base, m.present)); } else { process('TOTAL', c.base, c.present); }
             });
-
             purchaseItems.sort((a, b) => b.shortage - a.shortage);
             return { items: purchaseItems, total: totalPurchaseQty, stores: affectedStores.size };
         }
@@ -918,35 +877,20 @@
             const data = calculatePurchaseNeeds();
             document.getElementById('reportTotalPurchase').textContent = data.total.toLocaleString();
             document.getElementById('reportStoresAffected').textContent = data.stores;
-
-            // Chart Logic (same as before)
             const catTotals = {};
             data.items.forEach(item => { catTotals[item.category] = (catTotals[item.category] || 0) + item.purchase; });
             const sortedCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]).slice(0, 5);
-
             if (purchaseSummaryChart) purchaseSummaryChart.destroy();
             purchaseSummaryChart = new Chart(document.getElementById('purchaseSummaryChart'), {
                 type: 'bar', data: { labels: sortedCats.map(c => c[0].substring(0, 15) + '...'), datasets: [{ label: 'Total Purchase Qty', data: sortedCats.map(c => c[1]), backgroundColor: '#d63031', borderRadius: 4 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
             });
-
-            // List
             const container = document.getElementById('purchaseListContainer');
-            let listHtml = `<div class="report-list-item font-bold text-xs uppercase" style="background:var(--bg); color:var(--text-muted);">
-                <div>Store</div><div>Category / MRP</div><div class="text-center">Target</div><div class="text-center">Stock</div><div class="text-center">Gap</div><div class="text-center">To Buy</div>
-            </div>`;
-            
+            let listHtml = `<div class="report-list-item font-bold text-xs uppercase" style="background:var(--bg); color:var(--text-muted);"><div>Store</div><div>Category / MRP</div><div class="text-center">Target</div><div class="text-center">Stock</div><div class="text-center">Gap</div><div class="text-center">To Buy</div></div>`;
             if (data.items.length === 0) { listHtml += `<div class="p-8 text-center font-bold" style="color: var(--success)">ALL STOCKS ARE OPTIMIZED.</div>`; } 
             else {
                 data.items.forEach(item => {
-                    listHtml += `<div class="report-list-item">
-                        <div class="flex flex-col"><span class="font-bold" style="color:var(--danger)">${item.store}</span></div>
-                        <div class="flex flex-col"><span class="font-semibold">${item.category}</span><span class="text-xs" style="color:var(--text-muted)">${item.mrp}</span></div>
-                        <div class="text-center mono font-bold">${item.target}</div>
-                        <div class="text-center mono font-bold" style="color:var(--info)">${item.stock}</div>
-                        <div class="text-center"><span class="font-bold mono" style="color:var(--warning)">${item.shortage}</span></div>
-                        <div class="text-center"><button class="btn btn-danger btn-sm" style="padding: 4px 12px;">Buy ${item.purchase}</button></div>
-                    </div>`;
+                    listHtml += `<div class="report-list-item"><div class="flex flex-col"><span class="font-bold" style="color:var(--danger)">${item.store}</span></div><div class="flex flex-col"><span class="font-semibold">${item.category}</span><span class="text-xs" style="color:var(--text-muted)">${item.mrp}</span></div><div class="text-center mono font-bold">${item.target}</div><div class="text-center mono font-bold" style="color:var(--info)">${item.stock}</div><div class="text-center"><span class="font-bold mono" style="color:var(--warning)">${item.shortage}</span></div><div class="text-center"><button class="btn btn-danger btn-sm" style="padding: 4px 12px;">Buy ${item.purchase}</button></div></div>`;
                 });
             }
             container.innerHTML = listHtml;
