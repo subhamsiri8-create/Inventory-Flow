@@ -126,7 +126,7 @@
         }
         
         td { 
-            padding: 0; font-size: 12px; border-bottom: 1px solid var(--border); 
+            padding: 10px 6px; font-size: 12px; border-bottom: 1px solid var(--border); 
             border-left: 1px solid var(--border); text-align: center; vertical-align: middle; 
             transition: background 0.2s;
             background: var(--bg-secondary);
@@ -163,35 +163,29 @@
         }
         thead .sticky-action { z-index: 20; background: var(--bg); }
 
-        /* Inline Input Styling */
-        .inline-input {
-            width: 100%; height: 100%; border: none; background: transparent;
-            text-align: center; font-family: 'JetBrains Mono', monospace;
-            font-weight: 700; font-size: 12px; padding: 10px 6px;
-            color: var(--text); transition: all 0.2s;
+        .num-target { 
+            background-color: rgba(9, 132, 227, 0.1); 
+            color: var(--info); 
+            font-family: 'JetBrains Mono', monospace; font-weight: 700; display: block; 
+            padding: 6px; border-radius: 6px; border: 1px solid rgba(9, 132, 227, 0.2); font-size: 12px;
         }
-        
-        .inline-input:focus {
-            outline: none; background: var(--bg);
-            box-shadow: inset 0 0 0 2px var(--accent);
+        .num-stock { 
+            font-family: 'JetBrains Mono', monospace; font-weight: 700; display: block; 
+            padding: 6px; border-radius: 6px; border: 1px solid transparent; 
+            cursor: pointer; transition: all 0.2s; font-size: 12px;
+            color: #000000;
         }
+        .num-stock:hover { opacity: 0.8; transform: scale(1.05); }
 
-        .input-target { color: var(--info); cursor: pointer; }
-        .input-target:hover { background: rgba(9, 132, 227, 0.05); }
+        .stock-surplus { background-color: #fecaca; border-color: #fca5a5; }
+        .stock-short { background-color: #bbf7d0; border-color: #86efac; }
+        .stock-equal { background-color: #bfdbfe; border-color: #93c5fd; }
         
-        .input-stock { cursor: pointer; }
-        .input-stock:focus { box-shadow: inset 0 0 0 2px var(--success); }
-
-        /* Stock Status Colors for Input Background/Text */
-        .stock-surplus { background-color: #fecaca; color: #c53030; }
-        .stock-short { background-color: #bbf7d0; color: #166534; }
-        .stock-equal { background-color: #bfdbfe; color: #1e40af; }
-
         .purchase-matrix-val { 
             background-color: rgba(214, 48, 49, 0.1); color: var(--danger); 
             font-family: 'JetBrains Mono', monospace; font-weight: 700; display: block; 
-            padding: 10px 6px; border-radius: 0; cursor: pointer; 
-            border: 1px solid transparent; font-size: 12px;
+            padding: 6px; border-radius: 6px; cursor: pointer; 
+            border: 1px solid rgba(214, 48, 49, 0.2); font-size: 12px;
         }
 
         .modal-overlay { 
@@ -217,6 +211,22 @@
         }
         .report-header.purchase { 
             background: linear-gradient(135deg, var(--danger), var(--danger-light)); color: white;
+        }
+        
+        /* Report List Styling */
+        .report-list-item { 
+            display: grid; 
+            grid-template-columns: 0.8fr 1.5fr 0.6fr 0.6fr 0.8fr 0.8fr; 
+            gap: 12px; padding: 16px 18px; 
+            border-bottom: 1px solid var(--border); 
+            align-items: center; font-size: 13px;
+        }
+        .transfer-list-item {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr; /* From, To, Category, Item, Qty */
+            gap: 12px; padding: 16px 18px; 
+            border-bottom: 1px solid var(--border); 
+            align-items: center; font-size: 13px;
         }
         
         .badge { 
@@ -275,8 +285,10 @@
                     <button onclick="openPurchaseReport()" class="btn btn-danger">Purchase Report</button>
                     <button onclick="document.getElementById('uploadInput').click()" class="btn btn-primary">Upload Stock</button>
                     <input type="file" id="uploadInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleFileUpload(event)">
+                    <!-- Clear Stock Button: Resets only stock, keeps targets -->
+                    <button onclick="resetStockData()" class="btn btn-secondary">Clear Stock</button>
                     <button onclick="exportMatrixExcel()" class="btn btn-info">Export Matrix</button>
-                    <button onclick="openManualModal()" class="btn btn-secondary">Manual Entry</button>
+                    <button onclick="openManualModal()" class="btn btn-secondary">Manual</button>
                 </div>
             </div>
         </header>
@@ -337,21 +349,21 @@
         <div id="tabActions" class="tab-content hidden">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8" style="max-width: 1600px; margin: 0 auto;">
                 <div class="card p-8">
-                    <h3 class="font-bold mb-6 text-sm uppercase tracking-wider" style="color: var(--text-muted)">Add New Branch</h3>
+                    <h3 class="font-bold mb-6 text-sm uppercase tracking-wider" style="color: var(--text-muted)">Add Branch</h3>
                     <div class="flex gap-3">
                         <input type="text" id="newBr" placeholder="Branch Name" class="input-field">
                         <button onclick="addBr()" class="btn btn-primary">Add</button>
                     </div>
                 </div>
                 <div class="card p-8">
-                    <h3 class="font-bold mb-6 text-sm uppercase tracking-wider" style="color: var(--text-muted)">Add New Category</h3>
+                    <h3 class="font-bold mb-6 text-sm uppercase tracking-wider" style="color: var(--text-muted)">Add Category</h3>
                     <div class="flex gap-3">
                         <input type="text" id="newCat" placeholder="Category Name" class="input-field">
                         <button onclick="addCat()" class="btn btn-primary">Add</button>
                     </div>
                 </div>
                 <div class="card p-8">
-                    <h3 class="font-bold mb-6 text-sm uppercase tracking-wider" style="color: var(--text-muted)">Bulk Set Target</h3>
+                    <h3 class="font-bold mb-6 text-sm uppercase tracking-wider" style="color: var(--text-muted)">Set Target</h3>
                     <div class="flex flex-col gap-3">
                         <div class="flex gap-3">
                             <select id="selCat" class="input-field text-xs" onchange="updateTargetMrpOptions()"></select>
@@ -498,54 +510,51 @@
 
     <script>
         // --- CONFIG & DATA ---
-        // We initialize variables but DO NOT load default data unless storage is empty.
-        let stores = []; 
-        let inventoryData = []; 
+        let stores = ["SG", "SGHYD", "SGRJY", "SGTNL", "SIRIELR", "SGTNK", "SGTUNI", "SIRICPT", "SIRIVJY", "SIRIKKD", "SIRITPT", "VS"];
         
-        let mainChart = null; let currentModalBranchIndex = null; let branchModalChart = null; 
-        let purchaseSummaryChart = null; let transferSummaryChart = null;
-
-        // Default template ONLY used if localStorage is completely empty
+        // Full Data Template (Defaults for first run ONLY)
         const defaultInventoryTemplate = [
-            { name: "BNS HANDLOOM HF", base: [], present: [], mrpDetails: [ { range: "0<500", base: [500, 250, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] }, { range: "501<1000", base: [1000, 450, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] }, { range: "1001<1500", base: [1200, 500, 500, 1000, 750, 750, 750, 400, 1200, 750, 750, 750], present: [] }, { range: "1501<2000", base: [500, 250, 250, 400, 300, 350, 350, 250, 500, 350, 350, 300], present: [] }, { range: "2001<3000", base: [500, 250, 250, 350, 300, 350, 300, 250, 500, 350, 350, 300], present: [] }, { range: "3001<4000", base: [300, 150, 150, 200, 200, 200, 200, 150, 300, 200, 200, 150], present: [] }, { range: "4001<6000", base: [200, 100, 100, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] }, { range: "6001<7500", base: [100, 50, 50, 100, 50, 100, 50, 50, 100, 100, 100, 100], present: [] }, { range: ">7500", base: [20, 10, 10, 0, 0, 10, 0, 20, 20, 10, 10, 20], present: [] }, { range: "501<1000(1+1)", base: [800, 500, 500, 500, 500, 400, 1000, 400, 800, 400, 400, 400], present: [] }, { range: "1001<2000(1+1)", base: [500, 250, 250, 400, 300, 300, 500, 300, 500, 300, 300, 400], present: [] } ] },
-            { name: "SILK WORK SAREES", base: [], present: [], mrpDetails: [ { range: "0<500", base: [175, 87, 87, 125, 125, 150, 175, 0, 175, 150, 150, 150], present: [] }, { range: "501<1000", base: [370, 185, 185, 295, 245, 295, 345, 50, 370, 295, 295, 295], present: [] }, { range: "1001<1500", base: [400, 175, 175, 350, 280, 350, 490, 200, 400, 350, 350, 350], present: [] }, { range: "1501<2000", base: [400, 200, 200, 300, 150, 300, 200, 100, 400, 300, 300, 250], present: [] }, { range: "2001<3000", base: [350, 175, 175, 300, 150, 350, 400, 150, 350, 350, 350, 250], present: [] }, { range: "3001<4000", base: [125, 63, 63, 100, 100, 100, 100, 100, 125, 100, 100, 50], present: [] }, { range: "4001<6000", base: [50, 25, 25, 25, 25, 50, 50, 25, 50, 50, 50, 25], present: [] }, { range: ">6000", base: [20, 10, 10, 0, 0, 0, 0, 0, 20, 0, 0, 0], present: [] }, { range: "501<1000(1+1)", base: [175, 87, 87, 125, 125, 150, 175, 50, 175, 150, 150, 150], present: [] }, { range: "1001<2000(1+1)", base: [115, 58, 58, 90, 75, 90, 105, 50, 115, 90, 90, 90], present: [] } ] },
-            { name: "PRINT WORK SAREES", base: [], present: [], mrpDetails: [ { range: "0<500", base: [200, 100, 100, 175, 150, 150, 175, 150, 200, 150, 150, 150], present: [] }, { range: "501<1000", base: [265, 133, 133, 210, 210, 210, 210, 100, 265, 210, 210, 210], present: [] }, { range: "1001<1500", base: [150, 75, 75, 120, 120, 120, 175, 100, 150, 120, 120, 120], present: [] }, { range: "1501<2000", base: [100, 50, 50, 70, 70, 70, 70, 50, 100, 70, 70, 70], present: [] }, { range: "501<1000(1+1)", base: [150, 75, 75, 115, 115, 115, 150, 120, 150, 115, 115, 115], present: [] }, { range: "1001<2000(1+1)", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] } ] },
-            { name: "HANDLOOM COTTON", base: [], present: [], mrpDetails: [ { range: "0<500", base: [200, 60, 60, 100, 120, 75, 150, 50, 200, 75, 75, 100], present: [] }, { range: "501<1000", base: [300, 150, 150, 300, 175, 100, 100, 150, 300, 100, 100, 300], present: [] }, { range: "1001<1500", base: [100, 50, 50, 120, 75, 50, 25, 75, 100, 50, 50, 120], present: [] }, { range: "1501<2000", base: [50, 25, 25, 60, 40, 20, 0, 50, 50, 20, 20, 60], present: [] }, { range: "2001<3000", base: [30, 15, 15, 20, 0, 20, 0, 0, 30, 20, 20, 20], present: [] } ] },
-            { name: "VENKATAGIRI", base: [], present: [], mrpDetails: [ { range: "0<1000", base: [200, 100, 100, 150, 100, 100, 200, 100, 200, 100, 100, 175], present: [] }, { range: "1001<1500", base: [100, 60, 60, 100, 50, 30, 100, 50, 100, 30, 30, 100], present: [] }, { range: "1501<2000", base: [75, 50, 50, 75, 20, 30, 50, 50, 75, 30, 30, 75], present: [] }, { range: "2001<3000", base: [30, 15, 15, 30, 0, 10, 20, 20, 30, 10, 10, 30], present: [] } ] },
+            { name: "BNS HANDLOOM HF", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [500, 250, 250, 500, 400, 400, 500, 400, 500, 400, 400, 400], present: [] }, { range: "501<1000", base: [1000, 450, 450, 800, 700, 700, 800, 400, 1000, 700, 700, 800], present: [] }, { range: "1001<1500", base: [1200, 500, 500, 1000, 750, 750, 750, 400, 1200, 750, 750, 750], present: [] }, { range: "1501<2000", base: [500, 250, 250, 400, 300, 350, 350, 250, 500, 350, 350, 300], present: [] }, { range: "2001<3000", base: [500, 250, 250, 350, 300, 350, 300, 250, 500, 350, 350, 300], present: [] }, { range: "3001<4000", base: [300, 150, 150, 200, 200, 200, 200, 150, 300, 200, 200, 150], present: [] }, { range: "4001<6000", base: [200, 100, 100, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] }, { range: "6001<7500", base: [100, 50, 50, 100, 50, 100, 50, 50, 100, 100, 100, 100], present: [] }, { range: ">7500", base: [20, 10, 10, 0, 0, 10, 0, 20, 20, 10, 10, 20], present: [] }, { range: "501<1000(1+1)", base: [800, 500, 500, 500, 500, 400, 1000, 400, 800, 400, 400, 400], present: [] }, { range: "1001<2000(1+1)", base: [500, 250, 250, 400, 300, 300, 500, 300, 500, 300, 300, 400], present: [] } ] },
+            { name: "SILK WORK SAREES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [175, 87, 87, 125, 125, 150, 175, 0, 175, 150, 150, 150], present: [] }, { range: "501<1000", base: [370, 185, 185, 295, 245, 295, 345, 50, 370, 295, 295, 295], present: [] }, { range: "1001<1500", base: [400, 175, 175, 350, 280, 350, 490, 200, 400, 350, 350, 350], present: [] }, { range: "1501<2000", base: [400, 200, 200, 300, 150, 300, 200, 100, 400, 300, 300, 250], present: [] }, { range: "2001<3000", base: [350, 175, 175, 300, 150, 350, 400, 150, 350, 350, 350, 250], present: [] }, { range: "3001<4000", base: [125, 63, 63, 100, 100, 100, 100, 100, 125, 100, 100, 50], present: [] }, { range: "4001<6000", base: [50, 25, 25, 25, 25, 50, 50, 25, 50, 50, 50, 25], present: [] }, { range: ">6000", base: [20, 10, 10, 0, 0, 0, 0, 0, 20, 0, 0, 0], present: [] }, { range: "501<1000(1+1)", base: [175, 87, 87, 125, 125, 150, 175, 50, 175, 150, 150, 150], present: [] }, { range: "1001<2000(1+1)", base: [115, 58, 58, 90, 75, 90, 105, 50, 115, 90, 90, 90], present: [] } ] },
+            { name: "PRINT WORK SAREES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [200, 100, 100, 175, 150, 150, 175, 150, 200, 150, 150, 150], present: [] }, { range: "501<1000", base: [265, 133, 133, 210, 210, 210, 210, 100, 265, 210, 210, 210], present: [] }, { range: "1001<1500", base: [150, 75, 75, 120, 120, 120, 175, 100, 150, 120, 120, 120], present: [] }, { range: "1501<2000", base: [100, 50, 50, 70, 70, 70, 70, 50, 100, 70, 70, 70], present: [] }, { range: "501<1000(1+1)", base: [150, 75, 75, 115, 115, 115, 150, 120, 150, 115, 115, 115], present: [] }, { range: "1001<2000(1+1)", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] } ] },
+            { name: "HANDLOOM COTTON", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<500", base: [200, 60, 60, 100, 120, 75, 150, 50, 200, 75, 75, 100], present: [] }, { range: "501<1000", base: [300, 150, 150, 300, 175, 100, 100, 150, 300, 100, 100, 300], present: [] }, { range: "1001<1500", base: [100, 50, 50, 120, 75, 50, 25, 75, 100, 50, 50, 120], present: [] }, { range: "1501<2000", base: [50, 25, 25, 60, 40, 20, 0, 50, 50, 20, 20, 60], present: [] }, { range: "2001<3000", base: [30, 15, 15, 20, 0, 20, 0, 0, 30, 20, 20, 20], present: [] } ] },
+            { name: "VENKATAGIRI", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<1000", base: [200, 100, 100, 150, 100, 100, 200, 100, 200, 100, 100, 175], present: [] }, { range: "1001<1500", base: [100, 60, 60, 100, 50, 30, 100, 50, 100, 30, 30, 100], present: [] }, { range: "1501<2000", base: [75, 50, 50, 75, 20, 30, 50, 50, 75, 30, 30, 75], present: [] }, { range: "2001<3000", base: [30, 15, 15, 30, 0, 10, 20, 20, 30, 10, 10, 30], present: [] } ] },
             { name: "UPPADA (MANGALAGIRI)", base: [50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [], mrpDetails: [] },
-            { name: "UPPADA (CHIRALA)", base: [], present: [], mrpDetails: [ { range: "1001<2000", base: [30, 15, 15, 30, 20, 20, 30, 20, 30, 20, 20, 30], present: [] }, { range: "2001<3000", base: [20, 10, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] }, { range: "3001<4000", base: [40, 20, 20, 40, 25, 30, 30, 20, 40, 30, 30, 40], present: [] }, { range: "4001<5000", base: [40, 20, 20, 30, 20, 20, 20, 20, 40, 20, 20, 30], present: [] }, { range: "5001<7000", base: [30, 20, 20, 30, 20, 25, 20, 20, 30, 25, 25, 30], present: [] }, { range: "7001<10000", base: [10, 5, 5, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] } ] },
-            { name: "UPPADA (COIMBATORE)", base: [], present: [], mrpDetails: [ { range: "4001<5000", base: [20, 10, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] }, { range: "5001<7000", base: [30, 15, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] }, { range: "7001<10000", base: [30, 15, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] }, { range: "10001<15000", base: [10, 5, 5, 0, 0, 0, 0, 10, 10, 0, 0, 10], present: [] } ] },
-            { name: "UPPADA (SALEM)", base: [], present: [], mrpDetails: [ { range: "7001<10000", base: [30, 0, 30, 30, 30, 30, 30, 20, 30, 30, 30, 30], present: [] }, { range: ">10000", base: [20, 0, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] } ] },
+            { name: "UPPADA (CHIRALA)", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "1001<2000", base: [30, 15, 15, 30, 20, 20, 30, 20, 30, 20, 20, 30], present: [] }, { range: "2001<3000", base: [20, 10, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] }, { range: "3001<4000", base: [40, 20, 20, 40, 25, 30, 30, 20, 40, 30, 30, 40], present: [] }, { range: "4001<5000", base: [40, 20, 20, 30, 20, 20, 20, 20, 40, 20, 20, 30], present: [] }, { range: "5001<7000", base: [30, 20, 20, 30, 20, 25, 20, 20, 30, 25, 25, 30], present: [] }, { range: "7001<10000", base: [10, 5, 5, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] } ] },
+            { name: "UPPADA (COIMBATORE)", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "4001<5000", base: [20, 10, 10, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] }, { range: "5001<7000", base: [30, 15, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] }, { range: "7001<10000", base: [30, 15, 15, 30, 20, 20, 20, 20, 30, 20, 20, 30], present: [] }, { range: "10001<15000", base: [10, 5, 5, 0, 0, 0, 0, 10, 10, 0, 0, 10], present: [] } ] },
+            { name: "UPPADA (SALEM)", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "7001<10000", base: [30, 0, 30, 30, 30, 30, 30, 20, 30, 30, 30, 30], present: [] }, { range: ">10000", base: [20, 0, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20], present: [] } ] },
             { name: "UPPADA (NELLORE)", base: [100, 0, 100, 100, 40, 70, 70, 0, 100, 70, 70, 100], present: [], mrpDetails: [] },
-            { name: "UPPADA (PRODDATUR)", base: [], present: [], mrpDetails: [ { range: "1001<3000", base: [50, 25, 25, 50, 40, 30, 50, 40, 50, 30, 30, 50], present: [] }, { range: "3001<5000", base: [30, 20, 20, 30, 30, 25, 40, 30, 30, 25, 25, 30], present: [] }, { range: "5001<7000", base: [50, 25, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] }, { range: "7001<10000", base: [50, 25, 25, 50, 30, 50, 30, 50, 50, 50, 50, 50], present: [] }, { range: ">10000", base: [10, 5, 5, 10, 0, 0, 10, 15, 10, 0, 0, 15], present: [] } ] },
-            { name: "PATTU SAREES", base: [], present: [], mrpDetails: [ { range: "0<1000", base: [40, 30, 30, 50, 25, 40, 60, 25, 40, 40, 40, 60], present: [] }, { range: "1001<2000", base: [150, 125, 125, 200, 100, 175, 250, 100, 150, 175, 175, 250], present: [] }, { range: "2001<3000", base: [200, 100, 100, 200, 100, 200, 250, 100, 200, 200, 200, 300], present: [] }, { range: "3001<4000", base: [150, 75, 75, 150, 100, 175, 150, 100, 150, 175, 175, 150], present: [] }, { range: "4001<5000", base: [100, 50, 50, 100, 75, 75, 100, 50, 100, 75, 75, 120], present: [] }, { range: "5001<7000", base: [120, 63, 63, 120, 100, 75, 75, 50, 120, 75, 75, 120], present: [] }, { range: "7001<10000", base: [100, 50, 50, 100, 50, 75, 100, 50, 100, 75, 75, 100], present: [] }, { range: "10001<15000", base: [100, 50, 50, 100, 50, 90, 100, 50, 100, 90, 90, 100], present: [] }, { range: "15001<20000", base: [50, 25, 25, 50, 20, 50, 50, 30, 50, 50, 50, 20], present: [] }, { range: "20001<30000", base: [25, 15, 15, 20, 5, 10, 10, 10, 25, 10, 10, 20], present: [] }, { range: ">30000", base: [10, 5, 5, 10, 0, 0, 0, 0, 10, 0, 0, 10], present: [] } ] },
-            { name: "HP EMBOSE", base: [], present: [], mrpDetails: [ { range: "2001<3000", base: [30, 20, 20, 30, 20, 20, 30, 0, 30, 20, 20, 30], present: [] }, { range: "3001<4000", base: [20, 10, 10, 20, 10, 20, 25, 10, 20, 20, 20, 20], present: [] }, { range: "4001<5000", base: [20, 10, 10, 25, 10, 15, 30, 15, 20, 15, 15, 20], present: [] }, { range: "5001<7000", base: [40, 15, 15, 30, 20, 30, 40, 15, 40, 30, 30, 30], present: [] }, { range: "7001<10000", base: [20, 10, 10, 20, 5, 15, 40, 10, 20, 15, 15, 20], present: [] }, { range: "10001<15000", base: [10, 5, 5, 10, 5, 10, 15, 10, 10, 10, 10, 15], present: [] } ] },
-            { name: "COIMBATORE SECO", base: [], present: [], mrpDetails: [ { range: "0<1100", base: [200, 75, 75, 150, 100, 120, 200, 50, 200, 120, 120, 150], present: [] }, { range: "1101<2000", base: [200, 100, 100, 200, 150, 200, 200, 100, 200, 200, 200, 200], present: [] }, { range: ">2000", base: [50, 25, 25, 50, 30, 30, 75, 50, 50, 30, 30, 50], present: [] } ] },
-            { name: "HL PATTU PAWADAS JUST BORN", base: [], present: [], mrpDetails: [ { range: "0<1000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] }, { range: "1001<2000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] }, { range: "2001<3000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] }, { range: "3001<4000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] }, { range: "4001<6000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] }, { range: ">6000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] } ] },
-            { name: "HL PATTU PAWADAS 27", base: [], present: [], mrpDetails: [ { range: "0<1000", base: [15, 0, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] }, { range: "1001<2000", base: [15, 0, 15, 15, 15, 15, 15, 20, 15, 15, 15, 15], present: [] }, { range: "2001<3000", base: [15, 0, 15, 15, 15, 15, 15, 10, 15, 15, 15, 15], present: [] }, { range: ">3000", base: [10, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] } ] },
-            { name: "HL PATTU PAWADAS 32", base: [], present: [], mrpDetails: [ { range: "0<2000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] }, { range: "2001<3000", base: [15, 0, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] }, { range: ">3000", base: [10, 0, 10, 10, 10, 10, 10, 0, 10, 10, 10, 10], present: [] } ] },
-            { name: "HL PATTU PAWADAS 36", base: [], present: [], mrpDetails: [ { range: "1001<2000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] }, { range: "2001<3000", base: [10, 0, 10, 10, 10, 10, 10, 20, 10, 10, 10, 10], present: [] }, { range: "3001<4000", base: [10, 0, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] }, { range: "4001<6000", base: [10, 0, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] }, { range: ">6000", base: [5, 0, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5], present: [] } ] },
-            { name: "HL PATTU PAWADAS 45", base: [], present: [], mrpDetails: [ { range: "1001<3000", base: [30, 0, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30], present: [] }, { range: "3001<5000", base: [20, 0, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] }, { range: "5001<7000", base: [20, 0, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] }, { range: "7001<10000", base: [10, 0, 10, 10, 10, 10, 10, 15, 10, 10, 10, 10], present: [] }, { range: ">10000", base: [10, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] } ] },
+            { name: "UPPADA (PRODDATUR)", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "1001<3000", base: [50, 25, 25, 50, 40, 30, 50, 40, 50, 30, 30, 50], present: [] }, { range: "3001<5000", base: [30, 20, 20, 30, 30, 25, 40, 30, 30, 25, 25, 30], present: [] }, { range: "5001<7000", base: [50, 25, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] }, { range: "7001<10000", base: [50, 25, 25, 50, 30, 50, 30, 50, 50, 50, 50, 50], present: [] }, { range: ">10000", base: [10, 5, 5, 10, 0, 0, 10, 15, 10, 0, 0, 15], present: [] } ] },
+            { name: "PATTU SAREES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<1000", base: [40, 30, 30, 50, 25, 40, 60, 25, 40, 40, 40, 60], present: [] }, { range: "1001<2000", base: [150, 125, 125, 200, 100, 175, 250, 100, 150, 175, 175, 250], present: [] }, { range: "2001<3000", base: [200, 100, 100, 200, 100, 200, 250, 100, 200, 200, 200, 300], present: [] }, { range: "3001<4000", base: [150, 75, 75, 150, 100, 175, 150, 100, 150, 175, 175, 150], present: [] }, { range: "4001<5000", base: [100, 50, 50, 100, 75, 75, 100, 50, 100, 75, 75, 120], present: [] }, { range: "5001<7000", base: [120, 63, 63, 120, 100, 75, 75, 50, 120, 75, 75, 120], present: [] }, { range: "7001<10000", base: [100, 50, 50, 100, 50, 75, 100, 50, 100, 75, 75, 100], present: [] }, { range: "10001<15000", base: [100, 50, 50, 100, 50, 90, 100, 50, 100, 90, 90, 100], present: [] }, { range: "15001<20000", base: [50, 25, 25, 50, 20, 50, 50, 30, 50, 50, 50, 20], present: [] }, { range: "20001<30000", base: [25, 15, 15, 20, 5, 10, 10, 10, 25, 10, 10, 20], present: [] }, { range: ">30000", base: [10, 5, 5, 10, 0, 0, 0, 0, 10, 0, 0, 10], present: [] } ] },
+            { name: "HP EMBOSE", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "2001<3000", base: [30, 20, 20, 30, 20, 20, 30, 0, 30, 20, 20, 30], present: [] }, { range: "3001<4000", base: [20, 10, 10, 20, 10, 20, 25, 10, 20, 20, 20, 20], present: [] }, { range: "4001<5000", base: [20, 10, 10, 25, 10, 15, 30, 15, 20, 15, 15, 20], present: [] }, { range: "5001<7000", base: [40, 15, 15, 30, 20, 30, 40, 15, 40, 30, 30, 30], present: [] }, { range: "7001<10000", base: [20, 10, 10, 20, 5, 15, 40, 10, 20, 15, 15, 20], present: [] }, { range: "10001<15000", base: [10, 5, 5, 10, 5, 10, 15, 10, 10, 10, 10, 15], present: [] } ] },
+            { name: "COIMBATORE SECO", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<1100", base: [200, 75, 75, 150, 100, 120, 200, 50, 200, 120, 120, 150], present: [] }, { range: "1101<2000", base: [200, 100, 100, 200, 150, 200, 200, 100, 200, 200, 200, 200], present: [] }, { range: ">2000", base: [50, 25, 25, 50, 30, 30, 75, 50, 50, 30, 30, 50], present: [] } ] },
+            { name: "HL PATTU PAWADAS JUST BORN", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<1000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] }, { range: "1001<2000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] }, { range: "2001<3000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] }, { range: "3001<4000", base: [30, 0, 30, 30, 30, 30, 30, 10, 30, 30, 30, 30], present: [] }, { range: "4001<6000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] }, { range: ">6000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] } ] },
+            { name: "HL PATTU PAWADAS 27", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<1000", base: [15, 0, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] }, { range: "1001<2000", base: [15, 0, 15, 15, 15, 15, 15, 20, 15, 15, 15, 15], present: [] }, { range: "2001<3000", base: [15, 0, 15, 15, 15, 15, 15, 10, 15, 15, 15, 15], present: [] }, { range: ">3000", base: [10, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] } ] },
+            { name: "HL PATTU PAWADAS 32", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<2000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] }, { range: "2001<3000", base: [15, 0, 15, 15, 15, 15, 15, 0, 15, 15, 15, 15], present: [] }, { range: ">3000", base: [10, 0, 10, 10, 10, 10, 10, 0, 10, 10, 10, 10], present: [] } ] },
+            { name: "HL PATTU PAWADAS 36", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "1001<2000", base: [30, 0, 30, 30, 30, 30, 30, 0, 30, 30, 30, 30], present: [] }, { range: "2001<3000", base: [10, 0, 10, 10, 10, 10, 10, 20, 10, 10, 10, 10], present: [] }, { range: "3001<4000", base: [10, 0, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] }, { range: "4001<6000", base: [10, 0, 10, 10, 10, 10, 10, 5, 10, 10, 10, 10], present: [] }, { range: ">6000", base: [5, 0, 5, 5, 5, 5, 5, 0, 5, 5, 5, 5], present: [] } ] },
+            { name: "HL PATTU PAWADAS 45", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "1001<3000", base: [30, 0, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30], present: [] }, { range: "3001<5000", base: [20, 0, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] }, { range: "5001<7000", base: [20, 0, 20, 20, 20, 20, 20, 10, 20, 20, 20, 20], present: [] }, { range: "7001<10000", base: [10, 0, 10, 10, 10, 10, 10, 15, 10, 10, 10, 10], present: [] }, { range: ">10000", base: [10, 0, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], present: [] } ] },
             { name: "IKKAT PAWADAS 24 INCHES", base: [10, 0, 10, 5, 5, 5, 5, 5, 10, 5, 5, 10], present: [], mrpDetails: [] },
             { name: "IKKAT PAWADAS 36 INCHES", base: [10, 0, 10, 5, 5, 5, 5, 5, 10, 5, 5, 10], present: [], mrpDetails: [] },
             { name: "IKKAT PAWADAS 45 INCHES", base: [15, 0, 15, 10, 10, 10, 10, 10, 10, 10, 10, 15], present: [], mrpDetails: [] },
-            { name: "GADWAL PURE JARI", base: [], present: [], mrpDetails: [ { range: "2001<4000", base: [30, 8, 8, 15, 15, 15, 15, 0, 30, 15, 15, 30], present: [] }, { range: "4001<6000", base: [20, 5, 5, 10, 10, 10, 10, 0, 20, 10, 10, 25], present: [] }, { range: "6001<10000", base: [15, 8, 8, 10, 0, 10, 0, 10, 15, 10, 10, 20], present: [] } ] },
-            { name: "GADWAL HF JARI", base: [], present: [], mrpDetails: [ { range: "0<2000", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] }, { range: ">2001", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] } ] },
-            { name: "SURAT PRINTED", base: [], present: [], mrpDetails: [ { range: "0<250", base: [500, 150, 150, 300, 300, 300, 300, 200, 500, 300, 300, 300], present: [] }, { range: "251<500", base: [500, 200, 200, 400, 400, 400, 400, 200, 500, 400, 400, 400], present: [] }, { range: "501<750", base: [200, 50, 50, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] }, { range: "751<1000", base: [50, 25, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] }, { range: ">1000", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] } ] },
-            { name: "SURAT PRINTED (1+1)", base: [], present: [], mrpDetails: [ { range: "251<500", base: Array(12).fill(0), present: [] }, { range: "501<750", base: Array(12).fill(0), present: [] }, { range: "751<1000", base: Array(12).fill(0), present: [] }, { range: ">1000", base: Array(12).fill(0), present: [] } ] },
-            { name: "IKKAT", base: [], present: [], mrpDetails: [ { range: "<12000", base: [15, 0, 15, 15, 10, 10, 15, 10, 15, 10, 10, 15], present: [] }, { range: ">12000", base: [15, 0, 10, 15, 10, 10, 10, 15, 10, 10, 10, 15], present: [] } ] },
-            { name: "COTTON SAREES-BRAND WISE", base: [], present: [], mrpDetails: [ { range: "B.K COTTON", base: [150, 75, 75, 150, 100, 100, 150, 100, 150, 100, 100, 100], present: [] }, { range: "KARISHMA COTTON", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] }, { range: "MEENA COTTON", base: [300, 150, 150, 300, 200, 200, 300, 100, 300, 200, 200, 200], present: [] }, { range: "MP COTTON", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] }, { range: "SARVODAYA COTTON", base: [200, 100, 100, 200, 100, 100, 200, 100, 200, 100, 100, 100], present: [] } ] },
-            { name: "COTTON SAREES PROMO", base: [], present: [], mrpDetails: [ { range: "450 (1+1)", base: Array(12).fill(0), present: [] }, { range: "499 (1+1)", base: Array(12).fill(0), present: [] }, { range: "599 (1+1)", base: Array(12).fill(0), present: [] }, { range: "699 (1+1)", base: Array(12).fill(0), present: [] }, { range: "799 (1+1)", base: Array(12).fill(0), present: [] }, { range: "999 (1+1)", base: Array(12).fill(0), present: [] }, { range: "BUY 3 @ 999", base: Array(12).fill(0), present: [] } ] },
-            { name: "COTTON SAREES-OTHERS", base: [], present: [], mrpDetails: [ { range: "0<400", base: [400, 200, 200, 400, 200, 200, 400, 0, 400, 200, 200, 200], present: [] }, { range: "401<600", base: [200, 100, 100, 200, 100, 100, 200, 0, 200, 100, 100, 100], present: [] }, { range: ">600", base: [100, 50, 50, 100, 50, 50, 100, 0, 100, 50, 50, 50], present: [] }, { range: "601<1999 (1+1)", base: [400, 200, 200, 400, 200, 200, 400, 200, 400, 200, 200, 200], present: [] } ] },
-            { name: "FANCY BLOUSES", base: [], present: [], mrpDetails: [ { range: "0<599", base: [80, 0, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] }, { range: "600<1000", base: [80, 0, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] }, { range: ">1000", base: [40, 0, 20, 40, 25, 20, 40, 20, 20, 20, 20, 10], present: [] } ] },
+            { name: "GADWAL PURE JARI", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "2001<4000", base: [30, 8, 8, 15, 15, 15, 15, 0, 30, 15, 15, 30], present: [] }, { range: "4001<6000", base: [20, 5, 5, 10, 10, 10, 10, 0, 20, 10, 10, 25], present: [] }, { range: "6001<10000", base: [15, 8, 8, 10, 0, 10, 0, 10, 15, 10, 10, 20], present: [] } ] },
+            { name: "GADWAL HF JARI", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<2000", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] }, { range: ">2001", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] } ] },
+            { name: "SURAT PRINTED", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<250", base: [500, 150, 150, 300, 300, 300, 300, 200, 500, 300, 300, 300], present: [] }, { range: "251<500", base: [500, 200, 200, 400, 400, 400, 400, 200, 500, 400, 400, 400], present: [] }, { range: "501<750", base: [200, 50, 50, 100, 100, 100, 100, 100, 200, 100, 100, 100], present: [] }, { range: "751<1000", base: [50, 25, 25, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [] }, { range: ">1000", base: [0,0,0,0,0,0,0,20,0,0,0,0], present: [] } ] },
+            { name: "SURAT PRINTED (1+1)", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "251<500", base: Array(12).fill(0), present: [] }, { range: "501<750", base: Array(12).fill(0), present: [] }, { range: "751<1000", base: Array(12).fill(0), present: [] }, { range: ">1000", base: Array(12).fill(0), present: [] } ] },
+            { name: "IKKAT", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "<12000", base: [15, 0, 15, 15, 10, 10, 15, 10, 15, 10, 10, 15], present: [] }, { range: ">12000", base: [15, 0, 10, 15, 10, 10, 10, 15, 10, 10, 10, 15], present: [] } ] },
+            { name: "COTTON SAREES-BRAND WISE", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "B.K COTTON", base: [150, 75, 75, 150, 100, 100, 150, 100, 150, 100, 100, 100], present: [] }, { range: "KARISHMA COTTON", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] }, { range: "MEENA COTTON", base: [300, 150, 150, 300, 200, 200, 300, 100, 300, 200, 200, 200], present: [] }, { range: "MP COTTON", base: [100, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100], present: [] }, { range: "SARVODAYA COTTON", base: [200, 100, 100, 200, 100, 100, 200, 100, 200, 100, 100, 100], present: [] } ] },
+            { name: "COTTON SAREES PROMO", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "450 (1+1)", base: Array(12).fill(0), present: [] }, { range: "499 (1+1)", base: Array(12).fill(0), present: [] }, { range: "599 (1+1)", base: Array(12).fill(0), present: [] }, { range: "699 (1+1)", base: Array(12).fill(0), present: [] }, { range: "799 (1+1)", base: Array(12).fill(0), present: [] }, { range: "999 (1+1)", base: Array(12).fill(0), present: [] }, { range: "BUY 3 @ 999", base: Array(12).fill(0), present: [] } ] },
+            { name: "COTTON SAREES-OTHERS", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<400", base: [400, 200, 200, 400, 200, 200, 400, 0, 400, 200, 200, 200], present: [] }, { range: "401<600", base: [200, 100, 100, 200, 100, 100, 200, 0, 200, 100, 100, 100], present: [] }, { range: ">600", base: [100, 50, 50, 100, 50, 50, 100, 0, 100, 50, 50, 50], present: [] }, { range: "601<1999 (1+1)", base: [400, 200, 200, 400, 200, 200, 400, 200, 400, 200, 200, 200], present: [] } ] },
+            { name: "FANCY BLOUSES", base: Array(12).fill(0), present: [], mrpDetails: [ { range: "0<599", base: [80, 0, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] }, { range: "600<1000", base: [80, 0, 40, 80, 50, 40, 80, 50, 40, 40, 40, 20], present: [] }, { range: ">1000", base: [40, 0, 20, 40, 25, 20, 40, 20, 20, 20, 20, 10], present: [] } ] },
             { name: "HI FANCY CRAPES & GEOS", base: [250, 75, 75, 150, 150, 150, 200, 100, 250, 150, 150, 100], present: [], mrpDetails: [] },
             { name: "SUPERNET PRINTED", base: [200, 75, 75, 150, 100, 100, 100, 100, 200, 100, 100, 100], present: [], mrpDetails: [] },
             { name: "MUNGA KOTA PRINTED", base: [50, 0, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50], present: [], mrpDetails: [] },
             { name: "PATTU BLOUSE WORK", base: [25, 10, 10, 25, 15, 20, 20, 20, 25, 20, 20, 20], present: [], mrpDetails: [] },
-            { name: "NARAYANPET PATTU", base: [], present: [], mrpDetails: [] }
+            { name: "NARAYANPET PATTU", base: Array(12).fill(0), present: [], mrpDetails: [] }
         ];
-        
-        const defaultStores = ["SG", "SGHYD", "SGRJY", "SGTNL", "SIRIELR", "SGTNK", "SGTUNI", "SIRICPT", "SIRIVJY", "SIRIKKD", "SIRITPT", "VS"];
+
+        let inventoryData = []; // Will be loaded or initialized
+        let mainChart = null; let currentModalBranchIndex = null; let branchModalChart = null; 
+        let purchaseSummaryChart = null; let transferSummaryChart = null;
 
         // --- CORE PERSISTENCE FUNCTIONS ---
 
@@ -585,16 +594,31 @@
                 } catch(e) { 
                     console.error("Error loading data, resetting to default.", e); 
                     inventoryData = JSON.parse(JSON.stringify(defaultInventoryTemplate));
-                    stores = [...defaultStores];
                     initPresentArrays(inventoryData);
                 } 
             } else {
                 // First run: Load defaults
                 inventoryData = JSON.parse(JSON.stringify(defaultInventoryTemplate));
-                stores = [...defaultStores];
                 initPresentArrays(inventoryData);
                 saveData(); // Save defaults immediately
             }
+        }
+        
+        // RESET: Clears only Stock, keeps Targets
+        function resetStockData() { 
+            if(!confirm('This will set ALL Stock values to 0. Targets will remain. Proceed?')) return; 
+            
+            inventoryData.forEach(c => { 
+                // Reset Top Level Stock
+                if(c.present) c.present.fill(0);
+                // Reset MRP Detail Level Stock
+                if(c.mrpDetails) c.mrpDetails.forEach(m => { 
+                    if(m.present) m.present.fill(0); 
+                }); 
+            }); 
+            
+            saveData(); // Save the cleared state
+            render(); 
         }
         
         function recalcTotals(ci) { 
@@ -636,7 +660,7 @@
             let h1 = `<tr><th rowspan="2" class="sticky-col-1 col-cat">Category</th><th rowspan="2" class="sticky-col-2 col-mrp">MRP</th>`;
             stores.forEach(s => { h1 += `<th colspan="2" class="group-header col-data">${s}</th>`; }); 
             h1 += '<th rowspan="2" class="sticky-action">AI Suggestion</th></tr>'; 
-            let h2 = '<tr>'; stores.forEach(() => { h2 += `<th class="sub-header col-data">Tgt</th><th class="sub-header col-data" style="border-right:1px solid var(--border)">Stk</th>`; }); h2 += '</tr>'; 
+            let h2 = '<tr>'; stores.forEach(() => { h2 += `<th class="sub-header col-data">BS</th><th class="sub-header col-data" style="border-right:1px solid var(--border)">CS</th>`; }); h2 += '</tr>'; 
             th.innerHTML = h1 + h2; let body = ''; 
             
             inventoryData.forEach((c, ci) => { 
@@ -651,16 +675,9 @@
                             if(isP && l.purchase===0) { row += `<td class="col-data"></td><td class="col-data"></td>`; } 
                             else { 
                                 if(isP) hasData = true; 
-                                // Target Input
-                                row += `<td class="col-data"><input type="number" class="inline-input input-target" value="${t}" onchange="updateInlineTarget(${ci}, ${mi}, ${si}, this.value)"></td>`; 
-                                
-                                // Stock Input
+                                row += `<td class="col-data"><span class="num-target">${t}</span></td>`; 
                                 const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); 
-                                if(isP) {
-                                    row += `<td class="col-data"><span class="purchase-matrix-val">${l.purchase}</span></td>`;
-                                } else {
-                                    row += `<td class="col-data"><input type="number" class="inline-input input-stock ${cls}" value="${s}" onchange="updateInlineStock(${ci}, ${mi}, ${si}, this.value)"></td>`;
-                                }
+                                row += isP ? `<td class="col-data"><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td class="col-data" onclick="editStock(${ci},${mi},${si})"><span class="num-stock ${cls}">${s}</span></td>`; 
                             } 
                         }); 
                         if(isP && !hasData) return; 
@@ -697,56 +714,15 @@
                     if(isP && l.purchase===0) { tr += `<td class="col-data"></td><td class="col-data"></td>`; } 
                     else { 
                         if(isP) hasData = true; 
-                        // Total Target (Read Only or Input? If MRP exists, usually calculated. If no MRP, Input)
-                        if (c.mrpDetails && c.mrpDetails.length > 0) {
-                            tr += `<td class="col-data"><span class="inline-input" style="cursor:default; color:var(--text-muted)">${t}</span></td>`; 
-                        } else {
-                            tr += `<td class="col-data"><input type="number" class="inline-input input-target" value="${t}" onchange="updateInlineTarget(${ci}, -1, ${si}, this.value)"></td>`; 
-                        }
-
+                        tr += `<td class="col-data"><span class="num-target">${t}</span></td>`; 
                         const cls = s > t ? 'stock-surplus' : (s < t ? 'stock-short' : 'stock-equal'); 
-                        if(isP) {
-                            tr += `<td class="col-data" onclick="openModal(${si})" style="cursor:pointer"><span class="purchase-matrix-val">${l.purchase}</span></td>`; 
-                        } else {
-                            if (c.mrpDetails && c.mrpDetails.length > 0) {
-                                 // Total Stock is calculated, show as read only
-                                 tr += `<td class="col-data"><span class="inline-input ${cls}" style="cursor:default">${s}</span></td>`; 
-                            } else {
-                                 // Simple item, allow edit
-                                 tr += `<td class="col-data"><input type="number" class="inline-input input-stock ${cls}" value="${s}" onchange="updateInlineStock(${ci}, -1, ${si}, this.value)"></td>`; 
-                            }
-                        }
+                        tr += isP ? `<td class="col-data" onclick="openModal(${si})" style="cursor:pointer"><span class="purchase-matrix-val">${l.purchase}</span></td>` : `<td class="col-data" onclick="openModal(${si})" style="cursor:pointer"><span class="num-stock ${cls}">${s}</span></td>`; 
                     } 
                 }); 
                 if(isP && !hasData) return; 
                 body += tr + `<td class="sticky-action"></td></tr>`; 
             }); 
             tb.innerHTML = body; 
-        }
-
-        // New functions for inline editing
-        function updateInlineStock(ci, mi, si, val) {
-            const v = parseInt(val) || 0;
-            if(mi === -1) {
-                inventoryData[ci].present[si] = v;
-            } else {
-                inventoryData[ci].mrpDetails[mi].present[si] = v;
-                recalcTotals(ci);
-            }
-            saveData();
-            render(); // Re-render to update colors and totals
-        }
-
-        function updateInlineTarget(ci, mi, si, val) {
-            const v = parseInt(val) || 0;
-            if(mi === -1) {
-                inventoryData[ci].base[si] = v;
-            } else {
-                inventoryData[ci].mrpDetails[mi].base[si] = v;
-                recalcTotals(ci);
-            }
-            saveData();
-            render();
         }
 
         function getSmartLogic(si, base, pres) { 
@@ -766,6 +742,13 @@
             return { transfer: tObj, purchase: pQty, gap: gap }; 
         }
         
+        function editStock(ci, mi, si) { 
+            const val = mi === -1 ? (inventoryData[ci].present[si]||0) : (inventoryData[ci].mrpDetails[mi].present[si]||0); 
+            const n = prompt("New Stock:", val); if(n===null) return; const num = parseInt(n); if(isNaN(num)) return; 
+            if(mi===-1) inventoryData[ci].present[si] = num; else { inventoryData[ci].mrpDetails[mi].present[si] = num; recalcTotals(ci); } 
+            saveData(); render(); 
+        }
+
         function refreshCharts() { 
             const chartSel = document.getElementById('chartFilter'); if(!chartSel) return;
             const ci = parseInt(chartSel.value) || 0; const cat = inventoryData[ci]; if(!cat) return; 
@@ -927,8 +910,8 @@
         function switchTab(t) { document.querySelectorAll('.tab-content').forEach(e=>e.classList.add('hidden')); document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active')); document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('hidden'); event.target.classList.add('active'); if(t==='analytics') refreshCharts(); }
         function openModal(si) { currentModalBranchIndex = si; const nm = stores[si]; const labels = [], tgts = [], stks = []; let tT=0, tS=0; let rows = ''; inventoryData.forEach(c => { const t = c.base[si]||0, s = c.present[si]||0; if(t>0 || s>0) { tT+=t; tS+=s; labels.push(c.name.substring(0,10)); tgts.push(t); stks.push(s); const g = s-t; const l = {purchase: Math.max(0, t-s)}; let b = ''; if(l.purchase>0) b = `<span class="badge badge-danger">Buy ${l.purchase}</span>`; else if(g>0) b = `<span class="badge badge-warning">Surplus</span>`; else b = `<span class="badge badge-success">OK</span>`; rows += `<div class="card p-4 mb-2" style="border-left:4px solid ${g<0?'var(--danger)':'var(--success)'}"><div class="flex justify-between text-xs uppercase mb-1" style="color:var(--text-muted)"><span>${c.name}</span><span>Gap: ${g>0?'+':''}${g}</span></div><div class="flex justify-between items-center"><div class="mono text-xs">T: ${t} | S: ${s}</div><div>${b}</div></div></div>`; } }); document.getElementById('modalBody').innerHTML = `<div style="height:250px;margin-bottom:20px;position:relative"><canvas id="branchModalChart"></canvas></div><div class="grid grid-cols-2 gap-4 mb-6 text-center"><div class="p-4 rounded-xl" style="background:var(--bg)"><p class="text-xs uppercase font-bold" style="color:var(--text-muted)">Total Target</p><p class="text-2xl font-extrabold mono">${tT}</p></div><div class="p-4 rounded-xl" style="background:var(--info);color:white"><p class="text-xs uppercase font-bold opacity-80">Total Stock</p><p class="text-2xl font-extrabold mono">${tS}</p></div></div><h3 class="font-bold text-sm mb-3 uppercase tracking-wider" style="color:var(--text-muted)">Category Breakdown</h3><div>${rows}</div>`; document.getElementById('modalStore').textContent = `${nm} Analysis`; document.getElementById('modal').classList.remove('hidden'); const ctx = document.getElementById('branchModalChart').getContext('2d'); if(branchModalChart) branchModalChart.destroy(); branchModalChart = new Chart(ctx, { type:'bar', data:{labels, datasets:[{label:'Target', data:tgts, backgroundColor:'#00b894', borderRadius: 4}, {label:'Stock', data:stks, backgroundColor:'#0984e3', borderRadius: 4}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}, scales:{x:{display:true, grid:{display:false}}, y:{beginAtZero:true}} } }); }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-        function addBr() { const n=document.getElementById('newBr').value.trim().toUpperCase(); if(!n) return; stores.push(n); inventoryData.forEach(c=>{c.base.push(0);c.present.push(0);if(c.mrpDetails)c.mrpDetails.forEach(m=>{m.base.push(0);m.present.push(0)});}); saveData(); render(); document.getElementById('newBr').value = ''; }
-        function addCat() { const n=document.getElementById('newCat').value.trim().toUpperCase(); if(!n) return; inventoryData.push({name:n,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]}); saveData(); render(); document.getElementById('newCat').value = ''; }
+        function addBr() { const n=document.getElementById('newBr').value.trim().toUpperCase(); if(!n) return; stores.push(n); inventoryData.forEach(c=>{c.base.push(0);c.present.push(0);if(c.mrpDetails)c.mrpDetails.forEach(m=>{m.base.push(0);m.present.push(0)});}); saveData(); render(); }
+        function addCat() { const n=document.getElementById('newCat').value.trim().toUpperCase(); if(!n) return; inventoryData.push({name:n,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0),mrpDetails:[]}); saveData(); render(); }
         function updateTargetMrpOptions() { const ci=parseInt(document.getElementById('selCat').value); const s=document.getElementById('selMrp'); s.innerHTML='<option value="TOTAL">TOTAL</option>'; if(!isNaN(ci)){ const c=inventoryData[ci]; if(c.mrpDetails) c.mrpDetails.forEach(m=>{ const o=document.createElement('option'); o.value=m.range; o.textContent=m.range; s.appendChild(o); }); } }
         function setTarget() { const ci=parseInt(document.getElementById('selCat').value), m=document.getElementById('selMrp').value, si=parseInt(document.getElementById('selBr').value), v=parseInt(document.getElementById('targetVal').value)||0; if(isNaN(ci)||isNaN(si)) return alert('Select Category and Branch'); const c=inventoryData[ci]; if(m==='TOTAL'||!m) c.base[si]=v; else { let r=c.mrpDetails.find(x=>x.range===m); if(!r){r={range:m,base:Array(stores.length).fill(0),present:Array(stores.length).fill(0)};c.mrpDetails.push(r);} r.base[si]=v; recalcTotals(ci); } saveData(); render(); alert('Target Updated'); }
         function updateMrpOptions() { const n=document.getElementById('manualCatInput').value.toUpperCase().trim(); const l=document.getElementById('mrpList'); l.innerHTML='<option value="TOTAL">TOTAL</option>'; if(!n) return; const c=inventoryData.find(x=>x.name===n); if(c&&c.mrpDetails) c.mrpDetails.forEach(m=>{ const o=document.createElement('option'); o.value=m.range; l.appendChild(o); }); }
