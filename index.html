@@ -660,7 +660,7 @@
             let h1 = `<tr><th rowspan="2" class="sticky-col-1 col-cat">Category</th><th rowspan="2" class="sticky-col-2 col-mrp">MRP</th>`;
             stores.forEach(s => { h1 += `<th colspan="2" class="group-header col-data">${s}</th>`; }); 
             h1 += '<th rowspan="2" class="sticky-action">AI Suggestion</th></tr>'; 
-            let h2 = '<tr>'; stores.forEach(() => { h2 += `<th class="sub-header col-data">T</th><th class="sub-header col-data" style="border-right:1px solid var(--border)">S</th>`; }); h2 += '</tr>'; 
+            let h2 = '<tr>'; stores.forEach(() => { h2 += `<th class="sub-header col-data">BS</th><th class="sub-header col-data" style="border-right:1px solid var(--border)">CS</th>`; }); h2 += '</tr>'; 
             th.innerHTML = h1 + h2; let body = ''; 
             
             inventoryData.forEach((c, ci) => { 
